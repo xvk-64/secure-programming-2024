@@ -1,3 +1,3 @@
-import {hello} from "common/hello";
+import {hello} from "@sp24/common";
 
-setInterval(() => { console.log(hello() + "aaa") }, 1000)
+setInterval(() => { console.log("Message for you: " + hello()) }, 1000)

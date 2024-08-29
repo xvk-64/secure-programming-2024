@@ -1,5 +1,11 @@
 export default [
     {
+        extends: [
+            "eslint:recommended",
+            "plugin:@typescript-eslint/recommended",
+        ],
+        "parser": "@typescript-eslint/parser",
+        plugins: ["@typescript-eslint"],
         rules: {
             "no-unused-vars": "error",
             "no-undef": "error"

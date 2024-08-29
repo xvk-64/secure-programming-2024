@@ -1,8 +1,6 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "noEmit": false,
-    "composite": true,
-    "outDir": "../../dist/common"
+    "outDir": "./dist/"
   }
 }
