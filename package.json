@@ -4,7 +4,12 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "build": "tsc --build src/tsconfig.build.json --verbose"
+    "build": "npm-run-all build:client build:server",
+    "build:client": "npm run build -w @sp24/client",
+    "build:server": "npm run build -w @sp24/server",
+    "dev": "npm-run-all -p dev:server dev:client",
+    "dev:server": "npm run dev -w @sp24/server",
+    "dev:client": "npm run dev -w @sp24/client"
   },
   "workspaces": [
     "src/common",

@@ -1,7 +1,13 @@
 {
-  "name": "client",
+  "name": "@sp24/client",
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "scripts": {}
+  "scripts": {
+    "build": "node ./esbuild.js",
+    "dev": "node ./esbuild.dev.js"
+  },
+  "dependencies": {
+    "@sp24/common": "^0.0.0"
+  }
 }
