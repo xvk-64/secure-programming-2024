@@ -1,0 +1,8 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./pkg/common/src" },
+    { "path": "./pkg/client/src" },
+    { "path": "./pkg/server/src" }
+  ]
+}

@@ -4,8 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "build": "node ./esbuild.js",
-    "dev": "node ./esbuild.dev.js"
+    "build": "node _esbuild.js",
+    "dev": "node _esbuild.dev.js",
+    "clean": "node ./_clean.js"
   },
   "dependencies": {
     "@sp24/common": "^0.0.0"

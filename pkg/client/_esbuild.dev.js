@@ -1,7 +1,7 @@
 import * as esbuild from 'esbuild';
 
 const ctx = await esbuild.context({
-    entryPoints: ['./index.tsx'],
+    entryPoints: ['./src/index.tsx'],
     outdir: './dist',
     bundle: true,
     logLevel: 'info'

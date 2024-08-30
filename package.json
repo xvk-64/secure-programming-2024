@@ -4,17 +4,16 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "build": "npm-run-all build:client build:server",
-    "build:client": "npm run build -w @sp24/client",
-    "build:server": "npm run build -w @sp24/server",
+    "build": "npm run build --workspaces",
     "dev": "npm-run-all -p dev:server dev:client",
     "dev:server": "npm run dev -w @sp24/server",
-    "dev:client": "npm run dev -w @sp24/client"
+    "dev:client": "npm run dev -w @sp24/client",
+    "clean": "npm run clean --workspaces"
   },
   "workspaces": [
-    "src/common",
-    "src/client",
-    "src/server"
+    "pkg/common",
+    "pkg/client",
+    "pkg/server"
   ],
   "dependencies": {
     "react": "^18.3.1",
