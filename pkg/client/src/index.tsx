@@ -1,5 +1,4 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+import {StrictMode} from 'react';
 import {App} from "./App.js";
 import {createRoot} from "react-dom/client";
 
@@ -9,4 +8,4 @@ const root = createRoot(container!);
 // esbuild live reload
 new EventSource('/esbuild').addEventListener('change', () => location.reload())
 
-root.render(<App/>)
+root.render(<StrictMode><App/></StrictMode>)
