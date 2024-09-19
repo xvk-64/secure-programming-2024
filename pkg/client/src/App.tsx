@@ -1,5 +1,8 @@
 import React, {useEffect, useState} from "react";
-import {hello} from "@sp24/common"
+import {hello} from "@sp24/common";
+import "./main.css";
+
+import Test from './Test';
 
 export const App : React.FC = () => {
     const [message, setMessage] = useState("")
@@ -19,6 +22,14 @@ export const App : React.FC = () => {
     return <p>
             Hello, world!<br/>
             message: {hello()}<br/>
+            message2 : <Test></Test>
             server: {message}
+            <div className='main'>
+                <div className='leftDiv'>sidebar stuff goes here</div>
+                <div className='middleDiv'>
+                    <div className='chatDiv'>wow chat goes here?? pls</div>
+                </div>
+                <div className='rightDiv'>maybe friends and server go here</div>
+            </div>
         </p>;
 }
