@@ -1,8 +1,12 @@
 import React, {useEffect, useState} from "react";
 import {hello} from "@sp24/common";
-import "./main.css";
+// declare module "*.module.css";
+// import styles from "./main.module.css";
+import Test from "./Test.js";
+import ChatBox from "./ChatBox.js"
+import GroupUserList from "./GroupUserList.js";
 
-import Test from './Test';
+// import Test from './Test';
 
 export const App : React.FC = () => {
     const [message, setMessage] = useState("")
@@ -19,17 +23,29 @@ export const App : React.FC = () => {
         })
     })
 
-    return <p>
+   
+
+
+    return <>
+            <p>
             Hello, world!<br/>
             message: {hello()}<br/>
-            message2 : <Test></Test>
+           
+
             server: {message}
-            <div className='main'>
-                <div className='leftDiv'>sidebar stuff goes here</div>
-                <div className='middleDiv'>
-                    <div className='chatDiv'>wow chat goes here?? pls</div>
+            </p>
+
+            <div className="main">
+                <div className="leftDiv"><p>sidebar</p></div>
+                <div className="middleDiv">
+                    <p>middle</p>
+                    <ChatBox></ChatBox>
                 </div>
-                <div className='rightDiv'>maybe friends and server go here</div>
+                <div className="rightDiv">
+                    <GroupUserList></GroupUserList>
+                    </div>
             </div>
-        </p>;
+      
+        
+        </>
 }
