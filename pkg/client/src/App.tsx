@@ -5,6 +5,7 @@ import {hello} from "@sp24/common";
 import Test from "./Test.js";
 import ChatBox from "./ChatBox.js"
 import GroupUserList from "./GroupUserList.js";
+import ServerList from "./ServerList.js";
 
 // import Test from './Test';
 
@@ -42,6 +43,7 @@ export const App : React.FC = () => {
                     <ChatBox></ChatBox>
                 </div>
                 <div className="rightDiv">
+                    <ServerList></ServerList>
                     <GroupUserList></GroupUserList>
                     </div>
             </div>

@@ -11,7 +11,7 @@ export default function GroupUserList() {
         {name: 'jamie', status:false},
         {name: 'cat', status:true},
     ];
-   
+   // if user is online, add to one list, otherwise, add to another
     userList.forEach((user) => {
         // if status true
         {user.status ? (
@@ -23,7 +23,7 @@ export default function GroupUserList() {
         )}
        
     });
-    let userDisplay: React.ReactElement[] = [...userDisplayOnline, ...userDisplayOffline]
+    // let userDisplay: React.ReactElement[] = [...userDisplayOnline, ...userDisplayOffline]
     
 
     return (
