@@ -7,14 +7,14 @@ export default function GroupUserList() {
     let userDisplayOffline: React.ReactElement[] = []
     // let messageList = ["wowowowoww", "cool message bro", "i like soup"];
     const userList = [
-        {name: 'fred', status:true},
-        {name: 'jamie', status:false},
-        {name: 'cat', status:true},
+        {name: 'fred', online:true},
+        {name: 'jamie', online:true},
+        {name: 'cat', online:false},
     ];
    // if user is online, add to one list, otherwise, add to another
     userList.forEach((user) => {
         // if status true
-        {user.status ? (
+        {user.online ? (
             userDisplayOnline.push(
                 <><p>● <strong>{user.name}</strong></p></>)
             ): ( // else if false
@@ -28,7 +28,7 @@ export default function GroupUserList() {
 
     return (
         <>
-        <h3>Group Chat Members:</h3>
+        <h4>Group Chat Members:</h4>
         <h4>Online:</h4>
         {userDisplayOnline}
         <h4>Offline:</h4>

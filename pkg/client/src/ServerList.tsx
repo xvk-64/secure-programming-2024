@@ -49,7 +49,8 @@ export default function ServerList() {
 
     return (
         <>
-        <h3>Servers:</h3>
+        <div style={{width:"200px", height:"30px", borderStyle : "ridge", borderColor:"rgb(195,196,200)", borderWidth: "thin"}}><h4>Servers:</h4></div>
+        
         {connectedServer}
         {/* <p>---------</p> */}
         {onlineServerList}
