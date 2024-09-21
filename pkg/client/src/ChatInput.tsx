@@ -8,8 +8,11 @@ export default function ChatInput() {
 
     return (
         <>
-        <input type="text" style={{marginTop: "5px", width: "475px"}}/>
-        <button type="submit">Send</button>
+        <div>
+            <input type="text" style={{float: "left", marginTop: "5px", width: "446px"}}/>
+            <button type="submit" style={{marginTop: "5px", marginLeft:"5px"}}>Send</button>
+        </div>
+        
         </>
     )
 }

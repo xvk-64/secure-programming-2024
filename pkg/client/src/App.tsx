@@ -39,13 +39,10 @@ export const App : React.FC = () => {
             server: {message}
             </p>
 
-            <div  className="main" style={{width: "1200px", height: "600px", padding: "15px", borderStyle : "ridge", borderColor:"rgb(195,196,200)", borderWidth: "thin", display: "block",  float: "none", flex:1, lineHeight: "normal", backgroundColor: "rgb(252,252,252)"}}>
+            <div  className="main" style={{fontFamily: "Courier New", width: "1200px", height: "600px", padding: "15px", borderStyle : "ridge", borderColor:"rgb(195,196,200)", borderWidth: "thin", display: "block",  float: "none", flex:1, lineHeight: "normal", backgroundColor: "rgb(252,252,252)"}}>
                 <div  className="leftDiv" style={{width: "200px", height: "600px", padding: "10px", margin: "2px", borderStyle : "ridge", borderColor:"rgb(195,196,200)", borderWidth: "thin", display: "block", float: "left", flex:1, lineHeight: "normal", backgroundColor: "grey"}}><p>sidebar</p></div>
-                <div className="middleDiv"style={{width: "600px", height: "700px", float:"left", margin: "20px"}}>
-                    <div className="chatDiv" style={{overflowY: "scroll", width: "500px", height: "400px", padding: "10px", borderStyle : "inset", borderColor:"rgb(195,196,200)", borderWidth: "thin", flex:1, lineHeight: "normal", backgroundColor: "white"}}>
-                        
-                        <ChatBox></ChatBox>
-                    </div>
+                <div className="middleDiv"style={{width: "500px", height: "600px", float:"left", margin: "20px"}}>
+                    <ChatBox></ChatBox>
                     <ChatInput></ChatInput>
                 </div>
                 

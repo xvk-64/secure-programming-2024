@@ -46,10 +46,10 @@ export default function ServerList() {
     //     )
     // })}
 
-
+{/* <div style={{width:"200px", height:"30px", borderStyle : "ridge", borderColor:"rgb(195,196,200)", borderWidth: "thin"}}></div> */}
     return (
         <>
-        <div style={{width:"200px", height:"30px", borderStyle : "ridge", borderColor:"rgb(195,196,200)", borderWidth: "thin"}}><h4>Servers:</h4></div>
+        <h4 style={{borderStyle : "ridge", borderColor:"rgb(195,196,200)", borderWidth: "thin"}}>Servers:</h4>
         
         {connectedServer}
         {/* <p>---------</p> */}
