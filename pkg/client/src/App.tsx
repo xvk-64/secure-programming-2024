@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from "react";
 import {hello} from "@sp24/common";
-import "./main.css";
+import "./App.css";
 
-import Test from './Test';
+import { test } from './Test.js';
 
 export const App : React.FC = () => {
     const [message, setMessage] = useState("")
@@ -22,7 +22,7 @@ export const App : React.FC = () => {
     return <p>
             Hello, world!<br/>
             message: {hello()}<br/>
-            message2 : <Test></Test>
+            message2 : test()
             server: {message}
             <div className='main'>
                 <div className='leftDiv'>sidebar stuff goes here</div>
