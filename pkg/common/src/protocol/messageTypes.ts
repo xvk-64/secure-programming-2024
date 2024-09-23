@@ -1,4 +1,7 @@
-namespace Protocol {
+export namespace Protocol {
+    /// These are typings that closely match the messages defined in the protocol.
+    /// They should be directly convertible to/from JSON for transport.
+
     export type HelloData = {
         type: "hello";
         public_key: string;
@@ -23,9 +26,10 @@ namespace Protocol {
         type: "server_hello";
         sender: string;
     }
+    export type SignedDataEntry = HelloData | ChatData | PublicChatData | ServerHelloData;
     export type SignedData = {
         type: "signed_data";
-        data: HelloData | ChatData | PublicChatData | ServerHelloData;
+        data: SignedDataEntry;
         counter: number;
         signature: string;
     }
@@ -51,4 +55,5 @@ namespace Protocol {
         type: "client_update_request";
     }
 
+    export type ProtocolMessage = SignedData | ClientListRequest | ClientList | ClientUpdate | ClientUpdateRequest;
 }
