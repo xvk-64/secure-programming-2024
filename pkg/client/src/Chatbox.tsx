@@ -21,8 +21,8 @@ export default function ChatBox() {
 
     return (
         <>
-        <h4 style={{borderStyle : "ridge", borderColor:"rgb(195,196,200)", borderWidth: "thin"}}>Chat Name</h4>
-        <div className="chatDiv" style={{overflowY: "scroll", width: "500px", height: "400px", padding: "10px", float:"left", borderStyle : "inset", borderColor:"rgb(195,196,200)", borderWidth: "thin", flex:1, lineHeight: "normal", backgroundColor: "white"}}>
+        <h4 className="heading">Chat Name</h4>
+        <div className="chatDiv">
             {chatbox}
         </div>
         </>

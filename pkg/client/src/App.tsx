@@ -9,6 +9,7 @@ import GroupUserList from "./GroupUserList.js";
 import ServerList from "./ServerList.js";
 import ChatInput from "./ChatInput.js";
 import GroupChatList from "./GroupChatList.js";
+import DropDownMenus from "./DropDownMenus.js";
 
 
 // import Test from './Test';
@@ -40,19 +41,17 @@ export const App : React.FC = () => {
             server: {message}
             </p>
 
-            <div  className="main" style={{fontFamily: "Courier New", width: "1200px", height: "600px", padding: "15px", borderStyle : "ridge", borderColor:"rgb(195,196,200)", borderWidth: "thin", display: "block",  float: "none", flex:1, lineHeight: "normal", backgroundColor: "rgb(252,252,252)"}}>
-                <div  className="leftDiv" style={{width: "200px", height: "600px", padding: "10px", margin: "2px", borderStyle : "ridge", borderColor:"rgb(195,196,200)", borderWidth: "thin", display: "block", float: "left", flex:1, lineHeight: "normal", backgroundColor: "rgb(252,252,252)"}}>
+            <div  className="main">
+                <div  className="leftDiv">
                     <p>sidebar</p>
-                    
-       
-                    <GroupChatList></GroupChatList>
+                    <DropDownMenus></DropDownMenus>
                     </div>
-                <div className="middleDiv"style={{width: "500px", height: "600px", float:"left", margin: "20px"}}>
+                <div className="middleDiv">
                     <ChatBox></ChatBox>
                     <ChatInput></ChatInput>
                 </div>
                 
-                <div className="rightDiv" style={{overflowY: "scroll", width: "200px", padding: "10px", margin: "2px", borderStyle : "ridge", borderColor:"rgb(195,196,200)", borderWidth: "thin",  display: "block", float: "right", flex:1, lineHeight: "normal", backgroundColor: "white"}}>
+                <div className="rightDiv">
                     <ServerList></ServerList>
                     <GroupUserList></GroupUserList>
                 </div>

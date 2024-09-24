@@ -16,9 +16,13 @@
     "pkg/server"
   ],
   "dependencies": {
+    "@types/react-bootstrap": "^0.32.37",
+    "bootstrap": "^5.3.3",
     "css-loader": "^7.1.2",
     "react": "^18.3.1",
+    "react-bootstrap": "^2.10.4",
     "react-dom": "^18.3.1",
+    "react-pro-sidebar": "^1.1.0",
     "style-loader": "^4.0.0"
   },
   "devDependencies": {

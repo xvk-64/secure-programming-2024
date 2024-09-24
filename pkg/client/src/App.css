@@ -1,41 +1,113 @@
 .main {
-   
-    width: 920px;
-    padding: 10px;
-    box-sizing: content-box;
-    display: block;
+    font-family: "Courier New";
+    width: 1200px; 
+    height: 600px;
+    padding: 15px;
+    border-style : ridge;
+    border-color:rgb(195,196,200);
+    border-width: thin;
+    display: block; 
     float: none;
+    flex:1;
     line-height: normal;
-    background-color: aqua;
+    background-color: rgb(252,252,252)
 }
 
 .leftDiv {
-    box-sizing: content-box;
-    background-color: rgb(236, 233, 233);
-    height: 200px; 
-    box-sizing: content-box;
-    display: block;
+    font-family: "Courier New";
+    width: 200px; 
+    height: 600px;
+    padding: 10px;
+    margin: 2px;
+    border-style : ridge;
+    border-color:rgb(195,196,200);
+    border-width: thin;
+    display: block; 
     float: left;
+    flex:1;
     line-height: normal;
+    background-color: rgb(252,252,252)
 }
 
 
+
 .middleDiv {
-    box-sizing: content-box;
-    display: block;
-    float: none;
-    line-height: normal;
+    font-family: "Courier New";
+    width: 500px; 
+    height: 600px;
+    margin: 20px;
+    float: left;
 
 }
 
 .rightDiv {
-    box-sizing: content-box;
-    display: block;
+    overflow-y: scroll;
+    font-family: "Courier New";
+    width: 200px; 
+    /* height: 600px; */
+    padding: 10px;
+    margin: 2px;
+    border-style : ridge;
+    border-color:rgb(195,196,200);
+    border-width: thin;
+    display: block; 
     float: right;
+    flex:1;
     line-height: normal;
-
+    background-color: white;
 }
 
-.test {
-    color: aquamarine;
+.chatDiv {
+    overflow-y: scroll;
+    font-family: "Courier New";
+    width: 500px; 
+    height: 400px;
+    padding: 10px;
+    margin: 2px;
+    border-style : inset;
+    border-color:rgb(195,196,200);
+    border-width: thin;
+    display: block; 
+    float: left;
+    flex:1;
+    line-height: normal;
+    background-color: white;
+}
+
+.createChatDiv {
+    font-family: "Courier New";
+    width: 500px; 
+    height: 400px;
+    padding: 10px;
+    margin: 2px;
+    border-style : inset;
+    border-color:rgb(195,196,200);
+    border-width: thin;
+    display: block; 
+    float: left;
+    flex:1;
+    line-height: normal;
+    background-color: white;
+}
+
+/* style={{overflowY: "scroll", width: "500px", height: "400px", padding: "10px", float:"left", borderStyle : "inset",
+     borderColor:"rgb(195,196,200)", borderWidth: "thin", flex:1, lineHeight: "normal", backgroundColor: "white"}} */
+
+.chatInputBox {
+    float: left;
+    /* margin-top: 5px; */
+    margin-top: 5px;
+    margin-left: 2px;
+    width: 442px
+}
+
+.chatInputButton {
+    margin-top: 5px;
+    margin-left: 5px
+}
+
+.heading {
+    border-style : ridge;
+    border-color:rgb(195,196,200);
+    border-width: thin;
 }

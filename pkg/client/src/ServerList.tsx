@@ -49,7 +49,7 @@ export default function ServerList() {
 {/* <div style={{width:"200px", height:"30px", borderStyle : "ridge", borderColor:"rgb(195,196,200)", borderWidth: "thin"}}></div> */}
     return (
         <>
-        <h4 style={{borderStyle : "ridge", borderColor:"rgb(195,196,200)", borderWidth: "thin"}}>Servers:   <button type="submit" >+</button></h4>
+        {/* <h4 className="heading" style={{borderStyle : "ridge", borderColor:"rgb(195,196,200)", borderWidth: "thin"}}>Servers:   <button type="submit" >+</button></h4> */}
         
         {connectedServer}
         {/* <p>---------</p> */}
