@@ -4,6 +4,6 @@
     "outDir": "../dist/",
     "rootDir": "./",
     "baseUrl": "./",
-    "lib": ["DOM"]
+    "lib": ["DOM", "ESNext"]
   }
 }

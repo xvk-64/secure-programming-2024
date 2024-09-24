@@ -127,4 +127,5 @@ export type ClientSendableMessageData = IMessageData<Protocol.HelloData>;
 export type ClientSendable = SignedData<ClientSendableMessageData>;
 
 // Which message types is a server allowed to send?
-export type ServerSendable = null;
+export type Server2ServerSendable = null;
+export type Server2ClientSendable = null;

@@ -10,7 +10,7 @@
     "moduleResolution": "node16",
     "esModuleInterop": true,
     "verbatimModuleSyntax": true,
-    "lib": ["ESNext"],
+    "lib": ["ESNext", "ES2021.WeakRef"],
 
     "types": ["node"],
 
