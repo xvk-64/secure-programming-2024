@@ -1,15 +1,13 @@
 {
   "name": "@sp24/common",
-  "type": "module",
   "version": "0.0.0",
+  "type": "module",
   "exports": {
-    ".": "./dist/index.js",
-    "./*": "./dist/*",
-    "./src/*": "./dist/*"
+    "./*": "./dist/src/*"
   },
   "scripts": {
-    "build": "tsc -p ./src/tsconfig.json",
-    "clean": "node ./_clean.js"
+    "build": "tsc -b",
+    "clean": "node _clean.mjs"
   },
   "dependencies": {
     "@types/base64-arraybuffer": "^0.1.0",

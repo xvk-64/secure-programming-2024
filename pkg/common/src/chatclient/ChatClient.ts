@@ -1,11 +1,12 @@
-import {type IChatClientTransport} from "./IChatClientTransport.js";
-import type {EventListener} from "../util/Event.js";
 import {
-    type ClientSendableMessageData,
-    HelloData, OAEPGenParams, OAEPImportParams, PSSImportParams,
-    type ServerToClientSendable,
+    ClientSendableMessageData, HelloData,
+    OAEPGenParams, OAEPImportParams,
+    PSSImportParams,
+    ServerToClientSendable,
     SignedData
 } from "../messageTypes.js";
+import {IChatClientTransport} from "./IChatClientTransport.js";
+import {EventListener} from "../util/Event.js";
 
 const webCrypto = globalThis.crypto.subtle;
 
@@ -47,14 +48,14 @@ export class ChatClient {
 
     static async create(transport: IChatClientTransport): Promise<ChatClient> {
         // Generate keys
-        const {privateKey, publicKey} = await webCrypto.generateKey(OAEPGenParams, true, ["encrypt"]);
+        const {privateKey, publicKey} = await webCrypto.generateKey(OAEPGenParams, true, ["encrypt", "decrypt"]);
         // Hack to get the same RSA key into both OAEP and PSS
-        const exportedPub = await webCrypto.exportKey("pkcs8", privateKey);
-        const exportedPriv = await webCrypto.exportKey("pkcs8", publicKey);
+        const exportedPub = await webCrypto.exportKey("spki", publicKey);
+        const exportedPriv = await webCrypto.exportKey("pkcs8", privateKey);
 
-        const signPub = await webCrypto.importKey("pkcs8", exportedPub, PSSImportParams, true, ["verify"]);
+        const signPub = await webCrypto.importKey("spki", exportedPub, PSSImportParams, true, ["verify"]);
         const signPriv = await webCrypto.importKey("pkcs8", exportedPriv, PSSImportParams, false, ["sign"]);
-        const cryptoPub = await webCrypto.importKey("pkcs8", exportedPub, OAEPImportParams, true, ["encrypt"]);
+        const cryptoPub = await webCrypto.importKey("spki", exportedPub, OAEPImportParams, true, ["encrypt"]);
         const cryptoPriv = await webCrypto.importKey("pkcs8", exportedPriv, OAEPImportParams, false, ["decrypt"]);
 
         let client = new ChatClient(transport, signPub, signPriv, cryptoPub, cryptoPriv);

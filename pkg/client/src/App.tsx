@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from "react";
-import {hello} from "@sp24/common";
 import "./App.css";
 
 import { test } from './Test.js';
+import {hello} from "@sp24/common/hello.js";
 
 export const App : React.FC = () => {
     const [message, setMessage] = useState("")

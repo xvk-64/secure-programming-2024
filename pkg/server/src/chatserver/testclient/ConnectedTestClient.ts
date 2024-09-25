@@ -1,6 +1,7 @@
 import type {IConnectedClient} from "../IConnectedClient.js";
-import {type ClientSendable, type ServerToClientSendable, Event} from "@sp24/common/src/index.js";
 import type {TestClientTransport} from "./TestClientTransport.js";
+import {ClientSendable, ServerToClientSendable} from "@sp24/common/messageTypes.js";
+import {Event} from "@sp24/common/util/Event.js"
 
 export class ConnectedTestClient implements IConnectedClient {
     private _testClientTransport: TestClientTransport;
@@ -18,6 +19,6 @@ export class ConnectedTestClient implements IConnectedClient {
 
     public constructor(testClientTransport: TestClientTransport) {
         this._testClientTransport = testClientTransport;
-        testClientTransport.onSendMessage.createListener(message => this.onReceiveMessage.dispatch(message));
+        testClientTransport.onSendMessage.createListener((message: ClientSendable) => this.onReceiveMessage.dispatch(message));
     }
 }

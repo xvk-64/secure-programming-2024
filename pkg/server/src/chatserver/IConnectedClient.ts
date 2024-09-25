@@ -1,5 +1,5 @@
-import {Event} from "@sp24/common/src/util/Event.js";
-import type {ClientSendable, ServerToClientSendable} from "@sp24/common/src/index.js";
+import {Event} from "@sp24/common/util/Event.js";
+import {ClientSendable, ServerToClientSendable} from "@sp24/common/messageTypes.js";
 
 // Defines a server's view of a connected client
 export interface IConnectedClient {

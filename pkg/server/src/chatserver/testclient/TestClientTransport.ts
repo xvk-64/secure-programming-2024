@@ -1,10 +1,7 @@
-import {
-    type ClientSendable,
-    type IChatClientTransport,
-    type ServerToClientSendable
-} from "@sp24/common/src/index.js";
-import {Event} from "@sp24/common/src/util/Event.js"
+import {Event} from "@sp24/common/util/Event.js"
 import type {TestClientEntryPoint} from "./TestClientEntryPoint.js";
+import {IChatClientTransport} from "@sp24/common/chatclient/IChatClientTransport.js";
+import {ClientSendable, ServerToClientSendable} from "@sp24/common/messageTypes.js";
 
 // Transport layer for testing client implementation on the server side.
 export class TestClientTransport implements IChatClientTransport {

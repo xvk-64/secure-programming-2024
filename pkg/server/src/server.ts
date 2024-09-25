@@ -1,10 +1,12 @@
-import {hello} from "@sp24/common"
 import express from "express";
-import {WebSocketServer} from "ws"
+// import {WebSocketServer} from "ws"
 import {ChatServer} from "./chatserver/ChatServer.js";
 import {TestClientEntryPoint} from "./chatserver/testclient/TestClientEntryPoint.js";
 import {TestClientTransport} from "./chatserver/testclient/TestClientTransport.js";
-import {ChatClient} from "@sp24/common/src/index.js";
+
+import {hello} from "@sp24/common/hello.js";
+import {ChatClient} from "@sp24/common/chatclient/ChatClient.js";
+
 
 const app = express();
 const port = 3307;
@@ -19,8 +21,14 @@ const httpServer = app.listen(port, () => {
     console.log(`Server started http://localhost:${port}`);
 })
 
+const cleanup = new FinalizationRegistry(key => {
+    console.log(key);
+})
+
 const testEntryPoint = new TestClientEntryPoint()
 const server = new ChatServer([testEntryPoint])
+
+cleanup.register(server, "server");
 
 const testTransport = new TestClientTransport(testEntryPoint);
 const testClient = await ChatClient.create(testTransport);

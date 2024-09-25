@@ -1,5 +1,5 @@
 import type {IServerEntryPoint} from "../IServerEntryPoint.js";
-import {Event} from "@sp24/common/src/util/Event.js";
+import {Event} from "@sp24/common/util/Event.js";
 import type {IConnectedClient} from "../IConnectedClient.js";
 import type {IConnectedServer} from "../IConnectedServer.js";
 import type {TestClientTransport} from "./TestClientTransport.js";

@@ -1,8 +1,8 @@
 // Main logic for server
 import type {IServerEntryPoint} from "./IServerEntryPoint.js";
 import type {IConnectedClient} from "./IConnectedClient.js";
-import {EventListener} from "@sp24/common/src/util/Event.js";
-import type {ClientSendable} from "@sp24/common/src/messageTypes.js";
+import {EventListener} from "@sp24/common/util/Event.js";
+import {ClientSendable} from "@sp24/common/messageTypes.js";
 
 type ClientMessageListenerData = {
     client: IConnectedClient;
@@ -19,9 +19,16 @@ export class ChatServer {
 
         console.log(`Client connected: ${client.getIdentifier()}`)
 
+        if (this._clients === undefined)
+            this._clients = []
+
         this._clients.push(client);
 
-        let receiveListener = client.onReceiveMessage.createListener(message => this.onClientMessage({client: client, message: message}));
+        const onMessage = this.onClientMessage;
+        let receiveListener = client.onReceiveMessage.createListener((message: ClientSendable) => {
+                console.log(onMessage)
+                this.onClientMessage({client: client, message: message})
+            });
 
         // Handle disconnection
         client.onDisconnect.createListener(() => {

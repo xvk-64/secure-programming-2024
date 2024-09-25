@@ -1,4 +1,4 @@
-import  {type Protocol} from "protocol/messageTypes.js"
+import  {type Protocol} from "./protocol/messageTypes.js";
 import {decode, encode} from "base64-arraybuffer";
 
 const webCrypto = globalThis.crypto.subtle;
