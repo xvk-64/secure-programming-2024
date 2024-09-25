@@ -42,9 +42,9 @@ export default function CreateGroupChat() {
     return (
         <>
         <div className="createChatDiv">
-            <h4 className="heading">Create Groupchat</h4>
+            <h4 className="heading">Create Chat</h4>
             <form onSubmit={handleSubmit}>
-            <h4>Add users to Group</h4>
+            <h4>Add users to a Chat. Adding a single user will be a private 1:1 chat</h4>
             {/* <label>Enter saved nickname, OR enter user's public key</label><br/><br/> */}
 
             <label>add nickname</label><br/>

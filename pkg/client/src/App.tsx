@@ -52,7 +52,6 @@ export const App : React.FC = () => {
                 </div>
                 
                 <div className="rightDiv">
-                    <ServerList></ServerList>
                     <GroupUserList></GroupUserList>
                 </div>
             </div>
