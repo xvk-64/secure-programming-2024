@@ -21,14 +21,8 @@ const httpServer = app.listen(port, () => {
     console.log(`Server started http://localhost:${port}`);
 })
 
-const cleanup = new FinalizationRegistry(key => {
-    console.log(key);
-})
-
 const testEntryPoint = new TestClientEntryPoint()
 const server = new ChatServer([testEntryPoint])
-
-cleanup.register(server, "server");
 
 const testTransport = new TestClientTransport(testEntryPoint);
 const testClient = await ChatClient.create(testTransport);

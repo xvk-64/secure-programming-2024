@@ -19,16 +19,11 @@ export class ChatServer {
 
         console.log(`Client connected: ${client.getIdentifier()}`)
 
-        if (this._clients === undefined)
-            this._clients = []
-
         this._clients.push(client);
 
-        const onMessage = this.onClientMessage;
         let receiveListener = client.onReceiveMessage.createListener((message: ClientSendable) => {
-                console.log(onMessage)
-                this.onClientMessage({client: client, message: message})
-            });
+            this.onClientMessage(client, message);
+        });
 
         // Handle disconnection
         client.onDisconnect.createListener(() => {
@@ -37,8 +32,8 @@ export class ChatServer {
         }, true);
     }
 
-    private onClientMessage({client, message}: ClientMessageListenerData) {
-        console.log(`Client message: ${message.type}`)
+    private onClientMessage(client: IConnectedClient, message: ClientSendable) {
+        console.log(`Client message from ${client.getIdentifier()}: ${message.type}`)
     }
 
     public constructor(entryPoints: IServerEntryPoint[]) {
@@ -46,7 +41,9 @@ export class ChatServer {
 
         // Set up listeners for clients connecting to the server.
         entryPoints.forEach(entryPoint => {
-            this._clientConnectListeners.push(entryPoint.onClientConnect.createListener(this.onClientConnect));
+            this._clientConnectListeners.push(entryPoint.onClientConnect.createListener((client: IConnectedClient) => {
+                this.onClientConnect(client)
+            }));
         });
     }
 }
