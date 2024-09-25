@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "exports": {
     ".": "./dist/index.js",
-    "./package.json": "./package.json"
+    "./*": "./dist/*",
+    "./src/*": "./dist/*"
   },
   "scripts": {
     "build": "tsc -p ./src/tsconfig.json",

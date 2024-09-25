@@ -3,7 +3,7 @@ import type {EventListener} from "../util/Event.js";
 import {
     type ClientSendableMessageData,
     HelloData, OAEPGenParams, OAEPImportParams, PSSImportParams,
-    type ServerSendable,
+    type ServerToClientSendable,
     SignedData
 } from "../messageTypes.js";
 
@@ -19,8 +19,8 @@ export class ChatClient {
     private readonly _cryptoPrivKey: CryptoKey;
     private _counter: number = 0;
 
-    private _receiveListener: EventListener<ServerSendable>;
-    private onReceiveMessage(message: ServerSendable) {
+    private _receiveListener: EventListener<ServerToClientSendable>;
+    private onReceiveMessage(message: ServerToClientSendable) {
 
     }
 
@@ -58,6 +58,8 @@ export class ChatClient {
         const cryptoPriv = await webCrypto.importKey("pkcs8", exportedPriv, OAEPImportParams, false, ["decrypt"]);
 
         let client = new ChatClient(transport, signPub, signPriv, cryptoPub, cryptoPriv);
+
+        await transport.connect();
 
         // Say hello
         await client.sendSignedData(new HelloData(cryptoPub));
