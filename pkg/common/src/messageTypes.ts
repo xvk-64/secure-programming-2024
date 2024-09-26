@@ -151,7 +151,7 @@ export class ChatData implements IMessageData<Protocol.ChatData> {
                 return new CleartextChat(this.destinationServers, decrypted.participants[0], decrypted.participants.slice(1), decrypted.message);
             } catch (e) {
                 // Some error so it probably wasn't the correct key
-                console.log(e);
+                // console.log(e);
                 continue;
             }
         }
