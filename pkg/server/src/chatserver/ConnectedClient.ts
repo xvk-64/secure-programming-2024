@@ -1,35 +1,44 @@
 import {IServerToClientTransport} from "./IServerToClientTransport.js";
 import {
+    calculateFingerprint,
     ClientSendable,
     ClientSendableSignedData,
     HelloData,
     ServerToClientSendable,
     SignedData
 } from "@sp24/common/messageTypes.js";
-import {Event} from "@sp24/common/util/Event.js";
+import {EventEmitter} from "@sp24/common/util/EventEmitter.js";
 import {encode} from "base64-arraybuffer";
-import {sign, webcrypto} from "node:crypto";
+import {webcrypto} from "node:crypto";
+import {IServerEntryPoint} from "./IServerEntryPoint.js";
 
 // A server-side view of a client connected to it.
 export class ConnectedClient {
     private _transport: IServerToClientTransport;
 
+    public readonly entryPoint: IServerEntryPoint;
+
     public async sendMessage(message: ServerToClientSendable): Promise<void> {
         return await this._transport.sendMessage(message);
     }
-    public readonly onMessageReady: Event<ClientSendable> = new Event<ClientSendable>();
-    public readonly onDisconnect: Event<void> = new Event<void>();
+    public readonly onMessageReady: EventEmitter<ClientSendable> = new EventEmitter<ClientSendable>();
+    public readonly onDisconnect: EventEmitter<void> = new EventEmitter<void>();
 
     private _counter: number | undefined;
 
     private _signPublicKey: webcrypto.CryptoKey | undefined;
+    public get signPublicKey(): webcrypto.CryptoKey | undefined {
+        return this._signPublicKey;
+    }
+
     private _fingerprint: string | undefined;
     public get fingerprint() {
         return this._fingerprint;
     }
 
-    public constructor(transport: IServerToClientTransport) {
+    public constructor(transport: IServerToClientTransport, entryPoint: IServerEntryPoint) {
         this._transport = transport;
+        this.entryPoint = entryPoint;
 
         const receiveListener = this._transport.onReceiveMessage.createListener(async message => {
             // Validate signed data.
@@ -51,10 +60,7 @@ export class ConnectedClient {
                     this._signPublicKey = helloData.signPublicKey;
 
                     // Update fingerprint
-                    let protocolData = await helloData.toProtocol();
-                    let exportedKeyBuffer = new TextEncoder().encode(protocolData.public_key);
-                    let fingerprintBuffer = await crypto.subtle.digest("SHA-256", exportedKeyBuffer);
-                    this._fingerprint = encode(fingerprintBuffer);
+                    this._fingerprint = await calculateFingerprint(this._signPublicKey);
                 }
 
                 if (this._signPublicKey === undefined)

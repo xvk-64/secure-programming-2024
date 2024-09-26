@@ -1,13 +1,13 @@
 import type {IServerToClientTransport} from "../IServerToClientTransport.js";
 import type {TestClientTransport} from "./TestClientTransport.js";
 import {ClientSendable, ServerToClientSendable} from "@sp24/common/messageTypes.js";
-import {Event} from "@sp24/common/util/Event.js"
+import {EventEmitter} from "@sp24/common/util/EventEmitter.js"
 
 export class ServerToTestClientTransport implements IServerToClientTransport {
     private _testClientTransport: TestClientTransport;
 
-    onDisconnect: Event<void> = new Event<void>();
-    onReceiveMessage: Event<ClientSendable> = new Event<ClientSendable>();
+    onDisconnect: EventEmitter<void> = new EventEmitter<void>();
+    onReceiveMessage: EventEmitter<ClientSendable> = new EventEmitter<ClientSendable>();
 
     public readonly identifier = "Test Client";
 

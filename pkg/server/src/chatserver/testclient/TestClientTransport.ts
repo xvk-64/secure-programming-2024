@@ -1,11 +1,11 @@
-import {Event} from "@sp24/common/util/Event.js"
+import {EventEmitter} from "@sp24/common/util/EventEmitter.js"
 import type {TestClientEntryPoint} from "./TestClientEntryPoint.js";
 import {IChatClientTransport} from "@sp24/common/chatclient/IChatClientTransport.js";
 import {ClientSendable, ServerToClientSendable} from "@sp24/common/messageTypes.js";
 
 // Transport layer for testing client implementation on the server side.
 export class TestClientTransport implements IChatClientTransport {
-    readonly onReceiveMessage: Event<ServerToClientSendable> = new Event<ServerToClientSendable>();
+    readonly onReceiveMessage: EventEmitter<ServerToClientSendable> = new EventEmitter<ServerToClientSendable>();
 
     private _serverEntryPoint: TestClientEntryPoint
 
@@ -15,7 +15,7 @@ export class TestClientTransport implements IChatClientTransport {
         return Promise.resolve();
     }
 
-    readonly onSendMessage: Event<ClientSendable> = new Event<ClientSendable>();
+    readonly onSendMessage: EventEmitter<ClientSendable> = new EventEmitter<ClientSendable>();
     sendMessage(message: ClientSendable): Promise<void> {
         this.onSendMessage.dispatch(message);
         return Promise.resolve();

@@ -21,11 +21,22 @@ const httpServer = app.listen(port, () => {
     console.log(`Server started http://localhost:${port}`);
 })
 
-const testEntryPoint = new TestClientEntryPoint()
-const server = new ChatServer([testEntryPoint])
+const testEntryPoint = new TestClientEntryPoint("server1");
+const server = new ChatServer([testEntryPoint]);
 
-const testTransport = new TestClientTransport(testEntryPoint);
-const testClient = await ChatClient.create(testTransport);
+const testTransport1 = new TestClientTransport(testEntryPoint);
+const testClient1 = await ChatClient.create(testTransport1);
+
+setInterval(() => {
+    testClient1.sendPublicChat("Hello!");
+}, 1000);
+
+const testTransport2 = new TestClientTransport(testEntryPoint);
+const testClient2 = await ChatClient.create(testTransport2);
+
+testClient2.onPublicChat.createListener(publicChat => {
+    console.log(`Client ${testClient2.fingerprint}: Public chat from ${publicChat.senderFingerprint}: "${publicChat.message}"`);
+})
 
 // const wss = new WebSocketServer({ server: httpServer });
 //

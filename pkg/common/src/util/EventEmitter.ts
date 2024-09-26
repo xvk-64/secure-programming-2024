@@ -11,7 +11,7 @@ export class EventListener<TData> {
     }
 }
 
-export class Event<TData> {
+export class EventEmitter<TData> {
     private _listeners: EventListener<TData>[] = [];
 
     public dispatch(data: TData): void {
