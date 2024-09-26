@@ -1,5 +1,6 @@
 import {
-    ClientSendableMessageData, HelloData,
+    ClientSendableSignedData, ClientSendableSignedDataEntry,
+    HelloData,
     OAEPGenParams, OAEPImportParams,
     PSSImportParams,
     ServerToClientSendable,
@@ -25,7 +26,7 @@ export class ChatClient {
 
     }
 
-    private async sendSignedData<TData extends ClientSendableMessageData>(data: TData): Promise<void> {
+    private async sendSignedData<TData extends ClientSendableSignedDataEntry>(data: TData): Promise<void> {
         const message = await SignedData.create<TData>(data, this._counter++, this._signPrivKey);
         await this._transport.sendMessage(message);
     }
@@ -63,7 +64,7 @@ export class ChatClient {
         await transport.connect();
 
         // Say hello
-        await client.sendSignedData(new HelloData(cryptoPub));
+        await client.sendSignedData(new HelloData(signPub));
 
         return client;
     }

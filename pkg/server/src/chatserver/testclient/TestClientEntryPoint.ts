@@ -1,16 +1,16 @@
 import type {IServerEntryPoint} from "../IServerEntryPoint.js";
 import {Event} from "@sp24/common/util/Event.js";
-import type {IConnectedClient} from "../IConnectedClient.js";
-import type {IConnectedServer} from "../IConnectedServer.js";
+import type {IServerToClientTransport} from "../IServerToClientTransport.js";
+import type {IServerToServerTransport} from "../IServerToServerTransport.js";
 import type {TestClientTransport} from "./TestClientTransport.js";
-import {ConnectedTestClient} from "./ConnectedTestClient.js";
+import {ServerToTestClientTransport} from "./ServerToTestClientTransport.js";
 
 export class TestClientEntryPoint implements IServerEntryPoint {
-    onClientConnect: Event<IConnectedClient> = new Event<IConnectedClient>();
-    onServerConnect: Event<IConnectedServer> = new Event<IConnectedServer>();
+    onClientConnect: Event<IServerToClientTransport> = new Event<IServerToClientTransport>();
+    onServerConnect: Event<IServerToServerTransport> = new Event<IServerToServerTransport>();
 
     addClient(clientTransport: TestClientTransport) {
-        let connectedTestClient = new ConnectedTestClient(clientTransport);
+        let connectedTestClient = new ServerToTestClientTransport(clientTransport);
 
         this.onClientConnect.dispatch(connectedTestClient);
     }

@@ -76,10 +76,22 @@ export class SignedData<TData extends IMessageData<Protocol.SignedDataEntry>> im
     counter: number;
     signature: ArrayBuffer;
 
+    static readonly signParams: RsaPssParams = {
+        name: "RSA-PSS",
+        saltLength: 32
+    }
+
     private constructor(data: TData, counter: number, signature: ArrayBuffer) {
         this.data = data;
         this.counter = counter;
         this.signature = signature;
+    }
+
+    public async verify(publicKey: CryptoKey): Promise<boolean> {
+        const payloadString = JSON.stringify(await this.data.toProtocol()) + this.counter.toString();
+        const encodedPayload = new TextEncoder().encode(payloadString);
+
+        return await crypto.subtle.verify(SignedData.signParams, publicKey, this.signature, encodedPayload);
     }
 
     static async create<TData extends IMessageData<Protocol.SignedDataEntry>>
@@ -87,11 +99,8 @@ export class SignedData<TData extends IMessageData<Protocol.SignedDataEntry>> im
         // Generate signature.
         const payloadString = JSON.stringify(await data.toProtocol()) + counter.toString();
         const encodedPayload = new TextEncoder().encode(payloadString);
-        const signParams: RsaPssParams = {
-            name: "RSA-PSS",
-            saltLength: 32
-        }
-        const signature = await webCrypto.sign(signParams, privateKey, encodedPayload);
+
+        const signature = await webCrypto.sign(SignedData.signParams, privateKey, encodedPayload);
 
         return new SignedData(data, counter, signature);
     }
@@ -122,9 +131,9 @@ export class SignedData<TData extends IMessageData<Protocol.SignedDataEntry>> im
 }
 
 // Which message types is a client allowed to send?
-type ClientSendableData = Protocol.HelloData;
-export type ClientSendableMessageData = IMessageData<Protocol.HelloData>;
-export type ClientSendable = SignedData<ClientSendableMessageData>;
+export type ClientSendableSignedDataEntry = HelloData;
+export type ClientSendableSignedData = SignedData<HelloData>;
+export type ClientSendable = ClientSendableSignedData;
 
 // Which message types is a server allowed to send?
 export type ServerToServerSendable = null;

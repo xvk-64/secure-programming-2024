@@ -1,39 +1,39 @@
 // Main logic for server
 import type {IServerEntryPoint} from "./IServerEntryPoint.js";
-import type {IConnectedClient} from "./IConnectedClient.js";
+import type {IServerToClientTransport} from "./IServerToClientTransport.js";
 import {EventListener} from "@sp24/common/util/Event.js";
 import {ClientSendable} from "@sp24/common/messageTypes.js";
+import {ConnectedClient} from "./ConnectedClient.js";
 
 type ClientMessageListenerData = {
-    client: IConnectedClient;
+    client: IServerToClientTransport;
     message: ClientSendable;
 }
 
 export class ChatServer {
     private _entryPoints: IServerEntryPoint[];
 
-    private _clients: IConnectedClient[] = [];
+    private _clients: ConnectedClient[] = [];
 
-    private _clientConnectListeners: EventListener<IConnectedClient>[] = [];
-    private onClientConnect(client: IConnectedClient) {
-
-        console.log(`Client connected: ${client.getIdentifier()}`)
+    private _clientConnectListeners: EventListener<IServerToClientTransport>[] = [];
+    private async onClientConnect(client: ConnectedClient) {
+        console.log(`Client connected: ${client.fingerprint}`)
 
         this._clients.push(client);
 
-        let receiveListener = client.onReceiveMessage.createListener((message: ClientSendable) => {
+        let messageListener = client.onMessageReady.createListener((message: ClientSendable) => {
             this.onClientMessage(client, message);
         });
 
         // Handle disconnection
         client.onDisconnect.createListener(() => {
-            client.onReceiveMessage.removeListener(receiveListener);
+            client.onMessageReady.removeListener(messageListener);
             this._clients.splice(this._clients.indexOf(client), 1);
         }, true);
     }
 
-    private onClientMessage(client: IConnectedClient, message: ClientSendable) {
-        console.log(`Client message from ${client.getIdentifier()}: ${message.type}`)
+    private onClientMessage(client: ConnectedClient, message: ClientSendable) {
+        console.log(`Client message from ${client.fingerprint}: ${message.type}`)
     }
 
     public constructor(entryPoints: IServerEntryPoint[]) {
@@ -41,8 +41,8 @@ export class ChatServer {
 
         // Set up listeners for clients connecting to the server.
         entryPoints.forEach(entryPoint => {
-            this._clientConnectListeners.push(entryPoint.onClientConnect.createListener((client: IConnectedClient) => {
-                this.onClientConnect(client)
+            this._clientConnectListeners.push(entryPoint.onClientConnect.createListener((clientTransport) => {
+                this.onClientConnect(new ConnectedClient(clientTransport));
             }));
         });
     }
