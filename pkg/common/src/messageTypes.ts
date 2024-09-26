@@ -127,7 +127,7 @@ export class ChatData implements IMessageData<Protocol.ChatData> {
     }
 
     public async tryDecrypt(fingerprint: string, decryptKey: CryptoKey): Promise<CleartextChat | undefined> {
-        const decoder = new TextDecoder("", {fatal: true});
+        const decoder = new TextDecoder("utf-8", {fatal: true});
 
         for (const encryptedKey of this.symm_keys) {
             try {

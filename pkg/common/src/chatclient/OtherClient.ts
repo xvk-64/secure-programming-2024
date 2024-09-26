@@ -12,16 +12,16 @@ const webCrypto = globalThis.crypto.subtle;
 export class OtherClient {
     public readonly fingerprint: string;
     public readonly serverAddress: string;
-    private readonly _verifyKey: CryptoKey;
-    private readonly _encryptKey: CryptoKey;
+    public readonly verifyKey: CryptoKey;
+    public readonly encryptKey: CryptoKey;
 
     private _counter: number;
 
     private constructor(fingerprint: string, serverAddress: string, verifyKey: CryptoKey, encryptKey: CryptoKey, counter: number) {
         this.fingerprint = fingerprint;
         this.serverAddress = serverAddress;
-        this._verifyKey = verifyKey;
-        this._encryptKey = encryptKey;
+        this.verifyKey = verifyKey;
+        this.encryptKey = encryptKey;
         this._counter = counter;
     }
 
@@ -30,7 +30,7 @@ export class OtherClient {
             // Invalid counter.
             return false;
 
-        if (!await message.verify(this._verifyKey))
+        if (!await message.verify(this.verifyKey))
             // Invalid signature.
             return false;
 

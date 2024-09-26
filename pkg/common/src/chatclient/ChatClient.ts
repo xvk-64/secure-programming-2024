@@ -14,6 +14,7 @@ import {OtherClient} from "./OtherClient.js";
 
 const webCrypto = globalThis.crypto.subtle;
 
+const GroupIDLength = 32;
 export type Chat = {
     message: string;
     groupID: string;
@@ -35,7 +36,23 @@ export class ChatClient {
     private _counter: number = 0;
     public readonly fingerprint: string;
 
-    private otherClients: { [fingerprint: string] : OtherClient } = {};
+    private _otherClients: { [fingerprint: string]: OtherClient } = {};
+
+    private _groups: { [groupID: string]: string[]} = {}
+
+    public getGroupID(recipientFingerprints: string[]): string {
+        let sorted = recipientFingerprints.slice().sort();
+
+        let result = ""
+
+        for (let i = 0; i < GroupIDLength; i++) {
+            result += sorted[i % sorted.length][i];
+        }
+
+        this._groups[result] = sorted;
+
+        return result;
+    }
 
     private _receiveListener: EventListener<ServerToClientSendable>;
     private async onReceiveMessage(message: ServerToClientSendable) {
@@ -48,10 +65,10 @@ export class ChatClient {
                     for (const verifyKey of server.clientVerifyKeys) {
                         const fingerprint = await calculateFingerprint(verifyKey);
 
-                        if (fingerprint in this.otherClients) {
+                        if (fingerprint in this._otherClients) {
                             // TODO set online status?
                         } else {
-                            this.otherClients[fingerprint] = await OtherClient.create(server.address, verifyKey, 0);
+                            this._otherClients[fingerprint] = await OtherClient.create(server.address, verifyKey, 0);
                         }
                     }
                 }
@@ -65,8 +82,8 @@ export class ChatClient {
                 // Locate the sender
                 let otherClient: OtherClient | undefined;
 
-                for (const fingerprint in this.otherClients) {
-                    let client = this.otherClients[fingerprint];
+                for (const fingerprint in this._otherClients) {
+                    let client = this._otherClients[fingerprint];
 
                     if (await client.isValidSignedData(signedDataMessage)) {
                         otherClient = client;
@@ -90,10 +107,12 @@ export class ChatClient {
 
                         let cleartext = tryCleartext as CleartextChat;
 
+                        const otherParticipants = [cleartext.senderFingerprint, ...cleartext.recipientFingerprints].filter(fingerprint => fingerprint != this.fingerprint);
+
                         // Do something with the cleartext.
                         this.onChat.dispatch({
                             message: cleartext.message,
-                            groupID: "", // TODO
+                            groupID: this.getGroupID(otherParticipants),
                             senderFingerprint: cleartext.senderFingerprint,
                         })
                         break;
@@ -140,7 +159,38 @@ export class ChatClient {
 
     public readonly onChat: EventEmitter<Chat> = new EventEmitter();
     public async sendChat(message: string, groupID: string): Promise<void> {
-        // TODO
+        if (this._groups[groupID] === undefined)
+            // Bad groupID
+            return;
+
+        let recipientFingerprints = this._groups[groupID];
+
+        let destinationServers: string[] = [];
+        let recipientEncryptKeys: CryptoKey[] = [];
+
+        for (const fingerprint in this._otherClients) {
+            if (!recipientFingerprints.includes(fingerprint))
+                continue;
+
+            const client = this._otherClients[fingerprint];
+
+            if (!destinationServers.includes(client.serverAddress))
+                destinationServers.push(client.serverAddress);
+
+            recipientEncryptKeys.push(client.encryptKey);
+        }
+
+        if (destinationServers.length === 0)
+            // No destination servers
+            return;
+
+        if (recipientEncryptKeys.length === 0)
+            // No recipients
+            return;
+
+        const chatData = await ChatData.create(message, this.fingerprint, recipientEncryptKeys, destinationServers);
+
+        await this.sendSignedData(chatData);
     }
 
     public readonly onPublicChat: EventEmitter<PublicChat> = new EventEmitter();

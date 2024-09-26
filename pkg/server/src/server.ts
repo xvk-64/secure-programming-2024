@@ -27,15 +27,16 @@ const server = new ChatServer([testEntryPoint]);
 const testTransport1 = new TestClientTransport(testEntryPoint);
 const testClient1 = await ChatClient.create(testTransport1);
 
-setInterval(() => {
-    testClient1.sendPublicChat("Hello!");
-}, 1000);
-
 const testTransport2 = new TestClientTransport(testEntryPoint);
 const testClient2 = await ChatClient.create(testTransport2);
 
-testClient2.onPublicChat.createListener(publicChat => {
-    console.log(`Client ${testClient2.fingerprint}: Public chat from ${publicChat.senderFingerprint}: "${publicChat.message}"`);
+setInterval(() => {
+    testClient1.sendChat("Hello!", testClient1.getGroupID([testClient2.fingerprint]));
+}, 1000);
+
+
+testClient2.onChat.createListener(chat => {
+    console.log(`Client ${testClient2.fingerprint}: Chat from ${chat.senderFingerprint}: "${chat.message}" GroupID: ${chat.groupID}`);
 })
 
 // const wss = new WebSocketServer({ server: httpServer });
