@@ -6,36 +6,22 @@ import { Dropdown } from 'react-bootstrap';
 import ServerList from "./ServerList.js";
 import CreateGroupChat from "./CreateGroupChat.js";
 
-export default function DropDownMenus(){
+export default function DropDownMenus({setGroupID}){
     
-    const menuItemsData = [
-        {
-          title: 'Home',
-          url: '/',
-        },
-        {
-          title: 'Services',
-          url: '/services',
-        },
-        {
-          title: 'About',
-          url: '/about',
-        },
-      ];
+  
 
       let groupDropdownList: React.ReactElement[] = []
       // let messageList = ["wowowowoww", "cool message bro", "i like soup"];
       const groupList = [
-          {groupName: 'group1'},
-          {groupName: 'group2'},
-          {groupName: 'group4'},
+          {groupID: 0, groupName: 'group1'},
+          {groupID: 1, groupName: 'group2'},
+          {groupID: 2, groupName: 'group4'},
       ];
       let counter = 1;
-      groupList.forEach((group) => {
-        counter += 1;
+      groupList.forEach((group, index) => {
           groupDropdownList.push(
             //  href="#/action-1">
-              <><Dropdown.Item eventKey={counter}>{group.groupName}</Dropdown.Item><br/><br/></>
+              <><Dropdown.Item eventKey={index} onClick={() => setGroupID(group.groupID)}>{group.groupName}</Dropdown.Item><br/><br/></>
           );
       });
 
@@ -43,6 +29,7 @@ export default function DropDownMenus(){
       const [toggle2, setToggle2] = useState(false);
 
       const [showCreateGroup, setCreateGroup] = useState(false);
+      
 
 // pull groups from list?
       return(

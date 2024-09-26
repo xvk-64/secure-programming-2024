@@ -10,6 +10,7 @@ import ServerList from "./ServerList.js";
 import ChatInput from "./ChatInput.js";
 import GroupChatList from "./GroupChatList.js";
 import DropDownMenus from "./DropDownMenus.js";
+import ChatWrapper from "./ChatWrapper.js";
 
 
 // import Test from './Test';
@@ -41,20 +42,7 @@ export const App : React.FC = () => {
             server: {message}
             </p>
 
-            <div  className="main">
-                <div  className="leftDiv">
-                    <p>sidebar</p>
-                    <DropDownMenus></DropDownMenus>
-                    </div>
-                <div className="middleDiv">
-                    <ChatBox></ChatBox>
-                    <ChatInput></ChatInput>
-                </div>
-                
-                <div className="rightDiv">
-                    <GroupUserList></GroupUserList>
-                </div>
-            </div>
+         <ChatWrapper></ChatWrapper>
       
         
         </>

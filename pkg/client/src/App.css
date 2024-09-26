@@ -15,7 +15,7 @@
 
 .leftDiv {
     font-family: "Courier New";
-    width: 200px; 
+    width: 220px; 
     height: 600px;
     padding: 10px;
     margin: 2px;
@@ -107,6 +107,21 @@
 }
 
 .heading {
+    border-style : ridge;
+    border-color:rgb(195,196,200);
+    border-width: thin;
+}
+
+p.clickable:hover {
+    background-color: rgb(238, 238, 238);
+}
+
+.sidebarSubDiv {
+    height: 200px;
+    width: 220px;
+    padding: 5px;
+    overflow-y: scroll;
+
     border-style : ridge;
     border-color:rgb(195,196,200);
     border-width: thin;
