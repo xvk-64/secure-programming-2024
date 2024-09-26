@@ -1,8 +1,8 @@
 {
   "name": "secure-programming-2024",
-  "type": "module",
   "private": true,
   "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "build": "npm run build --workspaces",
     "dev": "npm-run-all -p dev:server dev:client",
@@ -15,12 +15,9 @@
     "pkg/client",
     "pkg/server"
   ],
-  "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
-  },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
+    "@tsconfig/node20": "^20.1.4",
     "@tsconfig/recommended": "^1.0.7",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
@@ -30,6 +27,7 @@
     "eslint-plugin-react-refresh": "^0.4.9",
     "globals": "^15.9.0",
     "npm-run-all": "^4.1.5",
+    "source-map-support": "^0.5.21",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1"
   }

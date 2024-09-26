@@ -1,18 +1,14 @@
 {
   "name": "@sp24/server",
   "version": "0.0.0",
-  "type": "module",
   "private": true,
-  "exports": {
-    ".": "./dist/index.js",
-    "./package.json": "./package.json"
-  },
+  "type": "module",
   "scripts": {
-    "build": "tsc -p ./src/tsconfig.json",
+    "build": "tsc -b",
     "dev": "npm-run-all build --parallel dev:tsc dev:run",
-    "dev:tsc": "tsc -p ./src/tsconfig.json --watch",
-    "dev:run": "node --watch ./dist/server.js",
-    "clean": "node ./_clean.js"
+    "dev:tsc": "tsc -b --watch",
+    "dev:run": "node -r source-map-support/register --watch ./dist/src/server.js",
+    "clean": "node ./_clean.mjs"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
