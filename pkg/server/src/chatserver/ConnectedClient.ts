@@ -21,14 +21,14 @@ export class ConnectedClient {
     public async sendMessage(message: ServerToClientSendable): Promise<void> {
         return await this._transport.sendMessage(message);
     }
-    public readonly onMessageReady: EventEmitter<ClientSendable> = new EventEmitter<ClientSendable>();
-    public readonly onDisconnect: EventEmitter<void> = new EventEmitter<void>();
+    public readonly onMessageReady: EventEmitter<ClientSendable> = new EventEmitter();
+    public readonly onDisconnect: EventEmitter<void> = new EventEmitter();
 
     private _counter: number | undefined;
 
-    private _signPublicKey: webcrypto.CryptoKey | undefined;
-    public get signPublicKey(): webcrypto.CryptoKey | undefined {
-        return this._signPublicKey;
+    private _verifyKey: webcrypto.CryptoKey | undefined;
+    public get verifyKey(): webcrypto.CryptoKey | undefined {
+        return this._verifyKey;
     }
 
     private _fingerprint: string | undefined;
@@ -52,22 +52,22 @@ export class ConnectedClient {
                 if (signedDataMessage.data.type == "hello") {
                     const helloData = signedDataMessage.data as HelloData;
 
-                    if (!await signedDataMessage.verify(helloData.signPublicKey))
+                    if (!await signedDataMessage.verify(helloData.verifyKey))
                         // Invalid signature.
                         return;
 
                     // Update key
-                    this._signPublicKey = helloData.signPublicKey;
+                    this._verifyKey = helloData.verifyKey;
 
                     // Update fingerprint
-                    this._fingerprint = await calculateFingerprint(this._signPublicKey);
+                    this._fingerprint = await calculateFingerprint(this._verifyKey);
                 }
 
-                if (this._signPublicKey === undefined)
+                if (this._verifyKey === undefined)
                     // Need a key to send signed data.
                     return;
 
-                if (!await signedDataMessage.verify(this._signPublicKey))
+                if (!await signedDataMessage.verify(this._verifyKey))
                     // Invalid signature.
                     return;
 

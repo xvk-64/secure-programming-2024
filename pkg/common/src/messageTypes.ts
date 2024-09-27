@@ -69,15 +69,15 @@ export async function calculateFingerprint(key: CryptoKey) {
 
 export class HelloData implements IMessageData<Protocol.HelloData> {
     type: "hello" = "hello"
-    readonly signPublicKey: CryptoKey;
+    readonly verifyKey: CryptoKey;
 
     public constructor(signPublicKey: CryptoKey) {
-        this.signPublicKey = signPublicKey;
+        this.verifyKey = signPublicKey;
     }
 
     async toProtocol(): Promise<Protocol.HelloData> {
         // Export public key.
-        const exportedPEM = await verifyKeyToPEM(this.signPublicKey);
+        const exportedPEM = await verifyKeyToPEM(this.verifyKey);
 
         return {
             type: "hello",
@@ -257,20 +257,20 @@ export class SignedData<TData extends IMessageData<Protocol.SignedDataEntry>> im
         this.signature = signature;
     }
 
-    public async verify(publicKey: CryptoKey): Promise<boolean> {
+    public async verify(verifyKey: CryptoKey): Promise<boolean> {
         const payloadString = JSON.stringify(await this.data.toProtocol()) + this.counter.toString();
         const encodedPayload = new TextEncoder().encode(payloadString);
 
-        return await crypto.subtle.verify(SignedData.signParams, publicKey, this.signature, encodedPayload);
+        return await crypto.subtle.verify(SignedData.signParams, verifyKey, this.signature, encodedPayload);
     }
 
     static async create<TData extends IMessageData<Protocol.SignedDataEntry>>
-        (data: TData, counter: number, privateKey: CryptoKey): Promise<SignedData<TData>> {
+        (data: TData, counter: number, signKey: CryptoKey): Promise<SignedData<TData>> {
         // Generate signature.
         const payloadString = JSON.stringify(await data.toProtocol()) + counter.toString();
         const encodedPayload = new TextEncoder().encode(payloadString);
 
-        const signature = await webCrypto.sign(SignedData.signParams, privateKey, encodedPayload);
+        const signature = await webCrypto.sign(SignedData.signParams, signKey, encodedPayload);
 
         return new SignedData(data, counter, signature);
     }

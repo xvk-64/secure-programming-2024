@@ -14,10 +14,6 @@ import {ConnectedClient} from "./ConnectedClient.js";
 import {webcrypto} from "node:crypto";
 import {log} from "node:util";
 
-type ClientMessageListenerData = {
-    client: IServerToClientTransport;
-    message: ClientSendable;
-}
 
 export class ChatServer {
     private _entryPoints: IServerEntryPoint[];
@@ -42,10 +38,12 @@ export class ChatServer {
     }
 
     private sendClientList() {
+        // List of all clients I know about
+
         let keys: webcrypto.CryptoKey[] = [];
         for (const client of this._clients) {
-            if (client.signPublicKey !== undefined)
-                keys.push(client.signPublicKey);
+            if (client.verifyKey !== undefined)
+                keys.push(client.verifyKey);
         }
 
         for (const client of this._clients) {

@@ -14,13 +14,4 @@ export class TestClientEntryPoint implements IServerEntryPoint {
 
         this.onClientConnect.dispatch(connectedTestClient);
     }
-
-    public constructor(address: string) {
-        this._address = address;
-    }
-
-    private readonly _address: string;
-    get address(): string {
-        return "local:"+this._address;
-    }
 }
