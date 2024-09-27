@@ -20,15 +20,19 @@ export class ChatServer {
 
     private _clients: ConnectedClient[] = [];
 
-    private _clientConnectListeners: EventListener<IServerToClientTransport>[] = [];
+    private _clientConnectListeners: EventListener<ConnectedClient>[] = [];
     private async onClientConnect(client: ConnectedClient) {
-        console.log(`Client connected: ${client.fingerprint}`)
+        console.log(`Client connected: ${client.fingerprint}`);
 
         this._clients.push(client);
 
         let messageListener = client.onMessageReady.createListener((message: ClientSendable) => {
             this.onClientMessage(client, message);
         });
+
+        // Send client list?
+        this.sendClientList();
+        // Probably need to send client update too...
 
         // Handle disconnection
         client.onDisconnect.createListener(() => {
@@ -120,8 +124,8 @@ export class ChatServer {
 
         // Set up listeners for clients connecting to the server.
         entryPoints.forEach(entryPoint => {
-            this._clientConnectListeners.push(entryPoint.onClientConnect.createListener((clientTransport) => {
-                this.onClientConnect(new ConnectedClient(clientTransport, entryPoint));
+            this._clientConnectListeners.push(entryPoint.onClientConnect.createListener((client) => {
+                this.onClientConnect(client);
             }));
         });
     }

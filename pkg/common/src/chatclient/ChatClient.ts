@@ -1,16 +1,15 @@
 import {
-    calculateFingerprint,
     ChatData, CleartextChat, ClientList,
     ClientSendableSignedData, ClientSendableSignedDataEntry,
     HelloData,
-    OAEPGenParams, OAEPImportParams,
-    PSSImportParams, PublicChatData,
+    PublicChatData,
     ServerToClientSendable, ServerToClientSendableSignedData,
     SignedData
 } from "../messageTypes.js";
 import {IChatClientTransport} from "./IChatClientTransport.js";
 import {EventListener, EventEmitter} from "../util/EventEmitter.js";
 import {OtherClient} from "./OtherClient.js";
+import {calculateFingerprint, OAEPGenParams, OAEPImportParams, PSSImportParams} from "../util/crypto.js";
 
 const webCrypto = globalThis.crypto.subtle;
 
@@ -77,6 +76,7 @@ export class ChatClient {
                 // Signed data from another client
                 let signedDataMessage = message as ServerToClientSendableSignedData;
 
+
                 // Ugly code ahead
 
                 // Locate the sender
@@ -90,6 +90,7 @@ export class ChatClient {
                         break;
                     }
                 }
+
 
                 if (otherClient === undefined)
                     // Not valid signed data for any client we know about.

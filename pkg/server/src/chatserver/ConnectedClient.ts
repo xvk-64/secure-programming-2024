@@ -1,6 +1,5 @@
 import {IServerToClientTransport} from "./IServerToClientTransport.js";
 import {
-    calculateFingerprint,
     ClientSendable,
     ClientSendableSignedData,
     HelloData,
@@ -11,6 +10,7 @@ import {EventEmitter} from "@sp24/common/util/EventEmitter.js";
 import {encode} from "base64-arraybuffer";
 import {webcrypto} from "node:crypto";
 import {IServerEntryPoint} from "./IServerEntryPoint.js";
+import {calculateFingerprint} from "@sp24/common/util/crypto.js";
 
 // A server-side view of a client connected to it.
 export class ConnectedClient {
@@ -24,21 +24,25 @@ export class ConnectedClient {
     public readonly onMessageReady: EventEmitter<ClientSendable> = new EventEmitter();
     public readonly onDisconnect: EventEmitter<void> = new EventEmitter();
 
-    private _counter: number | undefined;
+    private _counter: number;
 
-    private _verifyKey: webcrypto.CryptoKey | undefined;
-    public get verifyKey(): webcrypto.CryptoKey | undefined {
+    private _verifyKey: webcrypto.CryptoKey;
+    public get verifyKey() {
         return this._verifyKey;
     }
 
-    private _fingerprint: string | undefined;
+    private _fingerprint: string;
     public get fingerprint() {
         return this._fingerprint;
     }
 
-    public constructor(transport: IServerToClientTransport, entryPoint: IServerEntryPoint) {
+    public constructor(transport: IServerToClientTransport, entryPoint: IServerEntryPoint, initialVerifyKey: webcrypto.CryptoKey, initialFingerprint: string, initialCounter: number) {
         this._transport = transport;
         this.entryPoint = entryPoint;
+
+        this._verifyKey = initialVerifyKey;
+        this._fingerprint = initialFingerprint;
+        this._counter = initialCounter;
 
         const receiveListener = this._transport.onReceiveMessage.createListener(async message => {
             // Validate signed data.

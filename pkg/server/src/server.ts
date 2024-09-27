@@ -6,6 +6,8 @@ import {TestClientTransport} from "./chatserver/testclient/TestClientTransport.j
 
 import {hello} from "@sp24/common/hello.js";
 import {ChatClient} from "@sp24/common/chatclient/ChatClient.js";
+import {webcrypto} from "node:crypto";
+import {PSSGenParams} from "@sp24/common/util/crypto.js";
 
 
 const app = express();
@@ -21,7 +23,9 @@ const httpServer = app.listen(port, () => {
     console.log(`Server started http://localhost:${port}`);
 })
 
-const testEntryPoint = new TestClientEntryPoint("server1");
+const keyPair = await webcrypto.subtle.generateKey(PSSGenParams, true, ["sign", "verify"]);
+
+const testEntryPoint = new TestClientEntryPoint("server1", keyPair.privateKey, keyPair.publicKey);
 const server = new ChatServer([testEntryPoint]);
 
 const testTransport1 = new TestClientTransport(testEntryPoint);
@@ -38,11 +42,12 @@ setInterval(() => {
     const groupID = testClient1.getGroupID([testClient2.fingerprint, testClient3.fingerprint]);
 
     testClient1.sendChat("Hello!", groupID);
+    testClient1.sendPublicChat("Yay!");
 }, 1000);
 
 
-testClient2.onChat.createListener(chat => {
-    console.log(`Client ${testClient2.fingerprint}: Chat from ${chat.senderFingerprint}: "${chat.message}" GroupID: ${chat.groupID}`);
+testClient2.onPublicChat.createListener(chat => {
+    console.log(`Client ${testClient2.fingerprint}: Publichat from ${chat.senderFingerprint}: "${chat.message}"`);
 })
 testClient3.onChat.createListener(chat => {
     console.log(`Client ${testClient3.fingerprint}: Chat from ${chat.senderFingerprint}: "${chat.message}" GroupID: ${chat.groupID}`);

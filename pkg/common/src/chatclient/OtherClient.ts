@@ -1,10 +1,9 @@
 import {
-    calculateFingerprint, ChatData, CleartextChat,
+    ChatData, CleartextChat,
     ClientToClientSendable,
-    OAEPImportParams,
-    PSSImportParams,
     PublicChatData, SignedData
 } from "../messageTypes.js";
+import {calculateFingerprint, duplicateKey} from "../util/crypto.js";
 
 const webCrypto = globalThis.crypto.subtle;
 
@@ -67,10 +66,8 @@ export class OtherClient {
         const fingerprint = await calculateFingerprint(verifyKey);
 
         // Hack to get the same RSA key into both OAEP and PSS
-        const exportedPub = await webCrypto.exportKey("spki", verifyKey);
-        const verify = await webCrypto.importKey("spki", exportedPub, PSSImportParams, true, ["verify"]);
-        const encrypt = await webCrypto.importKey("spki", exportedPub, OAEPImportParams, true, ["encrypt"]);
+        const newKeys = await duplicateKey(verifyKey);
 
-        return new OtherClient(fingerprint, serverAddress, verify, encrypt, counter);
+        return new OtherClient(fingerprint, serverAddress, newKeys.verifyKey, newKeys.encryptKey, counter);
     }
 }
