@@ -1,35 +1,13 @@
 import React, {useEffect, useState} from "react";
-import "./App.css";
-
-import { test } from './Test.js';
-import {hello} from "@sp24/common/hello.js";
+import ChatBox from "./Chatbox";
+import { UserProvider } from "./UserContext";
 
 export const App : React.FC = () => {
-    const [message, setMessage] = useState("")
-
     useEffect(() => {
-        const ws = new WebSocket(document.URL);
-
-        ws.addEventListener("open", event => {
-            console.log("Opened WebSocket connection");
-        })
-
-        ws.addEventListener("message", event => {
-            setMessage(event.data);
-        })
-    })
-
-    return <p>
-            Hello, world!<br/>
-            message: {hello()}<br/>
-            message2 : test()
-            server: {message}
-            <div className='main'>
-                <div className='leftDiv'>sidebar stuff goes here</div>
-                <div className='middleDiv'>
-                    <div className='chatDiv'>wow chat goes here?? pls</div>
-                </div>
-                <div className='rightDiv'>maybe friends and server go here</div>
-            </div>
-        </p>;
+        localStorage.setItem("keyPair", "{\"privateKey\":\"test\",\"publicKey\":\"test\"}");
+        localStorage.setItem("friends", "{\"TEST1\":\"alice\",\"TEST2\":\"bob\"}");
+        localStorage.setItem("groups", '[{"groupInfo":{"users":["TEST1","TEST2"]},"chatLog":["hello", "hi", "whats going on?"]}]');
+        localStorage.setItem("servers", "[\"http://localhost:3307/\"]");
+    }, []);
+    return <UserProvider><ChatBox></ChatBox></UserProvider>
 }

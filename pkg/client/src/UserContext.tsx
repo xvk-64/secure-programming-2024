@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 
 export interface GroupInfo {
     users: string[],
@@ -28,6 +28,7 @@ export type UserContext = {
     removeFriend: (publicKey: string) => void,
     groups: Group[],
     addGroup: (group: Group) => void,
+    appendMessage: (groupIndex: number, message: string) => void,
     servers: string[],
     addServer: (server: string) => void,
 }
@@ -56,6 +57,11 @@ export const UserProvider = ({ children }: any) => {
     const [groups, setGroups] = useState<Group[]>([]);
     const addGroup = (group: Group) => {
         setGroups(prevGroups => [...prevGroups, group])
+    }
+    const appendMessage = (groupIndex: number, message: string) => {
+        const newGroups = groups.slice();
+        newGroups[groupIndex].chatLog.push(message);
+        setGroups(newGroups);
     }
     
     const [servers, setServers] = useState<string[]>([]);
@@ -107,6 +113,7 @@ export const UserProvider = ({ children }: any) => {
         removeFriend,
         groups,
         addGroup,
+        appendMessage,
         servers,
         addServer,
     };
