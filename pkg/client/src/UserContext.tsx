@@ -38,6 +38,8 @@ export const UserContext: React.Context<UserContext | null> = createContext<User
 
 // TODO: what is this type?
 export const UserProvider = ({ children }: any) => {
+    const [loaded, setLoaded] = useState(false);
+
     const [friends, setFriends] = useState(new Map<string, string>());
     const updateFriend = (publicKey: string, newUsername: string) => {
         setFriends(prevFriends => {
@@ -90,20 +92,25 @@ export const UserProvider = ({ children }: any) => {
             let localServers = localStorage.getItem("servers");
             if(localServers) {setServers(JSON.parse(localServers));}
         }
+        setLoaded(true);
     }, []);
     useEffect(() => {
-        localStorage.setItem("friends", JSON.stringify(friends));
-    }, [friends]);
+        if(loaded)
+            localStorage.setItem("friends", JSON.stringify(friends));
+    }, [friends, loaded]);
     useEffect(() => {
-        localStorage.setItem("groups", JSON.stringify(groups));
-    }, [groups]);
+        if(loaded)
+            localStorage.setItem("groups", JSON.stringify(groups));
+    }, [groups, loaded]);
     useEffect(() => {
-        localStorage.setItem("servers", JSON.stringify(servers));
-    }, [servers]);
+        if(loaded)
+            localStorage.setItem("servers", JSON.stringify(servers));
+    }, [servers, loaded]);
     useEffect(() => {
-        // no idea if that's a valid way of storing the keys
-        localStorage.setItem("keyPair", JSON.stringify(userKeys));
-    }, [userKeys]);
+        if(loaded)
+            // no idea if that's a valid way of storing the keys
+            localStorage.setItem("keyPair", JSON.stringify(userKeys));
+    }, [userKeys, loaded]);
 
     const ret = {
         userKeys,
