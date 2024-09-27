@@ -5,6 +5,7 @@ import GroupChatList from "./GroupChatList.js";
 import DropDownMenus from "./DropDownMenus.js";
 import SideBarList from "./SideBarList.js";
 import CreateGroupChat from "./CreateGroupChat.js";
+import AddServer from "./AddServer.js";
 
 const msgList = [
     [{timestamp: '00:00',  name: 'fred', message: 'wowowowowowowowoww'},
@@ -22,15 +23,29 @@ export default function MiddleDivContent({groupID, isVisible}) {
     return (
     <>
         {isVisible == 0 && (
-            <span>
+            
             <ChatBox groupList={msgList} groupID={groupID}></ChatBox>
-            </span>
+            
         )}
         
         {isVisible == 1 && (
-            <span>
+         
             <CreateGroupChat></CreateGroupChat>
+            
+        )}
+
+      
+
+        {isVisible == 3 && (
+            <span>
+            
             </span>
+        )}
+
+        {isVisible == 3 && (
+           
+            <AddServer></AddServer>
+           
         )}
     </>
     )

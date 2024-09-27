@@ -98,14 +98,14 @@ export default function SideBarList({setGroupID, setIsVisible}) {
             {groupList}
         </div>
         <div className="sidebarSubDiv">
-        <h4 className="heading">Friend List: {friendCounter}</h4>
+        <h4 className="heading" >Friend List: {friendCounter} <button onClick={() => setIsVisible(2)}>+</button></h4>
         <h4 className="heading">Online: {onlineCounter}</h4>
         {userDisplayOnline}
         <h4 className="heading">Offline: {offlineCounter}</h4>
         {userDisplayOffline}
         </div>
         <div className="sidebarSubDiv">
-        <h4 className="heading">Server List: {serverCounter}</h4>
+        <h4 className="heading">Server List: {serverCounter} <button onClick={() => setIsVisible(3)}>+</button></h4>
         <h4 >Online: {onlineCounter}</h4>
         {connectedServer}
         {onlineServerList}
