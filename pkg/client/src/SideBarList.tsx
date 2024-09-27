@@ -4,7 +4,7 @@ import ServerList from "./ServerList.js";
 import CreateGroupChat from "./CreateGroupChat.js";
 
 
-export default function SideBarList({setGroupID}) {
+export default function SideBarList({setGroupID, setIsVisible}) {
 
     ////////// FRIEND LIST ////////////
     let userDisplayOnline: React.ReactElement[] = []
@@ -54,7 +54,7 @@ export default function SideBarList({setGroupID}) {
     groupsOriginal.forEach((group, index) => {
         groupList.push(
           //  href="#/action-1">
-            <><Dropdown.Item as="p" className="clickable" eventKey={index} onClick={() => setGroupID(group.groupID)}>{group.groupName}</Dropdown.Item></>
+            <><Dropdown.Item as="p" className="clickable" eventKey={index} onClick={() => setGroupID(group.groupID) & setIsVisible(0)}>{group.groupName}</Dropdown.Item></>
         );
     });
 
@@ -94,7 +94,7 @@ export default function SideBarList({setGroupID}) {
         <>
         
         <div className="sidebarSubDiv">
-        <h4 className="heading">Chats: {groupCounter}</h4>
+        <h4 className="heading">Chats: {groupCounter} <button onClick={() => setIsVisible(1)}>+</button></h4>
             {groupList}
         </div>
         <div className="sidebarSubDiv">

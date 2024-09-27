@@ -8,28 +8,32 @@ import GroupChatList from "./GroupChatList.js";
 import DropDownMenus from "./DropDownMenus.js";
 import SideBarList from "./SideBarList.js";
 
+import MiddleDivContent from "./MiddleDivContent.js";
 
 
 export default function ChatWrapper() {
 
-    const msgList = [
-        [{timestamp: '00:00',  name: 'fred', message: 'wowowowowowowowoww'},
-        {timestamp: '00:05', name: 'coolbeanie', message: 'hey guys can you help im stuck in the void'},
-        {timestamp: '00:10', name: '2cool4shoes', message: 'skill issue'}],
-        [{timestamp: '00:10',  name: 'coolbeanie', message: ':('},
-        {timestamp: '00:11',  name: 'fred', message: 'uwu'}]
-    ];
+    // const msgList = [
+    //     [{timestamp: '00:00',  name: 'fred', message: 'wowowowowowowowoww'},
+    //     {timestamp: '00:05', name: 'coolbeanie', message: 'hey guys can you help im stuck in the void'},
+    //     {timestamp: '00:10', name: '2cool4shoes', message: 'skill issue'}],
+    //     [{timestamp: '00:10',  name: 'coolbeanie', message: ':('},
+    //     {timestamp: '00:11',  name: 'fred', message: 'uwu'}]
+    // ];
    
     const [groupID, setGroupID] = useState(0)
+
+    const [isVisible, setIsVisible] = useState(0)
 
     return <>
             <div  className="main">
                 <div  className="leftDiv" overflow-y: scroll>
-                    <SideBarList setGroupID={setGroupID}></SideBarList>
+                    <SideBarList setGroupID={setGroupID} setIsVisible={setIsVisible}></SideBarList>
                     </div>
                 <div className="middleDiv">
-                    <ChatBox groupList={msgList} groupID={groupID}></ChatBox>
-                    <ChatInput></ChatInput>
+                    <p>Hello! Welcome to our chat app.</p>
+                    <MiddleDivContent groupID={groupID} isVisible={isVisible}></MiddleDivContent>
+                    {/* <ChatBox groupList={msgList} groupID={groupID}></ChatBox> */}
                 </div>
                 
                 <div className="rightDiv">

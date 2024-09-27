@@ -21,12 +21,13 @@ export default function CreateGroupChat() {
     let groupList: React.ReactElement[] = []
 
     // event handler to grab values from fields
-    const handleChange = (event: { target: { name: string; value: string; }; }) => {
-      const name = event.target.name;
+    const handleChange = (event: { target: { value: string; }; }) => {
+    //   const name = event.target.name;
       const value = event.target.value;
+      // name: string;
       
-      setInputs(values => ({...values, [name]: value}))
-    }
+      setInputs(values => ({...values, value}))
+    } //  [name]:
   
         // nickanme : publickey
     // store the members
@@ -41,27 +42,28 @@ export default function CreateGroupChat() {
 
     return (
         <>
-        <div className="createChatDiv">
-            <h4 className="heading">Create Chat</h4>
+        <h4 className="heading">Create Chat</h4>
+        <div className="chatDiv">
             <form onSubmit={handleSubmit}>
-            <h4>Add users to a Chat. Adding a single user will be a private 1:1 chat</h4>
+            <p>Create a chat. Add multiple users to create a group chat.</p>
+            
             {/* <label>Enter saved nickname, OR enter user's public key</label><br/><br/> */}
-
+{/* 
             <label>add nickname</label><br/>
             {/* get nickname*/}
-            <input type="text" name="nickname" value={inputs.nickname || ""} onChange={handleChange}/>
+            {/* <input type="text" name="nickname" value={inputs.nickname || ""} onChange={handleChange}/><br/> */} 
        
             <label>User's public key</label><br/>
             {/* get public key*/}
-            <input type="text" name="publicKey" value={inputs.publicKey || ""} onChange={handleChange}/><br/>
+            <input type="text" name="publicKey" className="chatInputBox" value={inputs.publicKey || ""} onChange={handleChange}/><br/><br/>
 
             {/* add user to working group*/}
-            <button type="submit">Add user to group</button><br/>
+            <button type="submit">Add user to chat</button><br/>
 
-            <h4>Group Members</h4><br/>
+            <h4>Current Chat Members:</h4><br/>
              {/* finalise group*/}
              </form>
-            <button type="submit"> Create group! </button>
+            <button type="submit"> Finalise chat! </button>
 
 
         </div>
