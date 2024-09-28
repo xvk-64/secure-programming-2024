@@ -44,7 +44,7 @@ export class ConnectedClient {
         this._fingerprint = initialFingerprint;
         this._counter = initialCounter;
 
-        const receiveListener = this._transport.onReceiveMessage.createListener(async message => {
+        const receiveListener = this._transport.onReceiveMessage.createAsyncListener(async message => {
             // Validate signed data.
             if (message.type == "signed_data") {
                 const signedDataMessage = message as ClientSendableSignedData;
@@ -80,7 +80,7 @@ export class ConnectedClient {
             }
 
             // Message is all valid, pass upwards.
-            this.onMessageReady.dispatch(message);
+            await this.onMessageReady.dispatch(message);
         });
 
         this._transport.onDisconnect.createListener(() => {

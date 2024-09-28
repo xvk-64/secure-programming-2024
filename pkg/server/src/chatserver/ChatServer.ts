@@ -7,12 +7,14 @@ import {
     ClientList,
     ClientSendable,
     ClientSendableSignedData,
-    PublicChatData,
+    PublicChatData, ServerHelloData,
     SignedData
 } from "@sp24/common/messageTypes.js";
 import {ConnectedClient} from "./ConnectedClient.js";
 import {webcrypto} from "node:crypto";
 import {log} from "node:util";
+import {ConnectedServer} from "./ConnectedServer.js";
+import {IServerToServerTransport} from "./IServerToServerTransport.js";
 
 
 export class ChatServer {
@@ -45,10 +47,12 @@ export class ChatServer {
         // List of all clients I know about
 
         let keys: webcrypto.CryptoKey[] = [];
-        for (const client of this._clients) {
-            if (client.verifyKey !== undefined)
-                keys.push(client.verifyKey);
-        }
+
+        // Collect my clients
+        this._clients.forEach(client => keys.push(client.verifyKey));
+
+        // Collect neighbourhood clients
+
 
         for (const client of this._clients) {
             const clientListMessage = new ClientList([{
@@ -119,14 +123,30 @@ export class ChatServer {
         // console.log(logMessage);
     }
 
+    private _neighbourhoodServers: ConnectedServer[] = [];
+
+    private _serverConnectListeners: EventListener<ConnectedServer>[] = [];
+    private async onServerConnect(server: ConnectedServer) {
+        console.log(`Server connected: ${server.neighbourhoodEntry.address}`);
+
+        // Reciprocate the connection with another server_hello.
+        const serverHelloData = new ServerHelloData(server.entryPoint.address);
+        const serverHelloMessage = await SignedData.create(serverHelloData, server.entryPoint.counter++, server.entryPoint.signKey);
+        await server.sendMessage(serverHelloMessage);
+    }
+
     public constructor(entryPoints: IServerEntryPoint[]) {
         this._entryPoints = entryPoints;
 
         // Set up listeners for clients connecting to the server.
         entryPoints.forEach(entryPoint => {
-            this._clientConnectListeners.push(entryPoint.onClientConnect.createListener((client) => {
-                this.onClientConnect(client);
+            this._clientConnectListeners.push(entryPoint.onClientConnect.createListener(async (client) => {
+                await this.onClientConnect(client);
             }));
+
+            this._serverConnectListeners.push(entryPoint.onServerConnect.createListener(async (server) => {
+                await this.onServerConnect(server);
+            }))
         });
     }
 }

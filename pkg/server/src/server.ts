@@ -1,7 +1,7 @@
 import express from "express";
 // import {WebSocketServer} from "ws"
 import {ChatServer} from "./chatserver/ChatServer.js";
-import {TestClientEntryPoint} from "./chatserver/testclient/TestClientEntryPoint.js";
+import {TestEntryPoint} from "./chatserver/testclient/TestEntryPoint.js";
 import {TestClientTransport} from "./chatserver/testclient/TestClientTransport.js";
 
 import {hello} from "@sp24/common/hello.js";
@@ -25,7 +25,7 @@ const httpServer = app.listen(port, () => {
 
 const keyPair = await webcrypto.subtle.generateKey(PSSGenParams, true, ["sign", "verify"]);
 
-const testEntryPoint = new TestClientEntryPoint("server1", keyPair.privateKey, keyPair.publicKey);
+const testEntryPoint = new TestEntryPoint("server1", keyPair.privateKey, keyPair.publicKey);
 const server = new ChatServer([testEntryPoint]);
 
 const testTransport1 = new TestClientTransport(testEntryPoint);

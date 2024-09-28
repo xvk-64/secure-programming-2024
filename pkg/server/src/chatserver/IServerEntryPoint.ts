@@ -10,6 +10,7 @@ export interface IServerEntryPoint {
     readonly signKey: webcrypto.CryptoKey;
     readonly verifyKey: webcrypto.CryptoKey;
     readonly address: string;
+    counter: number;
 
     onClientConnect: EventEmitter<ConnectedClient>;
     onServerConnect: EventEmitter<ConnectedServer>;

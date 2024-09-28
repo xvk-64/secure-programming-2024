@@ -1,5 +1,5 @@
 import {EventEmitter} from "@sp24/common/util/EventEmitter.js"
-import type {TestClientEntryPoint} from "./TestClientEntryPoint.js";
+import type {TestEntryPoint} from "./TestEntryPoint.js";
 import {IChatClientTransport} from "@sp24/common/chatclient/IChatClientTransport.js";
 import {ClientSendable, ServerToClientSendable} from "@sp24/common/messageTypes.js";
 
@@ -7,7 +7,7 @@ import {ClientSendable, ServerToClientSendable} from "@sp24/common/messageTypes.
 export class TestClientTransport implements IChatClientTransport {
     readonly onReceiveMessage: EventEmitter<ServerToClientSendable> = new EventEmitter<ServerToClientSendable>();
 
-    private _serverEntryPoint: TestClientEntryPoint
+    private _serverEntryPoint: TestEntryPoint
 
     connect(): Promise<void> {
         this._serverEntryPoint.addClient(this);
@@ -21,7 +21,7 @@ export class TestClientTransport implements IChatClientTransport {
         return Promise.resolve();
     }
 
-    constructor(entryPoint: TestClientEntryPoint) {
+    constructor(entryPoint: TestEntryPoint) {
         this._serverEntryPoint = entryPoint;
     }
 }

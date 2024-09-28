@@ -1,7 +1,7 @@
 import {IServerToServerTransport} from "./IServerToServerTransport.js";
 import {IServerEntryPoint} from "./IServerEntryPoint.js";
 import {
-    ClientSendable, ServerHelloData,
+    ClientSendable, ClientUpdate, ServerHelloData,
     ServerToClientSendable,
     ServerToServerSendable,
     ServerToServerSendableSignedData, SignedData
@@ -24,12 +24,12 @@ export class ConnectedServer {
         return this._clients;
     }
 
-    private _neighbourhoodEntry: NeighbourhoodServer | undefined;
+    private _neighbourhoodEntry: NeighbourhoodServer;
     public get neighbourhoodEntry() {
         return this._neighbourhoodEntry;
     }
 
-    private _counter: number | undefined;
+    private _counter: number;
 
     public readonly entryPoint: IServerEntryPoint;
 
@@ -40,52 +40,37 @@ export class ConnectedServer {
     public readonly onMessageReady: EventEmitter<ServerToServerSendable> = new EventEmitter();
     public readonly onDisconnect: EventEmitter<void> = new EventEmitter();
 
-    public constructor(transport: IServerToServerTransport, entryPoint: IServerEntryPoint, neighbourhood: NeighbourhoodAllowList) {
+    public constructor(transport: IServerToServerTransport, entryPoint: IServerEntryPoint, neighbourhoodEntry: NeighbourhoodServer, initialCounter: number) {
         this._transport = transport;
         this.entryPoint = entryPoint;
+        this._neighbourhoodEntry = neighbourhoodEntry;
+        this._counter = initialCounter;
 
-        const messageListener = this._transport.onReceiveMessage.createListener(async message => {
+        const messageListener = this._transport.onReceiveMessage.createAsyncListener(async message => {
             // Validate signed data
             if (message.type == "signed_data") {
                 const signedDataMessage = message as ServerToServerSendableSignedData;
 
                 // See if this was sent by the server?
                 if (signedDataMessage.data.type == "server_hello") {
-                    const serverHelloMessage = message as SignedData<ServerHelloData>;
-
-                    if (this._counter !== undefined && serverHelloMessage.counter <= this._counter)
-                        // Invalid counter.
-                        return;
-
-                    // Locate this server in the neighbourhood allow list
-                    let tryEntry = neighbourhood.find(server => server.address == serverHelloMessage.data.serverAddress);
-
-                    if (tryEntry === undefined)
-                        // Not in neighbourhood allow list
-                        return;
-
-                    let entry = tryEntry as NeighbourhoodServer;
-
-                    if (!await serverHelloMessage.verify(entry.verifyKey))
-                        // Invalid signature
-                        return;
-
-                    this._counter = serverHelloMessage.counter;
-                    this._neighbourhoodEntry = entry;
+                    // Do not let servers change their key after connecting.
+                    return;
                 }
             }
             if (message.type == "client_update") {
                 // Update my clients
 
+                let clientUpdateMessage = message as ClientUpdate;
+                this._clients = clientUpdateMessage.clientVerifyKeys.map(key => ({verifyKey: key}));
             }
 
             // Forward the message upwards
-            this.onMessageReady.dispatch(message);
+            await this.onMessageReady.dispatch(message);
         });
 
-        this._transport.onDisconnect.createListener(() => {
+        this._transport.onDisconnect.createAsyncListener(async () => {
             this._transport.onReceiveMessage.removeListener(messageListener);
-            this.onDisconnect.dispatch();
+            await this.onDisconnect.dispatch();
         })
     }
 }
