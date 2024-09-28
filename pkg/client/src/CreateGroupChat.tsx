@@ -53,9 +53,9 @@ export default function CreateGroupChat() {
             {/* get nickname*/}
             {/* <input type="text" name="nickname" value={inputs.nickname || ""} onChange={handleChange}/><br/> */} 
        
-            <label>User's public key</label><br/>
-            {/* get public key*/}
-            <input type="text" name="publicKey" className="chatInputBox" value={inputs.publicKey || ""} onChange={handleChange}/><br/><br/>
+            <label>User's fingerprint</label><br/>
+            {/* get fingerprint*/}
+            <input type="text" name="publicKey" className="chatInputBox" value={inputs.fingerprint || ""} onChange={handleChange}/><br/><br/>
 
             {/* add user to working group*/}
             <button type="submit">Add user to chat</button><br/>

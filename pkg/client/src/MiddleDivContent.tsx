@@ -6,7 +6,12 @@ import DropDownMenus from "./DropDownMenus.js";
 import SideBarList from "./SideBarList.js";
 import CreateGroupChat from "./CreateGroupChat.js";
 import AddServer from "./AddServer.js";
+import GroupUserList from "./GroupUserList.js";
 
+// TODO
+// - friend list/ add friend button/screen
+
+// switches content in the middle div depending on use state
 const msgList = [
     [{timestamp: '00:00',  name: 'fred', message: 'wowowowowowowowoww'},
     {timestamp: '00:05', name: 'coolbeanie', message: 'hey guys can you help im stuck in the void'},
@@ -23,8 +28,10 @@ export default function MiddleDivContent({groupID, isVisible}) {
     return (
     <>
         {isVisible == 0 && (
-            
+            <>
             <ChatBox groupList={msgList} groupID={groupID}></ChatBox>
+            
+            </>
             
         )}
         
@@ -47,6 +54,8 @@ export default function MiddleDivContent({groupID, isVisible}) {
             <AddServer></AddServer>
            
         )}
+
+
     </>
     )
 }
