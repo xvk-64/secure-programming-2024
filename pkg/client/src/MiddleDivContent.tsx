@@ -7,6 +7,7 @@ import SideBarList from "./SideBarList.js";
 import CreateGroupChat from "./CreateGroupChat.js";
 import AddServer from "./AddServer.js";
 import GroupUserList from "./GroupUserList.js";
+import AddFriend from "./AddFriend.js";
 
 // TODO
 // - friend list/ add friend button/screen
@@ -30,29 +31,19 @@ export default function MiddleDivContent({groupID, isVisible}) {
         {isVisible == 0 && (
             <>
             <ChatBox groupList={msgList} groupID={groupID}></ChatBox>
-            
             </>
-            
         )}
         
         {isVisible == 1 && (
-         
             <CreateGroupChat></CreateGroupChat>
-            
         )}
-
-      
-
-        {isVisible == 3 && (
-            <span>
-            
-            </span>
+        
+        {isVisible == 2 && (
+           <AddFriend></AddFriend>
         )}
 
         {isVisible == 3 && (
-           
             <AddServer></AddServer>
-           
         )}
 
 

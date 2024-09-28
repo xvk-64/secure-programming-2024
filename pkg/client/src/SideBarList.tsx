@@ -3,6 +3,11 @@ import { Dropdown } from 'react-bootstrap';
 import ServerList from "./ServerList.js";
 import CreateGroupChat from "./CreateGroupChat.js";
 
+// TODO
+// - import dynamic friend list. get offline/online
+// get dynamic server list, connected server, online and offline servers. 
+// - click on server to connect
+// 
 
 export default function SideBarList({setGroupID, setIsVisible}) {
 
