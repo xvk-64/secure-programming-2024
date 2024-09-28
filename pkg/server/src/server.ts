@@ -54,12 +54,12 @@ const testClient1 = await ChatClient.create(testTransport1);
 const testTransport2 = new TestClientTransport(testEntryPoint2);
 const testClient2 = await ChatClient.create(testTransport2);
 
-// const testTransport3 = new TestClientTransport(testEntryPoint);
-// const testClient3 = await ChatClient.create(testTransport3);
+const testTransport3 = new TestClientTransport(testEntryPoint1);
+const testClient3 = await ChatClient.create(testTransport3);
 
 
 setInterval(() => {
-    const groupID = testClient1.getGroupID([testClient2.fingerprint]);
+    const groupID = testClient1.getGroupID([testClient2.fingerprint, testClient3.fingerprint]);
 
     testClient1.sendChat("Hello!", groupID);
     testClient1.sendPublicChat("Yay!");
@@ -71,6 +71,13 @@ testClient2.onPublicChat.createListener(chat => {
 })
 testClient2.onChat.createListener(chat => {
     console.log(`Client ${testClient2.fingerprint}: Chat from ${chat.senderFingerprint}: "${chat.message}" GroupID: ${chat.groupID}`);
+})
+
+testClient3.onPublicChat.createListener(chat => {
+    console.log(`Client ${testClient3.fingerprint}: Public chat from ${chat.senderFingerprint}: "${chat.message}"`);
+})
+testClient3.onChat.createListener(chat => {
+    console.log(`Client ${testClient3.fingerprint}: Chat from ${chat.senderFingerprint}: "${chat.message}" GroupID: ${chat.groupID}`);
 })
 
 // const wss = new WebSocketServer({ server: httpServer });
