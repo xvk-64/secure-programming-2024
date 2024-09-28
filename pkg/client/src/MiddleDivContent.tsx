@@ -7,7 +7,10 @@ import SideBarList from "./SideBarList.js";
 import CreateGroupChat from "./CreateGroupChat.js";
 import AddServer from "./AddServer.js";
 import GroupUserList from "./GroupUserList.js";
+import PatBaba from "./PatBaba.js";
 import AddFriend from "./AddFriend.js";
+import PublicBroadcast from "./PublicBroadcast.js";
+
 
 // TODO
 // - friend list/ add friend button/screen
@@ -28,6 +31,12 @@ export default function MiddleDivContent({groupID, isVisible}) {
 
     return (
     <>
+        {isVisible == 4 && (
+            <>
+            <PublicBroadcast></PublicBroadcast>
+            </>
+        )}
+        
         {isVisible == 0 && (
             <>
             <ChatBox groupList={msgList} groupID={groupID}></ChatBox>
@@ -44,6 +53,10 @@ export default function MiddleDivContent({groupID, isVisible}) {
 
         {isVisible == 3 && (
             <AddServer></AddServer>
+        )}
+
+        {isVisible == 5 && (
+            <PatBaba></PatBaba>
         )}
 
 

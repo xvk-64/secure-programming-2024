@@ -14,11 +14,12 @@
 }
 
 .leftDiv {
+    overflow-y: scroll;
     font-family: "Courier New";
     width: 220px; 
-    height: 600px;
+    height: 570px;
     padding: 10px;
-    margin: 2px;
+    /* margin: 2px; */
     border-style : ridge;
     border-color:rgb(195,196,200);
     border-width: thin;
@@ -33,9 +34,11 @@
 
 .middleDiv {
     font-family: "Courier New";
-    width: 500px; 
+    width: 650px; 
     height: 600px;
-    margin: 20px;
+    /* margin: 20px; */
+    margin-left: 20px;
+    margin-right: 20px;
     float: left;
 
 }
@@ -44,15 +47,17 @@
     overflow-y: scroll;
     font-family: "Courier New";
     width: 200px; 
-    /* height: 600px; */
+    height: 570px;
     padding: 10px;
-    margin: 2px;
+    /* margin: 2px; */
+    margin-left: 20px;
+    margin-right: 20px;
     border-style : ridge;
     border-color:rgb(195,196,200);
     border-width: thin;
     display: block; 
     float: right;
-    flex:1;
+    /* flex:1; */
     line-height: normal;
     background-color: white;
 }
@@ -60,10 +65,11 @@
 .chatDiv {
     overflow-y: scroll;
     font-family: "Courier New";
-    width: 500px; 
-    height: 400px;
+    width: 650px; 
+    height: 450px;
     padding: 10px;
     margin: 2px;
+    margin-bottom: 10px;
     border-style : inset;
     border-color:rgb(195,196,200);
     border-width: thin;
@@ -76,7 +82,7 @@
 
 .createChatDiv {
     font-family: "Courier New";
-    width: 500px; 
+    width: 650px; 
     height: 400px;
     padding: 10px;
     margin: 2px;
@@ -98,7 +104,7 @@
     /* margin-top: 5px; */
     margin-top: 5px;
     margin-left: 2px;
-    width: 442px
+    width: 500px
 }
 
 .chatInputButton {
@@ -107,6 +113,9 @@
 }
 
 .heading {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 4px;
     border-style : ridge;
     border-color:rgb(195,196,200);
     border-width: thin;
@@ -121,12 +130,24 @@ p.clickable:hover {
 }
 
 .sidebarSubDiv {
-    height: 200px;
-    width: 220px;
+    /* height: 200px;
+    width: 220px; */
     padding: 5px;
     overflow-y: scroll;
 
     border-style : ridge;
     border-color:rgb(195,196,200);
     border-width: thin;
+}
+
+.broadcastDiv {
+    height: 300px;
+    width: 620px;
+    padding: 5px;
+    overflow-y: scroll;
+
+    border-style : ridge;
+    border-color:rgb(195,196,200);
+    border-width: thin;
+    
 }

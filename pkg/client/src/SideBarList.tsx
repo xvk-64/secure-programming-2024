@@ -97,25 +97,28 @@ export default function SideBarList({setGroupID, setIsVisible}) {
   
     return (
         <>
-        
-        <div className="sidebarSubDiv">
-        <h4 className="heading">Chats: {groupCounter} <button onClick={() => setIsVisible(1)}>+</button></h4>
-            {groupList}
-        </div>
-        <div className="sidebarSubDiv">
-        <h4 className="heading" >Friend List: {friendCounter} <button onClick={() => setIsVisible(2)}>+</button></h4>
-        <h4 className="heading">Online: {onlineCounter}</h4>
-        {userDisplayOnline}
-        <h4 className="heading">Offline: {offlineCounter}</h4>
-        {userDisplayOffline}
-        </div>
-        <div className="sidebarSubDiv">
-        <h4 className="heading">Server List: {serverCounter} <button onClick={() => setIsVisible(3)}>+</button></h4>
-        <h4 >Online: {onlineCounter}</h4>
-        {connectedServer}
-        {onlineServerList}
-        <h4 className="heading">Offline: {offlineCounter}</h4>
-        {offlineServerList}
+        <div>
+            <button onClick={() => setIsVisible(4)}>Broadcast Public Message</button>
+            <h4 className="heading">Chats: {groupCounter} <button onClick={() => setIsVisible(1)}>+</button></h4>
+            <div className="sidebarSubDiv">
+                {groupList}
+            </div>
+            <h4 className="heading" >Friend List: {friendCounter} <button onClick={() => setIsVisible(2)}>+</button></h4>
+            <div className="sidebarSubDiv">
+                <h4 className="heading">Online: {onlineCounter}</h4>
+                {userDisplayOnline}
+                <h4 className="heading">Offline: {offlineCounter}</h4>
+                {userDisplayOffline}
+            </div>
+            <h4 className="heading">Server List: {serverCounter} <button onClick={() => setIsVisible(3)}>+</button></h4>
+            <div className="sidebarSubDiv">
+                <h4 >Online: {onlineCounter}</h4>
+                {connectedServer}
+                {onlineServerList}
+                <h4 className="heading">Offline: {offlineCounter}</h4>
+                {offlineServerList}
+            </div>
+            <button onClick={() => setIsVisible(5)}>Pat Baba</button>
         </div>
         </>
     )

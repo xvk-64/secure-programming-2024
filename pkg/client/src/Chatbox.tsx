@@ -1,6 +1,13 @@
 import React, {useEffect, useState} from "react";
 import ChatInput from "./ChatInput.js";
 
+
+// TODO
+// - dynamically load in messages
+// - refresh automatically on new message received/sent
+// - send message logic
+// - send file logic
+
 export default function ChatBox({groupList, groupID}) {
     let chatbox: React.ReactElement[] = []
     // let messageList = ["wowowowoww", "cool message bro", "i like soup"];

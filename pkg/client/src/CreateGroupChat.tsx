@@ -60,7 +60,7 @@ export default function CreateGroupChat() {
             {/* add user to working group*/}
             <button type="submit">Add user to chat</button><br/>
 
-            <h4>Current Chat Members:</h4><br/>
+            <h4>Prospective Chat Members:</h4><br/>
              {/* finalise group*/}
              </form>
             <button type="submit"> Finalise chat! </button>
