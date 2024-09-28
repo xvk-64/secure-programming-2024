@@ -4,14 +4,12 @@ import {IServerToClientTransport} from "./IServerToClientTransport.js";
 import {webcrypto} from "node:crypto";
 import {ConnectedClient} from "./ConnectedClient.js";
 import {ConnectedServer} from "./ConnectedServer.js";
+import {ServerHelloData, SignedData} from "@sp24/common/messageTypes.js";
 
 // Defines an entry point for new connections to a server.
 export interface IServerEntryPoint {
-    readonly signKey: webcrypto.CryptoKey;
-    readonly verifyKey: webcrypto.CryptoKey;
-    readonly address: string;
-    counter: number;
-
     onClientConnect: EventEmitter<ConnectedClient>;
     onServerConnect: EventEmitter<ConnectedServer>;
+
+    connectToServer(transport: IServerToServerTransport, helloMessage: SignedData<ServerHelloData>): Promise<void>;
 }

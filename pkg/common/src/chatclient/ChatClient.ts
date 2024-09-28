@@ -76,7 +76,6 @@ export class ChatClient {
                 // Signed data from another client
                 let signedDataMessage = message as ServerToClientSendableSignedData;
 
-
                 // Ugly code ahead
 
                 // Locate the sender
@@ -100,18 +99,20 @@ export class ChatClient {
                     case "chat":
                         let chatMessage = message as SignedData<ChatData>;
 
-                        let tryCleartext = await otherClient.isValidChat(chatMessage, this.fingerprint, this._decryptKey);
+                        let cleartext = await otherClient.isValidChat(chatMessage, this.fingerprint, this._decryptKey);
 
-                        if (tryCleartext === undefined)
+                        if (cleartext === undefined)
                             // Bad chat message
                             return;
 
-                        let cleartext = tryCleartext as CleartextChat;
+                        if (cleartext.senderFingerprint === this.fingerprint)
+                            // Don't care about message from myself.
+                            return;
 
                         const otherParticipants = [cleartext.senderFingerprint, ...cleartext.recipientFingerprints].filter(fingerprint => fingerprint != this.fingerprint);
 
                         // Do something with the cleartext.
-                        this.onChat.dispatch({
+                        await this.onChat.dispatch({
                             message: cleartext.message,
                             groupID: this.getGroupID(otherParticipants),
                             senderFingerprint: cleartext.senderFingerprint,
@@ -124,8 +125,12 @@ export class ChatClient {
                             // Bad public chat message
                             return;
 
+                        if (publicChatMessage.data.senderFingerprint === this.fingerprint)
+                            // Don't care about messages from me
+                            return;
+
                         // Do something with public chat.
-                        this.onPublicChat.dispatch({
+                        await this.onPublicChat.dispatch({
                             message: publicChatMessage.data.message,
                             senderFingerprint: publicChatMessage.data.senderFingerprint
                         });

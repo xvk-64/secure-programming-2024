@@ -14,23 +14,15 @@ import {webcrypto} from "node:crypto";
 import {calculateFingerprint} from "@sp24/common/util/crypto.js";
 import {NeighbourhoodAllowList, NeighbourhoodServer} from "../NeighbourhoodAllowList.js";
 import {TestServerToServerTransport} from "./TestServerToServerTransport.js";
+import {IServerToServerTransport} from "../IServerToServerTransport.js";
 
 export class TestEntryPoint implements IServerEntryPoint {
     onClientConnect: EventEmitter<ConnectedClient> = new EventEmitter();
     onServerConnect: EventEmitter<ConnectedServer> = new EventEmitter();
 
-    readonly address: string;
-    readonly signKey: webcrypto.CryptoKey;
-    readonly verifyKey: webcrypto.CryptoKey;
-    counter: number = 0;
-
     private _neighbourhood: NeighbourhoodAllowList;
 
-    public constructor(address: string, signKey: webcrypto.CryptoKey, verifyKey: webcrypto.CryptoKey, neighbourhood: NeighbourhoodAllowList) {
-        this.address = address;
-        this.signKey = signKey;
-        this.verifyKey = verifyKey;
-
+    public constructor(neighbourhood: NeighbourhoodAllowList) {
         this._neighbourhood = neighbourhood;
     }
 
@@ -58,22 +50,19 @@ export class TestEntryPoint implements IServerEntryPoint {
         });
     }
 
-    addServer(serverTransport: TestServerToServerTransport) {
+    async connectToServer(serverTransport: IServerToServerTransport, helloMessage: SignedData<ServerHelloData>) {
+        // Wait for a hello message
         const messageListener = serverTransport.onReceiveMessage.createAsyncListener(async message => {
             if (message.type === "signed_data") {
-                const signedDataMessage = message as ServerToServerSendableSignedData;
-
-                if (signedDataMessage.data.type == "server_hello") {
+                if (message.data.type == "server_hello") {
                     const serverHelloMessage = message as SignedData<ServerHelloData>;
 
                     // Locate this server in the neighbourhood allow list
-                    let tryEntry = this._neighbourhood.find(server => server.address == serverHelloMessage.data.serverAddress);
+                    let entry = this._neighbourhood.find(server => server.address === serverHelloMessage.data.serverAddress);
 
-                    if (tryEntry === undefined)
+                    if (entry === undefined)
                         // Not in neighbourhood allow list
                         return;
-
-                    let entry = tryEntry as NeighbourhoodServer;
 
                     if (!await serverHelloMessage.verify(entry.verifyKey))
                         // Invalid signature
@@ -82,25 +71,14 @@ export class TestEntryPoint implements IServerEntryPoint {
                     // Remove listener as we have received the message we want.
                     serverTransport.onReceiveMessage.removeListener(messageListener);
 
-                    const connectedServer = new ConnectedServer(serverTransport, this, entry, signedDataMessage.counter);
+                    const connectedServer = new ConnectedServer(serverTransport, this, entry, message.counter);
 
                     await this.onServerConnect.dispatch(connectedServer);
                 }
             }
-        })
-    }
+        });
 
-    async connectToServer(otherEntryPoint: TestEntryPoint) {
-        const [myTransport, theirTransport] = TestServerToServerTransport.createPair();
-
-        this.addServer(myTransport);
-        otherEntryPoint.addServer(theirTransport);
-
-        // Initiate a server_hello
-        const serverHelloData = new ServerHelloData(otherEntryPoint.address);
-        const serverHelloMessage = await SignedData.create(serverHelloData, this.counter++, this.signKey);
-        await myTransport.sendMessage(serverHelloMessage);
-
-        // The other server will process the hello and send one back.
+        // Send a hello message
+        await serverTransport.sendMessage(helloMessage);
     }
 }

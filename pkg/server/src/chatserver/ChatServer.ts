@@ -6,8 +6,8 @@ import {
     ChatData,
     ClientList,
     ClientSendable,
-    ClientSendableSignedData,
-    PublicChatData, ServerHelloData,
+    ClientSendableSignedData, ClientUpdate, ClientUpdateRequest,
+    PublicChatData, ServerHelloData, ServerToClientSendable, ServerToServerSendable, ServerToServerSendableSignedData,
     SignedData
 } from "@sp24/common/messageTypes.js";
 import {ConnectedClient} from "./ConnectedClient.js";
@@ -15,26 +15,36 @@ import {webcrypto} from "node:crypto";
 import {log} from "node:util";
 import {ConnectedServer} from "./ConnectedServer.js";
 import {IServerToServerTransport} from "./IServerToServerTransport.js";
+import {TestServerToServerTransport} from "./testclient/TestServerToServerTransport.js";
 
 
 export class ChatServer {
+    readonly address: string;
+    private readonly _signKey: webcrypto.CryptoKey;
+    private readonly _verifyKey: webcrypto.CryptoKey;
+    private _counter: number = 0;
+
     private _entryPoints: IServerEntryPoint[];
 
     private _clients: ConnectedClient[] = [];
 
     private _clientConnectListeners: EventListener<ConnectedClient>[] = [];
     private async onClientConnect(client: ConnectedClient) {
-        console.log(`Client connected: ${client.fingerprint}`);
+        console.log(`${this.address}: Client connected: ${client.fingerprint}`);
 
         this._clients.push(client);
 
-        let messageListener = client.onMessageReady.createListener((message: ClientSendable) => {
+        let messageListener = client.onMessageReady.createAsyncListener(async message => {
             this.onClientMessage(client, message);
         });
 
-        // Send client list?
+        // Do client_list to my clients
         this.sendClientList();
-        // Probably need to send client update too...
+
+        // Do client_update to other servers
+        const clientUpdateMessage = new ClientUpdate(this._clients.map(client => client.verifyKey));
+        for (const address in this._neighbourhoodServers)
+            this._neighbourhoodServers[address].sendMessage(clientUpdateMessage);
 
         // Handle disconnection
         client.onDisconnect.createListener(() => {
@@ -46,24 +56,39 @@ export class ChatServer {
     private sendClientList() {
         // List of all clients I know about
 
-        let keys: webcrypto.CryptoKey[] = [];
+        let clientKeys: {[address: string]: webcrypto.CryptoKey[]} = {}
 
         // Collect my clients
-        this._clients.forEach(client => keys.push(client.verifyKey));
+        clientKeys[this.address] = this._clients.map(client => client.verifyKey);
 
         // Collect neighbourhood clients
-
-
-        for (const client of this._clients) {
-            const clientListMessage = new ClientList([{
-                address: client.entryPoint.address,
-                clientVerifyKeys: keys
-            }]);
-
-            client.sendMessage(clientListMessage);
+        for (let address in this._neighbourhoodServers) {
+            clientKeys[address] = this._neighbourhoodServers[address].clients.map(client => client.verifyKey);
         }
+
+        // Reformat data
+        let clientList: {address: string, clientVerifyKeys: webcrypto.CryptoKey[]}[] = [];
+        for (const address in clientKeys) {
+            clientList.push({address: address, clientVerifyKeys: clientKeys[address]});
+        }
+
+        // Send client list
+        const clientListMessage = new ClientList(clientList);
+        this._clients.forEach(client => client.sendMessage(clientListMessage));
     }
 
+    private async relayMessage(message: ServerToClientSendable & ServerToServerSendable, destinationAddress: string[] | "all") {
+        if (destinationAddress === "all") {
+            // Relay to all clients
+
+
+        } else {
+            // Relay to specific servers
+
+
+        }
+
+    }
 
     private onClientMessage(client: ConnectedClient, message: ClientSendable) {
         let logMessage = `Client message from ${client.fingerprint}: ${message.type} `;
@@ -73,44 +98,40 @@ export class ChatServer {
         // Check what to do with this message.
         switch (message.type) {
             case "signed_data":
-                const signedDataMessage = message as ClientSendableSignedData;
+                logMessage += message.data.type + " ";
 
-                logMessage += signedDataMessage.data.type + " ";
-
-                switch (signedDataMessage.data.type) {
+                switch (message.data.type) {
                     case "hello":
-                        // Do client_list to my clients
-                        this.sendClientList();
-                        // Do client_update to other servers
+                        // Clients shouldn't send more hellos after joining.
+
                         break;
                     case "chat":
                         // Route to destination servers
-                        const chatMessage = signedDataMessage as SignedData<ChatData>
+                        const chatMessage = message as SignedData<ChatData>
 
-                        if (chatMessage.data.destinationServers.includes(client.entryPoint.address)) {
-                            for (const otherClient of this._clients) {
-                                if (otherClient.fingerprint == client.fingerprint)
-                                    // Don't send message to the same client
-                                    continue;
+                        // Relay to my clients.
+                        if (chatMessage.data.destinationServers.includes(this.address))
+                            this._clients.map(client => client.sendMessage(chatMessage))
 
-                                otherClient.sendMessage(chatMessage);
-                            }
-                        }
+                        // Relay to other servers
+                        chatMessage.data.destinationServers
+                            .filter(address => address != this.address && (address in this._neighbourhoodServers))
+                            .map(address => this._neighbourhoodServers[address].sendMessage(chatMessage)
+                        )
                         break;
                     case "public_chat":
-                        const publicChatMessage = signedDataMessage as SignedData<PublicChatData>;
+                        const publicChatMessage = message as SignedData<PublicChatData>;
 
                         logMessage += "\"" + publicChatMessage.data.message + "\" ";
 
                         // Forward message on.
-                        for (const otherClient of this._clients) {
-                            if (otherClient.fingerprint == client.fingerprint)
-                                // Don't send message to the same client
-                                continue;
 
-                            otherClient.sendMessage(publicChatMessage);
-                        }
-                        // Send to other servers.
+                        // Relay to my clients
+                        this._clients.map(client => client.sendMessage(publicChatMessage))
+
+                        // Relay to other servers
+                        for (const address in this._neighbourhoodServers)
+                            this._neighbourhoodServers[address].sendMessage(publicChatMessage);
                         break;
                 }
                 break;
@@ -123,28 +144,86 @@ export class ChatServer {
         // console.log(logMessage);
     }
 
-    private _neighbourhoodServers: ConnectedServer[] = [];
+    public async createServerHelloMessage() {
+        const serverHelloData = new ServerHelloData(this.address);
+        return await SignedData.create(serverHelloData, this._counter++, this._signKey);
+    }
+
+    private _neighbourhoodServers: {[address: string]: ConnectedServer} = {};
 
     private _serverConnectListeners: EventListener<ConnectedServer>[] = [];
     private async onServerConnect(server: ConnectedServer) {
-        console.log(`Server connected: ${server.neighbourhoodEntry.address}`);
+        console.log(`${this.address}: Server connected: ${server.neighbourhoodEntry.address}`);
+
+        this._neighbourhoodServers[server.neighbourhoodEntry.address] = server;
 
         // Reciprocate the connection with another server_hello.
-        const serverHelloData = new ServerHelloData(server.entryPoint.address);
-        const serverHelloMessage = await SignedData.create(serverHelloData, server.entryPoint.counter++, server.entryPoint.signKey);
+        const serverHelloMessage = await this.createServerHelloMessage();
         await server.sendMessage(serverHelloMessage);
+
+        const messageListener = server.onMessageReady.createAsyncListener(async message => {
+            await this.onServerMessage(server, message);
+        });
+
+        // Request client update
+        await server.sendMessage(new ClientUpdateRequest());
+
+        server.onDisconnect.createAsyncListener(async () => {
+            server.onMessageReady.removeListener(messageListener);
+            delete this._neighbourhoodServers[server.neighbourhoodEntry.address];
+        }, true);
     }
 
-    public constructor(entryPoints: IServerEntryPoint[]) {
+    private async onServerMessage(server: ConnectedServer, message: ServerToServerSendable) {
+        switch (message.type) {
+            case "signed_data":
+                switch (message.data.type) {
+                    case "server_hello":
+                        // Don't let server update its keys
+                        return
+                    case "chat":
+                        const chatMessage = message as SignedData<ChatData>;
+
+                        // Distribute to my clients
+                        this._clients.forEach(client => client.sendMessage(chatMessage));
+                        break;
+                    case "public_chat":
+                        const publicChatMessage = message as SignedData<PublicChatData>;
+
+                        // Distribute to my clients
+                        this._clients.forEach(client => client.sendMessage(publicChatMessage));
+                }
+                break;
+            case "client_update_request":
+                // We need to send a client update.
+
+                const clientUpdateMessage = new ClientUpdate(this._clients.map(client => client.verifyKey));
+                await server.sendMessage(clientUpdateMessage);
+                break;
+            case "client_update":
+                // The ConnectedServer will have already updated internal state.
+
+                // Send a client list to my clients.
+                this.sendClientList();
+                break;
+        }
+    }
+
+    public constructor(address: string, entryPoints: IServerEntryPoint[], signKey: webcrypto.CryptoKey, verifyKey: webcrypto.CryptoKey) {
+        this.address = address;
+
         this._entryPoints = entryPoints;
+
+        this._signKey = signKey;
+        this._verifyKey = verifyKey;
 
         // Set up listeners for clients connecting to the server.
         entryPoints.forEach(entryPoint => {
-            this._clientConnectListeners.push(entryPoint.onClientConnect.createListener(async (client) => {
+            this._clientConnectListeners.push(entryPoint.onClientConnect.createAsyncListener(async (client) => {
                 await this.onClientConnect(client);
             }));
 
-            this._serverConnectListeners.push(entryPoint.onServerConnect.createListener(async (server) => {
+            this._serverConnectListeners.push(entryPoint.onServerConnect.createAsyncListener(async (server) => {
                 await this.onServerConnect(server);
             }))
         });

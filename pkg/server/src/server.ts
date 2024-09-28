@@ -8,6 +8,8 @@ import {hello} from "@sp24/common/hello.js";
 import {ChatClient} from "@sp24/common/chatclient/ChatClient.js";
 import {webcrypto} from "node:crypto";
 import {PSSGenParams} from "@sp24/common/util/crypto.js";
+import {NeighbourhoodAllowList} from "./chatserver/NeighbourhoodAllowList.js";
+import {TestServerToServerTransport} from "./chatserver/testclient/TestServerToServerTransport.js";
 
 
 const app = express();
@@ -23,23 +25,41 @@ const httpServer = app.listen(port, () => {
     console.log(`Server started http://localhost:${port}`);
 })
 
-const keyPair = await webcrypto.subtle.generateKey(PSSGenParams, true, ["sign", "verify"]);
+const server1Keys = await webcrypto.subtle.generateKey(PSSGenParams, true, ["sign", "verify"]);
+const server2Keys = await webcrypto.subtle.generateKey(PSSGenParams, true, ["sign", "verify"]);
 
-const testEntryPoint = new TestEntryPoint("server1", keyPair.privateKey, keyPair.publicKey);
-const server = new ChatServer([testEntryPoint]);
+const neighbourhood: NeighbourhoodAllowList = [
+    {
+        address: "server1",
+        verifyKey: server1Keys.publicKey
+    },
+    {
+        address: "server2",
+        verifyKey: server2Keys.publicKey
+    }
+]
 
-const testTransport1 = new TestClientTransport(testEntryPoint);
+const testEntryPoint1 = new TestEntryPoint(neighbourhood);
+const server1 = new ChatServer("server1", [testEntryPoint1], server1Keys.privateKey, server1Keys.publicKey);
+
+const [transport1to2, transport2to1] = TestServerToServerTransport.createPair();
+const testEntryPoint2 = new TestEntryPoint(neighbourhood);
+const server2 = new ChatServer("server2", [testEntryPoint2], server2Keys.privateKey, server2Keys.publicKey);
+await testEntryPoint2.connectToServer(transport2to1, await server2.createServerHelloMessage());
+await testEntryPoint1.connectToServer(transport1to2, await server1.createServerHelloMessage());
+
+const testTransport1 = new TestClientTransport(testEntryPoint1);
 const testClient1 = await ChatClient.create(testTransport1);
 
-const testTransport2 = new TestClientTransport(testEntryPoint);
+const testTransport2 = new TestClientTransport(testEntryPoint2);
 const testClient2 = await ChatClient.create(testTransport2);
 
-const testTransport3 = new TestClientTransport(testEntryPoint);
-const testClient3 = await ChatClient.create(testTransport3);
+// const testTransport3 = new TestClientTransport(testEntryPoint);
+// const testClient3 = await ChatClient.create(testTransport3);
 
 
 setInterval(() => {
-    const groupID = testClient1.getGroupID([testClient2.fingerprint, testClient3.fingerprint]);
+    const groupID = testClient1.getGroupID([testClient2.fingerprint]);
 
     testClient1.sendChat("Hello!", groupID);
     testClient1.sendPublicChat("Yay!");
@@ -47,10 +67,10 @@ setInterval(() => {
 
 
 testClient2.onPublicChat.createListener(chat => {
-    console.log(`Client ${testClient2.fingerprint}: Publichat from ${chat.senderFingerprint}: "${chat.message}"`);
+    console.log(`Client ${testClient2.fingerprint}: Public chat from ${chat.senderFingerprint}: "${chat.message}"`);
 })
-testClient3.onChat.createListener(chat => {
-    console.log(`Client ${testClient3.fingerprint}: Chat from ${chat.senderFingerprint}: "${chat.message}" GroupID: ${chat.groupID}`);
+testClient2.onChat.createListener(chat => {
+    console.log(`Client ${testClient2.fingerprint}: Chat from ${chat.senderFingerprint}: "${chat.message}" GroupID: ${chat.groupID}`);
 })
 
 // const wss = new WebSocketServer({ server: httpServer });
