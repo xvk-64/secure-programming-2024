@@ -152,7 +152,7 @@ export class ChatClient {
         fingerprint: string
     ) {
         this._transport = transport;
-        this._receiveListener = this._transport.onReceiveMessage.createListener(message => this.onReceiveMessage(message));
+        this._receiveListener = this._transport.onReceiveMessage.createAsyncListener(message => this.onReceiveMessage(message));
 
         this._verifyKey = verifyKey;
         this._signKey = signKey;
@@ -217,8 +217,6 @@ export class ChatClient {
         const fingerprint = await calculateFingerprint(verifyKey);
 
         let client = new ChatClient(transport, verifyKey, signKey, encryptKey, decryptKey, fingerprint);
-
-        await transport.connect();
 
         // Say hello
         await client.sendSignedData(new HelloData(verifyKey));

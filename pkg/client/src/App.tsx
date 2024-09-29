@@ -1,8 +1,7 @@
 import React, {MutableRefObject, useEffect, useRef, useState} from "react";
-import ChatBox from "./Chatbox";
-import { UserProvider } from "./UserContext";
-import { WebSocketClientTransport } from "@sp24/common/chatclient/WebSocketClientTransport.js";
 import { ChatClient } from "@sp24/common/chatclient/ChatClient.js";
+import {WebSocketClientTransport} from "./client/WebSocketClientTransport.js";
+import {PSSGenParams} from "@sp24/common/util/crypto.js";
 
 export const App : React.FC = () => {
     // useEffect(() => {
@@ -12,23 +11,31 @@ export const App : React.FC = () => {
     //     localStorage.setItem("servers", "[\"http://localhost:3307/\"]");
     // }, []);
     // return <UserProvider><ChatBox></ChatBox></UserProvider>
-    const chatClient: MutableRefObject<ChatClient | null> = useRef(null);
-    useEffect(() => {  
-        const webSocketClientTransport = new WebSocketClientTransport();
+    const chatClient = useRef<ChatClient>();
+    useEffect(() => {
         (async () => {
-            if(webSocketClientTransport) {
-                chatClient.current = await ChatClient.create(webSocketClientTransport);
+            if (chatClient.current === undefined) {
+                const transport = await WebSocketClientTransport.connect("ws://localhost:3307");
+
+                if (transport === undefined) {
+                    console.log("Failed to create socket");
+                    return;
+                }
+
+                const clientKeys = await crypto.subtle.generateKey(PSSGenParams, true, ["sign", "verify"]);
+
+                chatClient.current = await ChatClient.create(transport, clientKeys.privateKey, clientKeys.publicKey);
+
                 chatClient.current.onChat.createListener((data) => {
-                    console.log("received chat");
-                    console.log(JSON.stringify(data));
+                    console.log(`received chat ${data.message} from ${data.senderFingerprint} ${data.groupID}`);
                 });
                 chatClient.current.onPublicChat.createListener((data) => {
-                    console.log("received public chat");
-                    console.log(JSON.stringify(data));
+                    console.log(`received public chat ${data.message} from ${data.senderFingerprint}`);
+                    chatClient.current?.sendChat("abcd", chatClient.current.getGroupID([data.senderFingerprint]));
                 });
-                setTimeout(() => {
+                setInterval(() => {
                     chatClient.current?.sendPublicChat("hello");
-                }, 5000);
+                }, 1000);
             }
         })();
     }, []);

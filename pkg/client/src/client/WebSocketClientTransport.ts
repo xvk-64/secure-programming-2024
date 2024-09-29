@@ -1,14 +1,14 @@
+import {IChatClientTransport} from "@sp24/common/chatclient/IChatClientTransport.js";
+import {WebSocketTransport} from "@sp24/common/websocket/WebSocketTransport.js";
+import {EventEmitter} from "@sp24/common/util/EventEmitter.js";
 import {
     ChatData,
     ClientSendable,
-    HelloData,
     PublicChatData,
     ServerToClientSendable,
     SignedData
-} from "../messageTypes.js";
-import { EventEmitter } from "../util/EventEmitter.js";
-import {IChatClientTransport} from "../chatclient/IChatClientTransport.js";
-import {WebSocketTransport} from "./WebSocketTransport.js";
+} from "@sp24/common/messageTypes.js";
+
 
 export class WebSocketClientTransport implements IChatClientTransport {
     private _transport: WebSocketTransport;
@@ -40,4 +40,11 @@ export class WebSocketClientTransport implements IChatClientTransport {
         await this._transport.sendMessage(message);
     }
 
+    public static async connect(URL: string): Promise<WebSocketClientTransport | undefined> {
+        return new Promise((resolve, reject) => {
+            const webSocket = new WebSocket(URL);
+            webSocket.onopen = () => resolve(new WebSocketClientTransport(new WebSocketTransport(webSocket)));
+            webSocket.onerror = () => reject();
+        });
+    }
 }

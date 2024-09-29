@@ -47,6 +47,7 @@ export class ChatServer {
 
         // Handle disconnection
         client.onDisconnect.createListener(() => {
+            console.log(`${this.address}: Client disconnected: ${client.fingerprint}`);
             client.onMessageReady.removeListener(messageListener);
             this._clients.splice(this._clients.indexOf(client), 1);
         }, true);

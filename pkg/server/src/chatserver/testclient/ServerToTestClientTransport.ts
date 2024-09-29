@@ -17,6 +17,6 @@ export class ServerToTestClientTransport implements IServerToClientTransport {
 
     public constructor(testClientTransport: TestClientTransport) {
         this._testClientTransport = testClientTransport;
-        testClientTransport.onSendMessage.createListener((message: ClientSendable) => this.onReceiveMessage.dispatch(message));
+        testClientTransport.onSendMessage.createAsyncListener((message: ClientSendable) => this.onReceiveMessage.dispatch(message));
     }
 }

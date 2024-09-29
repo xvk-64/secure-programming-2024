@@ -1,7 +1,6 @@
 import {EventEmitter} from "../util/EventEmitter.js";
 import {AnyMessage, deserialiseMessage} from "./messageserialisation.js";
 
-
 // Lowest level transport for websockets. Assumes the socket is already connected.
 export class WebSocketTransport {
     private _webSocket: WebSocket;
@@ -26,13 +25,5 @@ export class WebSocketTransport {
 
     public async sendMessage(message: AnyMessage): Promise<void> {
         this._webSocket.send(JSON.stringify(await message.toProtocol()))
-    }
-
-    public static async connect(URL: string): Promise<WebSocketTransport | undefined> {
-        return new Promise((resolve, reject) => {
-            const webSocket = new WebSocket(URL);
-            webSocket.onopen = () => resolve(new WebSocketTransport(webSocket));
-            webSocket.onerror = () => reject();
-        });
     }
 }

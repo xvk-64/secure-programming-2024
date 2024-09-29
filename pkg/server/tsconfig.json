@@ -6,8 +6,6 @@
       "@sp24/common/*": ["../common/src/*"]
     },
     "composite": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
   },
   "include": ["src"],
   "references": [

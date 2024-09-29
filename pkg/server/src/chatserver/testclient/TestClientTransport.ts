@@ -9,12 +9,6 @@ export class TestClientTransport implements IChatClientTransport {
 
     private _serverEntryPoint: TestEntryPoint
 
-    connect(): Promise<void> {
-        this._serverEntryPoint.addClient(this);
-
-        return Promise.resolve();
-    }
-
     readonly onSendMessage: EventEmitter<ClientSendable> = new EventEmitter();
     async sendMessage(message: ClientSendable): Promise<void> {
         await this.onSendMessage.dispatch(message);
@@ -24,5 +18,7 @@ export class TestClientTransport implements IChatClientTransport {
 
     constructor(entryPoint: TestEntryPoint) {
         this._serverEntryPoint = entryPoint;
+
+        this._serverEntryPoint.addClient(this);
     }
 }

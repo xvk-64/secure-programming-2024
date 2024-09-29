@@ -1,11 +1,16 @@
 import express from "express";
-// import {WebSocketServer} from "ws"
+
 import {ChatServer} from "./chatserver/ChatServer.js";
-import {TestClientEntryPoint} from "./chatserver/testclient/TestClientEntryPoint.js";
 import {TestClientTransport} from "./chatserver/testclient/TestClientTransport.js";
 
 import {hello} from "@sp24/common/hello.js";
 import {ChatClient} from "@sp24/common/chatclient/ChatClient.js";
+import {WebSocketEntryPoint} from "./chatserver/websocketserver/WebSocketEntryPoint.js";
+import {webcrypto} from "node:crypto";
+import {PSSGenParams} from "@sp24/common/util/crypto.js";
+import {WebSocketClientTransport} from "@sp24/common/websocket/WebSocketClientTransport.js";
+import {WebSocketTransport} from "@sp24/common/websocket/WebSocketTransport.js";
+import {TestEntryPoint} from "./chatserver/testclient/TestEntryPoint.js";
 
 
 const app = express();
@@ -19,33 +24,26 @@ app.get("/hello", (req: express.Request, res: express.Response) => {
 
 const httpServer = app.listen(port, () => {
     console.log(`Server started http://localhost:${port}`);
-})
+});
 
-const testEntryPoint = new TestClientEntryPoint("server1");
-const server = new ChatServer([testEntryPoint]);
+const serverKeyPair = await webcrypto.subtle.generateKey(PSSGenParams, true, ["sign", "verify"]);
+const wsEntryPoint = new WebSocketEntryPoint(httpServer, []);
+const testEntryPoint = new TestEntryPoint([]);
+const server = new ChatServer("server1", [wsEntryPoint, testEntryPoint], serverKeyPair.privateKey, serverKeyPair.publicKey);
 
+const client1Keys = await webcrypto.subtle.generateKey(PSSGenParams, true, ["sign", "verify"]);
 const testTransport1 = new TestClientTransport(testEntryPoint);
-const testClient1 = await ChatClient.create(testTransport1);
-
-const testTransport2 = new TestClientTransport(testEntryPoint);
-const testClient2 = await ChatClient.create(testTransport2);
-
-const testTransport3 = new TestClientTransport(testEntryPoint);
-const testClient3 = await ChatClient.create(testTransport3);
-
+const testClient1 = await ChatClient.create(testTransport1, client1Keys.privateKey, client1Keys.publicKey);
 
 setInterval(() => {
-    const groupID = testClient1.getGroupID([testClient2.fingerprint, testClient3.fingerprint]);
-
-    testClient1.sendChat("Hello!", groupID);
+    testClient1.sendPublicChat("Yay!");
 }, 1000);
 
-
-testClient2.onChat.createListener(chat => {
-    console.log(`Client ${testClient2.fingerprint}: Chat from ${chat.senderFingerprint}: "${chat.message}" GroupID: ${chat.groupID}`);
+testClient1.onPublicChat.createListener(message => {
+    console.log(`message: ${message.message} from ${message.senderFingerprint}`)
 })
-testClient3.onChat.createListener(chat => {
-    console.log(`Client ${testClient3.fingerprint}: Chat from ${chat.senderFingerprint}: "${chat.message}" GroupID: ${chat.groupID}`);
+testClient1.onChat.createListener(message => {
+    console.log(`message: ${message.message} from ${message.senderFingerprint} ${message.groupID}`)
 })
 
 // const wss = new WebSocketServer({ server: httpServer });

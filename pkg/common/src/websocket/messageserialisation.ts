@@ -1,12 +1,11 @@
-import {Protocol} from "@sp24/common/protocol/messageTypes.js";
-import ProtocolMessage = Protocol.ProtocolMessage;
 import {
     ChatData, ClientList, ClientListRequest,
-    ClientSendable, ClientUpdate, ClientUpdateRequest, HelloData, PublicChatData, ServerHelloData,
+    ClientSendable, ClientUpdate, ClientUpdateRequest,
+    HelloData, PublicChatData, ServerHelloData,
     ServerToClientSendable,
     ServerToServerSendable,
     SignedData
-} from "@sp24/common/messageTypes.js"
+} from "../messageTypes.js";
 
 export type AnyMessage = ClientSendable | ServerToClientSendable | ServerToServerSendable;
 
@@ -43,7 +42,7 @@ export async function deserialiseMessage(message: string) : Promise<AnyMessage |
                     if (typeof data.chat != "string") return;
 
                     // All done.
-                    return await SignedData.fromProtocol(parsed) as SignedData<HelloData>;
+                    return await SignedData.fromProtocol(parsed) as SignedData<ChatData>;
                 case "hello":
                     // Assert fields
                     if (typeof data.public_key != "string") return;

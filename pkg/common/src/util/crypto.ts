@@ -37,14 +37,14 @@ export const AESGenParams: AesKeyGenParams = {
 
 export async function verifyKeyToPEM(key: CryptoKey) {
     const exported: ArrayBuffer = await webCrypto.exportKey("spki", key);
-    return`-----BEGIN PUBLIC KEY-----\n${encode(exported)}\n-----END PUBLIC KEY-----`;
+    return "-----BEGIN PUBLIC KEY-----\n" + encode(exported) + "\n-----END PUBLIC KEY-----";
 }
 export async function PEMToVerifyKey(pem: string) {
-    const pemHeader = "-----BEGIN PUBLIC KEY-----";
-    const pemFooter = "-----END PUBLIC KEY-----";
+    const pemHeader = "-----BEGIN PUBLIC KEY-----\n";
+    const pemFooter = "\n-----END PUBLIC KEY-----";
     const pemContents = pem.substring(
         pemHeader.length,
-        pem.length - pemFooter.length - 1,
+        pem.length - pemFooter.length,
     );
 
     const spki = decode(pemContents);
