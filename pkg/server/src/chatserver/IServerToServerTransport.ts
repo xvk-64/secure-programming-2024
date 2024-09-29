@@ -5,4 +5,6 @@ import {ServerToServerSendable} from "@sp24/common/messageTypes.js";
 export interface IServerToServerTransport {
     sendMessage(message: ServerToServerSendable): Promise<void>;
     onReceiveMessage: EventEmitter<ServerToServerSendable>;
+
+    onDisconnect: EventEmitter<void>;
 }

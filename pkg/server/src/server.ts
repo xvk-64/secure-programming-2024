@@ -6,7 +6,6 @@ import {TestClientTransport} from "./chatserver/testclient/TestClientTransport.j
 
 import {hello} from "@sp24/common/hello.js";
 import {ChatClient} from "@sp24/common/chatclient/ChatClient.js";
-import { WebSocketEntryPoint } from "./chatserver/websocketserver/WebSocketEntryPoint.js";
 
 
 const app = express();
@@ -22,5 +21,35 @@ const httpServer = app.listen(port, () => {
     console.log(`Server started http://localhost:${port}`);
 })
 
-const webSocketEntryPoint = new WebSocketEntryPoint(httpServer);
-const server = new ChatServer([webSocketEntryPoint]);
+const testEntryPoint = new TestClientEntryPoint("server1");
+const server = new ChatServer([testEntryPoint]);
+
+const testTransport1 = new TestClientTransport(testEntryPoint);
+const testClient1 = await ChatClient.create(testTransport1);
+
+const testTransport2 = new TestClientTransport(testEntryPoint);
+const testClient2 = await ChatClient.create(testTransport2);
+
+const testTransport3 = new TestClientTransport(testEntryPoint);
+const testClient3 = await ChatClient.create(testTransport3);
+
+
+setInterval(() => {
+    const groupID = testClient1.getGroupID([testClient2.fingerprint, testClient3.fingerprint]);
+
+    testClient1.sendChat("Hello!", groupID);
+}, 1000);
+
+
+testClient2.onChat.createListener(chat => {
+    console.log(`Client ${testClient2.fingerprint}: Chat from ${chat.senderFingerprint}: "${chat.message}" GroupID: ${chat.groupID}`);
+})
+testClient3.onChat.createListener(chat => {
+    console.log(`Client ${testClient3.fingerprint}: Chat from ${chat.senderFingerprint}: "${chat.message}" GroupID: ${chat.groupID}`);
+})
+
+// const wss = new WebSocketServer({ server: httpServer });
+//
+// wss.on("connection", (ws) => {
+//     ws.send("Hello World!");
+// })
