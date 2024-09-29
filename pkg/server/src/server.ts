@@ -3,33 +3,89 @@ import express from "express";
 import {ChatServer} from "./chatserver/ChatServer.js";
 import {TestClientTransport} from "./chatserver/testclient/TestClientTransport.js";
 
-import {hello} from "@sp24/common/hello.js";
 import {ChatClient} from "@sp24/common/chatclient/ChatClient.js";
 import {WebSocketEntryPoint} from "./chatserver/websocketserver/WebSocketEntryPoint.js";
 import {webcrypto} from "node:crypto";
-import {PSSGenParams} from "@sp24/common/util/crypto.js";
-import {WebSocketClientTransport} from "@sp24/common/websocket/WebSocketClientTransport.js";
-import {WebSocketTransport} from "@sp24/common/websocket/WebSocketTransport.js";
+import {PEMToKey, PSSGenParams, PSSImportParams} from "@sp24/common/util/crypto.js";
 import {TestEntryPoint} from "./chatserver/testclient/TestEntryPoint.js";
+import * as fs from "node:fs";
+import {NeighbourhoodAllowList} from "./chatserver/NeighbourhoodAllowList.js";
 
+/*
+    ------------------------------
+    Secure Programming Chat Server
+    ------------------------------
+
+    Arguments:
+        node server.js address [port] [privateKeyFile] [publicKeyFile] [neighbourhoodFile]
+
+    - address:              The address used within the OLAF protocol.  Required.
+    - port:                 Port to host server on.                     Default: 3307
+    - privateKeyFile:       PEM PKCS-8 format file.                     Default: generate
+    - publicKeyFile:        PEM SPKI format file.                       Default: generate
+    - neighbourhoodFile:    JSON file specifying the neighbourhood.     Default: No neighbourhood.
+ */
+
+// Get command line arguments.
+const address = process.argv[2];
+const port = process.argv[3] || 3307;
+const privateKeyFile = process.argv[4];
+const publicKeyFile = process.argv[5];
+const neighbourhoodFile = process.argv[6];
 
 const app = express();
-const port = 3307;
 
 app.use(express.static("../client/dist/"));
 
-app.get("/hello", (req: express.Request, res: express.Response) => {
-    return res.status(200).send(hello());
-});
+if (address === undefined) {
+    console.error("Need to provide address")
+    process.exit(-1);
+}
+
+// Keys
+let serverPublicKey: webcrypto.CryptoKey | undefined;
+let serverPrivateKey: webcrypto.CryptoKey | undefined;
+
+if (fs.existsSync(publicKeyFile) && fs.existsSync(privateKeyFile)) {
+    // Load from file
+    serverPrivateKey = await PEMToKey(fs.readFileSync(privateKeyFile).toString(), PSSImportParams);
+    serverPublicKey = await PEMToKey(fs.readFileSync(privateKeyFile).toString(), PSSImportParams);
+}
+
+if (serverPublicKey === undefined || serverPrivateKey === undefined) {
+    // Generate keys
+    const serverKeyPair = await webcrypto.subtle.generateKey(PSSGenParams, true, ["sign", "verify"]);
+
+    serverPublicKey = serverKeyPair.publicKey;
+    serverPrivateKey = serverKeyPair.privateKey;
+}
+
+
+// Neighbourhood
+let neighbourhood: NeighbourhoodAllowList = [];
+if (fs.existsSync(neighbourhoodFile)) {
+    const parsed = JSON.parse(fs.readFileSync(neighbourhoodFile).toString());
+
+    if (parsed instanceof Array) {
+        for (const entry of parsed) {
+            if (typeof entry.address !== "string") break;
+            if (typeof entry.verifyKey !== "string") break;
+
+            neighbourhood.push({
+                address: entry.address,
+                verifyKey: await PEMToKey(entry.verifyKey, PSSImportParams)
+            });
+        }
+    }
+}
 
 const httpServer = app.listen(port, () => {
     console.log(`Server started http://localhost:${port}`);
 });
 
-const serverKeyPair = await webcrypto.subtle.generateKey(PSSGenParams, true, ["sign", "verify"]);
-const wsEntryPoint = new WebSocketEntryPoint(httpServer, []);
-const testEntryPoint = new TestEntryPoint([]);
-const server = new ChatServer("server1", [wsEntryPoint, testEntryPoint], serverKeyPair.privateKey, serverKeyPair.publicKey);
+const wsEntryPoint = new WebSocketEntryPoint(httpServer, neighbourhood);
+const testEntryPoint = new TestEntryPoint(neighbourhood);
+const server = new ChatServer(address, [wsEntryPoint, testEntryPoint], serverPrivateKey, serverPublicKey);
 
 const client1Keys = await webcrypto.subtle.generateKey(PSSGenParams, true, ["sign", "verify"]);
 const testTransport1 = new TestClientTransport(testEntryPoint);

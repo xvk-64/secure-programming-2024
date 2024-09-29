@@ -1,5 +1,5 @@
 // Main logic for server
-import type {IServerEntryPoint} from "./IServerEntryPoint.js";
+import type {EntryPoint} from "./EntryPoint.js";
 import type {IServerToClientTransport} from "./IServerToClientTransport.js";
 import {EventListener} from "@sp24/common/util/EventEmitter.js";
 import {
@@ -23,7 +23,7 @@ export class ChatServer {
     private readonly _verifyKey: webcrypto.CryptoKey;
     private _counter: number = 0;
 
-    private _entryPoints: IServerEntryPoint[];
+    private _entryPoints: EntryPoint[];
 
     private _clients: ConnectedClient[] = [];
 
@@ -209,7 +209,8 @@ export class ChatServer {
         }
     }
 
-    public constructor(address: string, entryPoints: IServerEntryPoint[], signKey: webcrypto.CryptoKey, verifyKey: webcrypto.CryptoKey) {
+
+    public constructor(address: string, entryPoints: EntryPoint[], signKey: webcrypto.CryptoKey, verifyKey: webcrypto.CryptoKey) {
         this.address = address;
 
         this._entryPoints = entryPoints;

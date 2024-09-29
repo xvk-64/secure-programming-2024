@@ -9,6 +9,7 @@ import {
 } from "@sp24/common/messageTypes.js";
 import {EventEmitter} from "@sp24/common/util/EventEmitter.js";
 import {WebSocketTransport} from "@sp24/common/websocket/WebSocketTransport.js";
+import {WebSocketServerToClientTransport} from "./WebSocketServerToClientTransport.js";
 
 export class WebsocketServerToServerTransport implements IServerToServerTransport {
     private _transport: WebSocketTransport;
@@ -45,4 +46,11 @@ export class WebsocketServerToServerTransport implements IServerToServerTranspor
         return this._transport.sendMessage(message);
     }
 
+    public static async connect(URL: string): Promise<WebsocketServerToServerTransport | undefined> {
+        return new Promise((resolve, reject) => {
+            const webSocket = new WebSocket(URL);
+            webSocket.onopen = () => resolve(new WebsocketServerToServerTransport(new WebSocketTransport(webSocket)));
+            webSocket.onerror = () => reject();
+        });
+    }
 }

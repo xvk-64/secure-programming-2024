@@ -4,9 +4,9 @@ import {
     AESGenParams,
     calculateFingerprint,
     OAEPParams,
-    PEMToVerifyKey,
+    PEMToKey,
     PSSParams,
-    verifyKeyToPEM
+    keyToPEM, PSSImportParams
 } from "./util/crypto.js";
 
 const webCrypto = globalThis.crypto.subtle;
@@ -36,7 +36,7 @@ export class HelloData implements IMessageData<Protocol.HelloData> {
 
     async toProtocol(): Promise<Protocol.HelloData> {
         // Export public key.
-        const exportedPEM = await verifyKeyToPEM(this.verifyKey);
+        const exportedPEM = await keyToPEM(this.verifyKey);
 
         return {
             type: "hello",
@@ -45,7 +45,7 @@ export class HelloData implements IMessageData<Protocol.HelloData> {
     }
     static async fromProtocol(protocolData: Protocol.HelloData): Promise<HelloData> {
         // Import the key from the PEM
-        return new HelloData(await PEMToVerifyKey(protocolData.public_key));
+        return new HelloData(await PEMToKey(protocolData.public_key, PSSImportParams));
     }
 }
 export class CleartextChat {
@@ -296,7 +296,7 @@ export class ClientList implements IMessage<Protocol.ClientList> {
         for (const server of this.servers) {
             let resultClients = [];
             for (const key of server.clientVerifyKeys) {
-                resultClients.push(await verifyKeyToPEM(key));
+                resultClients.push(await keyToPEM(key));
             }
 
             resultServers.push({address: server.address, clients: resultClients});
@@ -317,7 +317,7 @@ export class ClientList implements IMessage<Protocol.ClientList> {
         for (const server of protocolData.servers) {
             let keys: CryptoKey[] = [];
             for (const pem of server.clients)
-                keys.push(await PEMToVerifyKey(pem));
+                keys.push(await PEMToKey(pem, PSSImportParams));
 
             servers.push({address: server.address, clientVerifyKeys: keys});
         }
@@ -339,7 +339,7 @@ export class ClientUpdate implements IMessage<Protocol.ClientUpdate> {
         let resultPEM: string[] = [];
 
         for (const key of this.clientVerifyKeys) {
-            resultPEM.push(await verifyKeyToPEM(key));
+            resultPEM.push(await keyToPEM(key));
         }
 
         return {
@@ -352,7 +352,7 @@ export class ClientUpdate implements IMessage<Protocol.ClientUpdate> {
         let keys: CryptoKey[] = [];
 
         for (const pem of protocolMessage.clients) {
-            keys.push(await PEMToVerifyKey(pem));
+            keys.push(await PEMToKey(pem, PSSImportParams));
         }
 
         return new ClientUpdate(keys);

@@ -1,5 +1,5 @@
 import {IServerToServerTransport} from "./IServerToServerTransport.js";
-import {IServerEntryPoint} from "./IServerEntryPoint.js";
+import {EntryPoint} from "./EntryPoint.js";
 import {
     ClientSendable, ClientUpdate, ServerHelloData,
     ServerToClientSendable,
@@ -31,7 +31,7 @@ export class ConnectedServer {
 
     private _counter: number;
 
-    public readonly entryPoint: IServerEntryPoint;
+    public readonly entryPoint: EntryPoint;
 
     public async sendMessage(message: ServerToServerSendable): Promise<void> {
         return await this._transport.sendMessage(message);
@@ -40,7 +40,7 @@ export class ConnectedServer {
     public readonly onMessageReady: EventEmitter<ServerToServerSendable> = new EventEmitter();
     public readonly onDisconnect: EventEmitter<void> = new EventEmitter();
 
-    public constructor(transport: IServerToServerTransport, entryPoint: IServerEntryPoint, neighbourhoodEntry: NeighbourhoodServer, initialCounter: number) {
+    public constructor(transport: IServerToServerTransport, entryPoint: EntryPoint, neighbourhoodEntry: NeighbourhoodServer, initialCounter: number) {
         this._transport = transport;
         this.entryPoint = entryPoint;
         this._neighbourhoodEntry = neighbourhoodEntry;
