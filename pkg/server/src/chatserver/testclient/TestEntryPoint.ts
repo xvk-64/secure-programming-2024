@@ -30,19 +30,17 @@ export class TestEntryPoint implements IServerEntryPoint {
         let connectedTestClient = new ServerToTestClientTransport(clientTransport);
 
         // Wait until hello message
-        const messageListener = connectedTestClient.onReceiveMessage.createListener(async message => {
+        const messageListener = connectedTestClient.onReceiveMessage.createAsyncListener(async message => {
             if (message.type === "signed_data") {
-                const signedDataMessage = message as ClientSendableSignedData;
-
-                if (signedDataMessage.data.type === "hello") {
-                    if (!await signedDataMessage.verify(signedDataMessage.data.verifyKey))
+                if (message.data.type === "hello") {
+                    if (!await message.verify(message.data.verifyKey))
                         // Invalid signature
                         return;
 
                     // Remove listener as we have received the message we want.
                     connectedTestClient.onReceiveMessage.removeListener(messageListener);
 
-                    const client = new ConnectedClient(connectedTestClient, this, signedDataMessage.data.verifyKey, await calculateFingerprint(signedDataMessage.data.verifyKey), signedDataMessage.counter);
+                    const client = new ConnectedClient(connectedTestClient, this, message.data.verifyKey, await calculateFingerprint(message.data.verifyKey), message.counter);
 
                     await this.onClientConnect.dispatch(client);
                 }

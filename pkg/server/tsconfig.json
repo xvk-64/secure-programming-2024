@@ -5,7 +5,9 @@
     "paths": {
       "@sp24/common/*": ["../common/src/*"]
     },
-    "composite": true
+    "composite": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
   },
   "include": ["src"],
   "references": [

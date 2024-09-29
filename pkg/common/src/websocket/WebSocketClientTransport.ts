@@ -1,31 +1,30 @@
-import { EventEmitter } from "@sp24/common/util/EventEmitter.js";
-import { IServerToClientTransport } from "../IServerToClientTransport.js";
 import {
     ChatData,
-    ClientSendable, HelloData,
+    ClientSendable,
+    HelloData,
     PublicChatData,
     ServerToClientSendable,
     SignedData
-} from "@sp24/common/messageTypes.js";
-import {WebSocketTransport} from "@sp24/common/websocket/WebSocketTransport.js";
+} from "../messageTypes.js";
+import { EventEmitter } from "../util/EventEmitter.js";
+import {IChatClientTransport} from "../chatclient/IChatClientTransport.js";
+import {WebSocketTransport} from "./WebSocketTransport.js";
 
-export class WebSocketServerToClientTransport implements IServerToClientTransport {
+export class WebSocketClientTransport implements IChatClientTransport {
     private _transport: WebSocketTransport;
 
-    readonly onReceiveMessage: EventEmitter<ClientSendable> = new EventEmitter();
+    readonly onReceiveMessage: EventEmitter<ServerToClientSendable> = new EventEmitter();
     readonly onDisconnect: EventEmitter<void> = new EventEmitter();
 
     public constructor(transport: WebSocketTransport) {
         this._transport = transport;
 
         const receiveListener = transport.onReceiveMessage.createAsyncListener(async message => {
-            // Filter to only client sendable.
-            if (message.type == "client_list_request")
+            // Filter to only server sendable.
+            if (message.type == "client_list")
                 await this.onReceiveMessage.dispatch(message);
 
             if (message.type == "signed_data") {
-                if (message.data.type == "hello")
-                    await this.onReceiveMessage.dispatch(message as SignedData<HelloData>);
                 if (message.data.type == "chat")
                     await this.onReceiveMessage.dispatch(message as SignedData<ChatData>);
                 if (message.data.type == "public_chat")
@@ -37,7 +36,8 @@ export class WebSocketServerToClientTransport implements IServerToClientTranspor
         }, true);
     }
 
-    async sendMessage(message: ServerToClientSendable): Promise<void> {
+    async sendMessage(message: ClientSendable): Promise<void> {
         await this._transport.sendMessage(message);
     }
+
 }

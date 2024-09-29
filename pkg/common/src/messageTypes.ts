@@ -238,13 +238,20 @@ export class SignedData<TData extends IMessageData<Protocol.SignedDataEntry>> im
         };
     }
     static async fromProtocol(protocolMessage: Protocol.SignedData): Promise<SignedData<IMessageData<Protocol.SignedDataEntry>> | undefined> {
-        let data: IMessageData<Protocol.SignedDataEntry> | undefined;
-
-        switch(protocolMessage.data.type) {
-            case "hello":
-                data = await HelloData.fromProtocol(protocolMessage.data as Protocol.HelloData);
-                break;
-        }
+        let data = await (async () => {
+            switch (protocolMessage.data.type) {
+                case "hello":
+                    return await HelloData.fromProtocol(protocolMessage.data as Protocol.HelloData);
+                case "chat":
+                    return ChatData.fromProtocol(protocolMessage.data as Protocol.ChatData);
+                case "public_chat":
+                    return PublicChatData.fromProtocol(protocolMessage.data as Protocol.PublicChatData);
+                case "server_hello":
+                    return ServerHelloData.fromProtocol(protocolMessage.data as Protocol.ServerHelloData);
+                default:
+                    return undefined;
+            }
+        })();
 
         if (data == undefined)
             // Error

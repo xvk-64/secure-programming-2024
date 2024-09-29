@@ -30,7 +30,7 @@ export class EventEmitter<TData> {
         this.addListener(listener);
         return listener;
     }
-    public createListener(callback: (data: TData) => void, invokeOnce: boolean = false): EventListener<TData> {
+    public createListener(callback: (data: TData) => void | undefined, invokeOnce: boolean = false): EventListener<TData> {
         let listener = new EventListener((data: TData) => Promise.resolve(callback(data)), invokeOnce);
         this.addListener(listener);
         return listener;
