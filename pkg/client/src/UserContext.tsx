@@ -6,7 +6,7 @@ export interface GroupInfo {
 
 export interface Group {
     groupInfo: GroupInfo,
-    chatLog: string[],
+    chatLog: {sender: string, message: string}[],
 }
 
 export interface User {
@@ -28,7 +28,7 @@ export type UserContext = {
     removeFriend: (publicKey: string) => void,
     groups: Group[],
     addGroup: (group: Group) => void,
-    appendMessage: (groupIndex: number, message: string) => void,
+    appendMessage: (groupIndex: number, sender:string, message: string) => void,
     servers: string[],
     addServer: (server: string) => void,
 }
@@ -60,9 +60,9 @@ export const UserProvider = ({ children }: any) => {
     const addGroup = (group: Group) => {
         setGroups(prevGroups => [...prevGroups, group])
     }
-    const appendMessage = (groupIndex: number, message: string) => {
+    const appendMessage = (groupIndex: number, sender: string, message: string) => {
         const newGroups = groups.slice();
-        newGroups[groupIndex].chatLog.push(message);
+        newGroups[groupIndex].chatLog.push({sender, message});
         setGroups(newGroups);
     }
     
