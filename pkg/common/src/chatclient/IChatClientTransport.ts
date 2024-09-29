@@ -7,4 +7,6 @@ export interface IChatClientTransport {
 
     sendMessage(message: ClientSendable): Promise<void>;
     onReceiveMessage: EventEmitter<ServerToClientSendable>;
+    
+    onDisconnect: EventEmitter<void>;
 }
