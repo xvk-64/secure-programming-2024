@@ -1,9 +1,7 @@
 import React, {MutableRefObject, useEffect, useRef, useState} from "react";
-import ChatBox from "./Chatbox";
-import { UserProvider } from "./UserContext";
-import { WebSocketClientTransport } from "@sp24/common/chatclient/WebSocketClientTransport.js";
-import { ChatClient } from "@sp24/common/chatclient/ChatClient.js";
-import { ChatProvider } from "./ChatContext";
+import ChatBox from "./Chatbox.js";
+import { UserProvider } from "./UserContext.js";
+import { ChatProvider } from "./ChatContext.js";
 
 export const App : React.FC = () => {
     useEffect(() => {

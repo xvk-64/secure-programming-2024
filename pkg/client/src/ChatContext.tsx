@@ -1,15 +1,15 @@
 import { ChatClient } from "@sp24/common/chatclient/ChatClient.js";
 import { WebSocketClientTransport } from "@sp24/common/chatclient/WebSocketClientTransport.js";
 import React, { createContext, MutableRefObject, useContext, useEffect, useRef, useState } from "react";
-import { UserContext } from "./UserContext";
+import { UserContext } from "./UserContext.js";
 
 type ChatContext = {
-    sendChat: (group: number, message: string) => void,
+    sendChat: (group: number, message: string) => Promise<void>,
 }
 
 export const ChatContext = createContext<ChatContext | null>(null);
 
-export const ChatProvider = (({ children }) => {
+export const ChatProvider = (({ children }: any) => {
     const {groups, appendMessage} = useContext(UserContext) || {} as UserContext;
     const chatClient: MutableRefObject<ChatClient | null> = useRef(null);
     const [chatClientState, setChatClientState] = useState<ChatClient | null>(null);
@@ -32,7 +32,7 @@ export const ChatProvider = (({ children }) => {
     }, []);
 
     const [chat, setChat] = useState({
-        sendChat: (group: number, message: string) => {},
+        sendChat: (group: number, message: string) => {return Promise.resolve();},
         online: {"you": "localhost"},
     });
 
@@ -46,6 +46,7 @@ export const ChatProvider = (({ children }) => {
                         chatClientState.sendChat(message, groupId);
                         appendMessage(group, chatClientState.fingerprint, message);
                     }
+                    return Promise.resolve();
                 },
                 online: {"you": "localhost"},
             });
