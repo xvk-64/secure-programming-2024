@@ -12,7 +12,7 @@ export class WebSocketEntryPoint implements IServerEntryPoint {
     onClientConnect: EventEmitter<IServerToClientTransport> = new EventEmitter<IServerToClientTransport>();
     onServerConnect: EventEmitter<IServerToServerTransport> = new EventEmitter<IServerToServerTransport>();
     get address(): string {
-        return "wss://localhost:3307/";
+        return "ws://localhost:3307/";
     }
 
     public constructor(httpServer: Server) {

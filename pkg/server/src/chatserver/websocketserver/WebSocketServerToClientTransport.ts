@@ -9,7 +9,7 @@ export class WebSocketServerToClientTransport implements IServerToClientTranspor
     onReceiveMessage: EventEmitter<ClientSendable> = new EventEmitter<ClientSendable>();
 
     sendMessage(message: ServerToClientSendable): Promise<void> {
-        const messageString = JSON.stringify(message);
+        const messageString = JSON.stringify(message.toProtocol());
         this._webSocket.send(messageString);
         return Promise.resolve();
     }
@@ -17,10 +17,11 @@ export class WebSocketServerToClientTransport implements IServerToClientTranspor
     public constructor(webSocket: WebSocket) {
         this._webSocket = webSocket;
         this._webSocket.addEventListener("message", (event) => {
+            // this.onMessage
             try {
                 const message = JSON.parse(event.data);
                 if (message.type === "signed_data" || message.type === "client_list_request")
-                    this.onReceiveMessage.dispatch(event.data as ClientSendable);
+                    this.onReceiveMessage.dispatch(message);
             } catch {}
         });
         this._webSocket.addEventListener("close", (event) => {
