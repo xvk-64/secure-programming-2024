@@ -12,7 +12,6 @@ import {
 } from "@sp24/common/messageTypes.js";
 import {ConnectedClient} from "./ConnectedClient.js";
 import {webcrypto} from "node:crypto";
-import {log} from "node:util";
 import {ConnectedServer} from "./ConnectedServer.js";
 import {IServerToServerTransport} from "./IServerToServerTransport.js";
 import {TestServerToServerTransport} from "./testclient/TestServerToServerTransport.js";

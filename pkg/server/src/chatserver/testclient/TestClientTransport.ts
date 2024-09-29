@@ -5,7 +5,7 @@ import {ClientSendable, ServerToClientSendable} from "@sp24/common/messageTypes.
 
 // Transport layer for testing client implementation on the server side.
 export class TestClientTransport implements IChatClientTransport {
-    readonly onReceiveMessage: EventEmitter<ServerToClientSendable> = new EventEmitter<ServerToClientSendable>();
+    readonly onReceiveMessage: EventEmitter<ServerToClientSendable> = new EventEmitter();
 
     private _serverEntryPoint: TestEntryPoint
 
@@ -15,11 +15,12 @@ export class TestClientTransport implements IChatClientTransport {
         return Promise.resolve();
     }
 
-    readonly onSendMessage: EventEmitter<ClientSendable> = new EventEmitter<ClientSendable>();
-    sendMessage(message: ClientSendable): Promise<void> {
-        this.onSendMessage.dispatch(message);
-        return Promise.resolve();
+    readonly onSendMessage: EventEmitter<ClientSendable> = new EventEmitter();
+    async sendMessage(message: ClientSendable): Promise<void> {
+        await this.onSendMessage.dispatch(message);
     }
+
+    readonly onDisconnect: EventEmitter<void> = new EventEmitter();
 
     constructor(entryPoint: TestEntryPoint) {
         this._serverEntryPoint = entryPoint;

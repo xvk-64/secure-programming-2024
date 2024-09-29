@@ -7,7 +7,7 @@ import {TestClientTransport} from "./chatserver/testclient/TestClientTransport.j
 import {hello} from "@sp24/common/hello.js";
 import {ChatClient} from "@sp24/common/chatclient/ChatClient.js";
 import {webcrypto} from "node:crypto";
-import {PSSGenParams} from "@sp24/common/util/crypto.js";
+import {OAEPGenParams, PSSGenParams} from "@sp24/common/util/crypto.js";
 import {NeighbourhoodAllowList} from "./chatserver/NeighbourhoodAllowList.js";
 import {TestServerToServerTransport} from "./chatserver/testclient/TestServerToServerTransport.js";
 
@@ -49,13 +49,16 @@ await testEntryPoint2.connectToServer(transport2to1, await server2.createServerH
 await testEntryPoint1.connectToServer(transport1to2, await server1.createServerHelloMessage());
 
 const testTransport1 = new TestClientTransport(testEntryPoint1);
-const testClient1 = await ChatClient.create(testTransport1);
+const clientPair1 = await crypto.subtle.generateKey(OAEPGenParams, true, ["encrypt", "decrypt"]);
+const testClient1 = await ChatClient.create(testTransport1, clientPair1.privateKey, clientPair1.publicKey);
 
 const testTransport2 = new TestClientTransport(testEntryPoint2);
-const testClient2 = await ChatClient.create(testTransport2);
+const clientPair2 = await crypto.subtle.generateKey(OAEPGenParams, true, ["encrypt", "decrypt"]);
+const testClient2 = await ChatClient.create(testTransport2, clientPair2.privateKey, clientPair2.publicKey);
 
 const testTransport3 = new TestClientTransport(testEntryPoint1);
-const testClient3 = await ChatClient.create(testTransport3);
+const clientPair3 = await crypto.subtle.generateKey(OAEPGenParams, true, ["encrypt", "decrypt"]);
+const testClient3 = await ChatClient.create(testTransport3, clientPair3.privateKey, clientPair3.publicKey);
 
 
 setInterval(() => {

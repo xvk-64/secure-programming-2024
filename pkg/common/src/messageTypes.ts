@@ -1,6 +1,13 @@
 import  {type Protocol} from "./protocol/messageTypes.js";
 import {decode, encode} from "base64-arraybuffer";
-import {AESGenParams, calculateFingerprint, OAEPParams, PEMToVerifyKey, verifyKeyToPEM} from "./util/crypto.js";
+import {
+    AESGenParams,
+    calculateFingerprint,
+    OAEPParams,
+    PEMToVerifyKey,
+    PSSParams,
+    verifyKeyToPEM
+} from "./util/crypto.js";
 
 const webCrypto = globalThis.crypto.subtle;
 
@@ -198,11 +205,6 @@ export class SignedData<TData extends IMessageData<Protocol.SignedDataEntry>> im
     readonly counter: number;
     readonly signature: ArrayBuffer;
 
-    static readonly signParams: RsaPssParams = {
-        name: "RSA-PSS",
-        saltLength: 32
-    }
-
     private constructor(data: TData, counter: number, signature: ArrayBuffer) {
         this.data = data;
         this.counter = counter;
@@ -213,7 +215,7 @@ export class SignedData<TData extends IMessageData<Protocol.SignedDataEntry>> im
         const payloadString = JSON.stringify(await this.data.toProtocol()) + this.counter.toString();
         const encodedPayload = new TextEncoder().encode(payloadString);
 
-        return await crypto.subtle.verify(SignedData.signParams, verifyKey, this.signature, encodedPayload);
+        return await crypto.subtle.verify(PSSParams, verifyKey, this.signature, encodedPayload);
     }
 
     static async create<TData extends IMessageData<Protocol.SignedDataEntry>>
@@ -222,7 +224,7 @@ export class SignedData<TData extends IMessageData<Protocol.SignedDataEntry>> im
         const payloadString = JSON.stringify(await data.toProtocol()) + counter.toString();
         const encodedPayload = new TextEncoder().encode(payloadString);
 
-        const signature = await webCrypto.sign(SignedData.signParams, signKey, encodedPayload);
+        const signature = await webCrypto.sign(PSSParams, signKey, encodedPayload);
 
         return new SignedData(data, counter, signature);
     }

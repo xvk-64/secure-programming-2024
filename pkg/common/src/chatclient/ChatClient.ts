@@ -74,7 +74,6 @@ export class ChatClient {
                 break;
             case "signed_data":
                 // Signed data from another client
-                let signedDataMessage = message as ServerToClientSendableSignedData;
 
                 // Ugly code ahead
 
@@ -84,18 +83,17 @@ export class ChatClient {
                 for (const fingerprint in this._otherClients) {
                     let client = this._otherClients[fingerprint];
 
-                    if (await client.isValidSignedData(signedDataMessage)) {
+                    if (await client.isValidSignedData(message)) {
                         otherClient = client;
                         break;
                     }
                 }
 
-
                 if (otherClient === undefined)
                     // Not valid signed data for any client we know about.
                     return;
 
-                switch (signedDataMessage.data.type) {
+                switch (message.data.type) {
                     case "chat":
                         let chatMessage = message as SignedData<ChatData>;
 
@@ -140,8 +138,8 @@ export class ChatClient {
         }
     }
 
-    private async sendSignedData<TData extends ClientSendableSignedDataEntry>(data: TData): Promise<void> {
-        const message = await SignedData.create<TData>(data, this._counter++, this._signKey);
+    private async sendSignedData(data: ClientSendableSignedDataEntry): Promise<void> {
+        const message = await SignedData.create(data, this._counter++, this._signKey);
         await this._transport.sendMessage(message);
     }
 
@@ -206,9 +204,7 @@ export class ChatClient {
         await this.sendSignedData(publicChatData);
     }
 
-    static async create(transport: IChatClientTransport): Promise<ChatClient> {
-        // Generate keys
-        const {privateKey, publicKey} = await webCrypto.generateKey(OAEPGenParams, true, ["encrypt", "decrypt"]);
+    static async create(transport: IChatClientTransport, privateKey: CryptoKey, publicKey: CryptoKey): Promise<ChatClient> {
         // Hack to get the same RSA key into both OAEP and PSS
         const exportedPub = await webCrypto.exportKey("spki", publicKey);
         const exportedPriv = await webCrypto.exportKey("pkcs8", privateKey);

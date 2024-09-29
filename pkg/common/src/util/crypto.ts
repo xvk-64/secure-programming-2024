@@ -25,6 +25,10 @@ export const PSSImportParams: RsaHashedImportParams = {
     name: "RSA-PSS",
     hash: "SHA-256"
 }
+export const PSSParams: RsaPssParams = {
+    name: "RSA-PSS",
+    saltLength: 32
+}
 
 export const AESGenParams: AesKeyGenParams = {
     name: "AES-GCM",
