@@ -8,8 +8,6 @@ import {ChatClient} from "@sp24/common/chatclient/ChatClient.js";
 import {WebSocketEntryPoint} from "./chatserver/websocketserver/WebSocketEntryPoint.js";
 import {webcrypto} from "node:crypto";
 import {PSSGenParams} from "@sp24/common/util/crypto.js";
-import {WebSocketClientTransport} from "@sp24/common/websocket/WebSocketClientTransport.js";
-import {WebSocketTransport} from "@sp24/common/websocket/WebSocketTransport.js";
 import {TestEntryPoint} from "./chatserver/testclient/TestEntryPoint.js";
 
 

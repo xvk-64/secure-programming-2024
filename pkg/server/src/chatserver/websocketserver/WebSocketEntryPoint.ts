@@ -1,7 +1,5 @@
 import { EventEmitter } from "@sp24/common/util/EventEmitter.js";
 import { IServerEntryPoint } from "../IServerEntryPoint.js";
-import { IServerToClientTransport } from "../IServerToClientTransport.js";
-import { IServerToServerTransport } from "../IServerToServerTransport.js";
 import { WebSocketServer } from "ws";
 import { Server } from "http";
 import { WebSocketServerToClientTransport } from "./WebSocketServerToClientTransport.js";
@@ -10,9 +8,7 @@ import {ConnectedServer} from "../ConnectedServer.js";
 import {ServerHelloData, SignedData} from "@sp24/common/messageTypes.js";
 import {WebSocketTransport} from "@sp24/common/websocket/WebSocketTransport.js";
 import {calculateFingerprint} from "@sp24/common/util/crypto.js";
-import {WebSocketClientTransport} from "@sp24/common/websocket/WebSocketClientTransport.js";
 import {NeighbourhoodAllowList} from "../NeighbourhoodAllowList.js";
-import {Sign} from "node:crypto";
 import {WebsocketServerToServerTransport} from "./WebsocketServerToServerTransport.js";
 
 export class WebSocketEntryPoint implements IServerEntryPoint {
