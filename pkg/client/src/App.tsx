@@ -34,16 +34,6 @@ export const App : React.FC = () => {
 
 
     return <>
-            <p>
-            Hello, world!<br/>
-            message: {hello()}<br/>
-           
-
-            server: {message}
-            </p>
-
          <ChatWrapper></ChatWrapper>
-      
-        
         </>
 }
