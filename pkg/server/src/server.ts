@@ -12,6 +12,9 @@ import * as fs from "node:fs";
 import {NeighbourhoodAllowList} from "./chatserver/NeighbourhoodAllowList.js";
 import * as readline from "node:readline";
 import {WebsocketServerToServerTransport} from "./chatserver/websocketserver/WebsocketServerToServerTransport.js";
+import cors from "cors";
+import fileUpload from "express-fileupload";
+import url from "url";
 
 /*
     ------------------------------
@@ -36,8 +39,33 @@ const publicKeyFile = process.argv[5];
 const neighbourhoodFile = process.argv[6];
 
 const app = express();
+app.use(cors());
 
 app.use(express.static("../client/dist/"));
+
+
+app.post("/api/upload", (request, response) => {
+    // what do when post request
+    // get file/save
+    
+
+    var body = '';
+    request.on('data', function(data){
+        body += data;
+    });
+
+ 
+
+    var filePath =  '/api/upload';
+    request.on('end', function(){
+        fs.appendFile(filePath, body, function(){
+            response.end("we have received your request");
+        })
+    })
+
+    // response.end("we have received your request");
+
+})
 
 if (address === undefined) {
     console.error("Need to provide address")
