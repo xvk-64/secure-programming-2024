@@ -15,6 +15,8 @@ import {WebsocketServerToServerTransport} from "./chatserver/websocketserver/Web
 import cors from "cors";
 import fileUpload from "express-fileupload";
 import url from "url";
+import bodyParser from "body-parser";
+
 
 /*
     ------------------------------
@@ -43,27 +45,50 @@ app.use(cors());
 
 app.use(express.static("../client/dist/"));
 
+app.use(fileUpload({
+    createParentPath: true
+}));
 
-app.post("/api/upload", (request, response) => {
-    // what do when post request
-    // get file/save
-    
+app.use(cors());
+app.use(bodyParser.json());
 
-    var body = '';
-    request.on('data', function(data){
-        body += data;
-    });
+// body-parser should parse it before the server handles it, file is capped to 100kb unless we change it
+// app.use(express.urlencoded({ extended: false, limit: '45B' })); // doesnt work atm
 
+app.post("/api/upload", async (request, response) => {
  
+    try {
+        if(!request.files) {
+            response.send({
+                status: false,
+                message: 'No file uploaded'
+            });
+            // have yet to test, can't upload files on free vers of http clients
+        // } else if (request.files.truncated) {
+        //     response.send({
+        //         status: false,
+        //         message: 'File exceebs 400Mb size limit'
+        //     });
+        //     // can move the file with mv() but not sure where to move
+        
 
-    var filePath =  '/api/upload';
-    request.on('end', function(){
-        fs.appendFile(filePath, body, function(){
-            response.end("we have received your request");
-        })
-    })
+        } else {
+            //send response
+            response.send({
+                status: true,
+                message: 'File uploaded successfully',
+                data: {
+                    name: request.files.name,
+                    size: request.files.size,
+                    mimetype: request.files.mimetype,
+                    
+                }
+            });
+        }
+    } catch (err) {
+        response.status(500).send(err);
+    }
 
-    // response.end("we have received your request");
 
 })
 
