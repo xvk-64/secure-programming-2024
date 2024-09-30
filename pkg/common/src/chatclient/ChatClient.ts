@@ -1,15 +1,15 @@
 import {
-    ChatData, CleartextChat, ClientList,
-    ClientSendableSignedData, ClientSendableSignedDataEntry,
+    ChatData, ClientList,
+    ClientSendableSignedDataEntry,
     HelloData,
     PublicChatData,
-    ServerToClientSendable, ServerToClientSendableSignedData,
+    ServerToClientSendable,
     SignedData
 } from "../messageTypes.js";
 import {IChatClientTransport} from "./IChatClientTransport.js";
-import {EventListener, EventEmitter} from "../util/EventEmitter.js";
+import {EventEmitter} from "../util/EventEmitter.js";
 import {OtherClient} from "./OtherClient.js";
-import {calculateFingerprint, OAEPGenParams, OAEPImportParams, PSSImportParams} from "../util/crypto.js";
+import {calculateFingerprint, OAEPImportParams, PSSImportParams} from "../util/crypto.js";
 
 const webCrypto = globalThis.crypto.subtle;
 
@@ -53,7 +53,6 @@ export class ChatClient {
         return result;
     }
 
-    private _receiveListener: EventListener<ServerToClientSendable>;
     private async onReceiveMessage(message: ServerToClientSendable) {
         switch (message.type) {
             case "client_list":
@@ -112,7 +111,7 @@ export class ChatClient {
                         const otherParticipants = [cleartext.senderFingerprint, ...cleartext.recipientFingerprints].filter(fingerprint => fingerprint != this.fingerprint);
 
                         // Do something with the cleartext.
-                        await this.onChat.dispatch({
+                        this.onChat.dispatch({
                             message: cleartext.message,
                             groupID: this.getGroupID(otherParticipants),
                             senderFingerprint: cleartext.senderFingerprint,
@@ -130,7 +129,7 @@ export class ChatClient {
                             return;
 
                         // Do something with public chat.
-                        await this.onPublicChat.dispatch({
+                        this.onPublicChat.dispatch({
                             message: publicChatMessage.data.message,
                             senderFingerprint: publicChatMessage.data.senderFingerprint
                         });
@@ -154,13 +153,19 @@ export class ChatClient {
         fingerprint: string
     ) {
         this._transport = transport;
-        this._receiveListener = this._transport.onReceiveMessage.createAsyncListener(message => this.onReceiveMessage(message));
 
         this._verifyKey = verifyKey;
         this._signKey = signKey;
         this._encryptKey = encryptKey;
         this._decryptKey = decryptKey;
         this.fingerprint = fingerprint
+
+
+        const receiveListener = this._transport.onReceiveMessage.createListener(message => this.onReceiveMessage(message));
+
+        this._transport.onDisconnect.createListener(() => {
+            this._transport.onReceiveMessage.removeListener(receiveListener);
+        })
     }
 
     public readonly onChat: EventEmitter<Chat> = new EventEmitter();

@@ -1,10 +1,10 @@
 import {IServerToServerTransport} from "../IServerToServerTransport.js";
 import {ServerToServerSendable} from "@sp24/common/messageTypes.js";
-import {EventEmitter} from "@sp24/common/util/EventEmitter.js";
+import {EventEmitter, EventQueue} from "@sp24/common/util/EventEmitter.js";
 
 export class TestServerToServerTransport implements IServerToServerTransport {
     onDisconnect: EventEmitter<void> = new EventEmitter();
-    onReceiveMessage: EventEmitter<ServerToServerSendable> = new EventEmitter();
+    onReceiveMessage: EventQueue<ServerToServerSendable> = new EventQueue();
 
     private _otherTransport: TestServerToServerTransport | undefined;
 

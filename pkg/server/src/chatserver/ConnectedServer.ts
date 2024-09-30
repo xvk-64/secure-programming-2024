@@ -6,7 +6,7 @@ import {
     ServerToServerSendable,
     ServerToServerSendableSignedData, SignedData
 } from "@sp24/common/messageTypes.js";
-import {EventEmitter} from "@sp24/common/util/EventEmitter.js";
+import {EventEmitter, EventQueue} from "@sp24/common/util/EventEmitter.js";
 import {webcrypto} from "node:crypto";
 import {IServerToClientTransport} from "./IServerToClientTransport.js";
 import {NeighbourhoodAllowList, NeighbourhoodServer} from "./NeighbourhoodAllowList.js";
@@ -37,7 +37,7 @@ export class ConnectedServer {
         return await this._transport.sendMessage(message);
     }
 
-    public readonly onMessageReady: EventEmitter<ServerToServerSendable> = new EventEmitter();
+    public readonly onMessageReady: EventQueue<ServerToServerSendable> = new EventQueue();
     public readonly onDisconnect: EventEmitter<void> = new EventEmitter();
 
     public constructor(transport: IServerToServerTransport, entryPoint: EntryPoint, neighbourhoodEntry: NeighbourhoodServer, initialCounter: number) {
@@ -46,7 +46,9 @@ export class ConnectedServer {
         this._neighbourhoodEntry = neighbourhoodEntry;
         this._counter = initialCounter;
 
-        const messageListener = this._transport.onReceiveMessage.createAsyncListener(async message => {
+        const messageListener = this._transport.onReceiveMessage.createListener(async message => {
+            // console.log(message);
+
             // Validate signed data
             if (message.type == "signed_data") {
                 const signedDataMessage = message as ServerToServerSendableSignedData;
@@ -68,9 +70,9 @@ export class ConnectedServer {
             await this.onMessageReady.dispatch(message);
         });
 
-        this._transport.onDisconnect.createAsyncListener(async () => {
+        this._transport.onDisconnect.createListener(() => {
             this._transport.onReceiveMessage.removeListener(messageListener);
-            await this.onDisconnect.dispatch();
+            this.onDisconnect.dispatch();
         })
     }
 }

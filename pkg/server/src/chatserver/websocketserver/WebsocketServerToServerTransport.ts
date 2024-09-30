@@ -7,7 +7,7 @@ import {
     ServerToServerSendable,
     SignedData
 } from "@sp24/common/messageTypes.js";
-import {EventEmitter} from "@sp24/common/util/EventEmitter.js";
+import {EventEmitter, EventQueue} from "@sp24/common/util/EventEmitter.js";
 import {WebSocketTransport} from "@sp24/common/websocket/WebSocketTransport.js";
 import {WebSocketServerToClientTransport} from "./WebSocketServerToClientTransport.js";
 import * as ws from "ws"
@@ -16,12 +16,12 @@ export class WebsocketServerToServerTransport implements IServerToServerTranspor
     private _transport: WebSocketTransport;
 
     readonly onDisconnect: EventEmitter<void> = new EventEmitter();
-    readonly onReceiveMessage: EventEmitter<ServerToServerSendable> = new EventEmitter();
+    readonly onReceiveMessage: EventQueue<ServerToServerSendable> = new EventQueue();
 
     public constructor(transport: WebSocketTransport) {
         this._transport = transport;
 
-        const receiveListener = transport.onReceiveMessage.createAsyncListener(async message => {
+        const receiveListener = transport.onReceiveMessage.createListener(async message => {
             // Filter to only server to server sendable.
             if (message.type == "client_update")
                 await this.onReceiveMessage.dispatch(message);

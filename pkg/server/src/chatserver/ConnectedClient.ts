@@ -6,7 +6,7 @@ import {
     ServerToClientSendable,
     SignedData
 } from "@sp24/common/messageTypes.js";
-import {EventEmitter} from "@sp24/common/util/EventEmitter.js";
+import {EventEmitter, EventQueue} from "@sp24/common/util/EventEmitter.js";
 import {encode} from "base64-arraybuffer";
 import {webcrypto} from "node:crypto";
 import {EntryPoint} from "./EntryPoint.js";
@@ -21,7 +21,7 @@ export class ConnectedClient {
     public async sendMessage(message: ServerToClientSendable): Promise<void> {
         return await this._transport.sendMessage(message);
     }
-    public readonly onMessageReady: EventEmitter<ClientSendable> = new EventEmitter();
+    public readonly onMessageReady: EventQueue<ClientSendable> = new EventQueue();
     public readonly onDisconnect: EventEmitter<void> = new EventEmitter();
 
     private _counter: number;
@@ -44,7 +44,7 @@ export class ConnectedClient {
         this._fingerprint = initialFingerprint;
         this._counter = initialCounter;
 
-        const receiveListener = this._transport.onReceiveMessage.createAsyncListener(async message => {
+        const receiveListener = this._transport.onReceiveMessage.createListener(async message => {
             // Validate signed data.
             if (message.type == "signed_data") {
                 const signedDataMessage = message as ClientSendableSignedData;

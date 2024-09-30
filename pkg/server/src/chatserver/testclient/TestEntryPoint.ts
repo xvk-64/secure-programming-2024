@@ -17,7 +17,7 @@ export class TestEntryPoint extends EntryPoint {
         let connectedTestClient = new ServerToTestClientTransport(clientTransport);
 
         // Wait until hello message
-        const messageListener = connectedTestClient.onReceiveMessage.createAsyncListener(async message => {
+        const messageListener = connectedTestClient.onReceiveMessage.createListener(async message => {
             if (message.type === "signed_data") {
                 if (message.data.type === "hello") {
                     if (!await message.verify(message.data.verifyKey))

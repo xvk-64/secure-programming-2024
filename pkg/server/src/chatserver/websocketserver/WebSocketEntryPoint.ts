@@ -16,7 +16,7 @@ export class WebSocketEntryPoint extends EntryPoint {
 
     private purgatory(transport: WebSocketTransport) {
         // Wait for a hello message...
-        const messageListener = transport.onReceiveMessage.createAsyncListener(async message => {
+        const messageListener = transport.onReceiveMessage.createListener(async message => {
             if (message.type == "signed_data") {
                 if (message.data.type === "hello") {
                     // It's a client!

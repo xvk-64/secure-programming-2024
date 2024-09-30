@@ -10,7 +10,6 @@ import {PEMToKey, PSSGenParams, PSSImportParams} from "@sp24/common/util/crypto.
 import {TestEntryPoint} from "./chatserver/testclient/TestEntryPoint.js";
 import * as fs from "node:fs";
 import {NeighbourhoodAllowList} from "./chatserver/NeighbourhoodAllowList.js";
-import * as readline from "node:readline";
 import {WebsocketServerToServerTransport} from "./chatserver/websocketserver/WebsocketServerToServerTransport.js";
 
 /*
