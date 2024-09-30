@@ -35,11 +35,11 @@ export const AESGenParams: AesKeyGenParams = {
     length: 128
 }
 
-export async function verifyKeyToPEM(key: CryptoKey) {
-    const exported: ArrayBuffer = await webCrypto.exportKey("spki", key);
+export async function keyToPEM(key: CryptoKey) {
+    const exported: ArrayBuffer = await webCrypto.exportKey(key.type == "public" ? "spki" : "pkcs8", key);
     return "-----BEGIN PUBLIC KEY-----\n" + encode(exported) + "\n-----END PUBLIC KEY-----";
 }
-export async function PEMToVerifyKey(pem: string) {
+export async function PEMToKey(pem: string, isPrivate: boolean, importParams: RsaHashedImportParams) {
     const pemHeader = "-----BEGIN PUBLIC KEY-----\n";
     const pemFooter = "\n-----END PUBLIC KEY-----";
     const pemContents = pem.substring(
@@ -47,12 +47,12 @@ export async function PEMToVerifyKey(pem: string) {
         pem.length - pemFooter.length,
     );
 
-    const spki = decode(pemContents);
+    const keyContents = decode(pemContents);
 
-    return await webCrypto.importKey("spki", spki, PSSImportParams, true, ["verify"]);
+    return await webCrypto.importKey(isPrivate ? "pkcs8" : "spki", keyContents, importParams, true, isPrivate ? ["sign"] : ["verify"]);
 }
 export async function calculateFingerprint(key: CryptoKey) {
-    let exportedKeyBuffer = new TextEncoder().encode(await verifyKeyToPEM(key));
+    let exportedKeyBuffer = new TextEncoder().encode(await keyToPEM(key));
     let fingerprintBuffer = await crypto.subtle.digest("SHA-256", exportedKeyBuffer);
     return encode(fingerprintBuffer);
 }

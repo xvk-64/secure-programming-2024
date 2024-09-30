@@ -1,3 +1,5 @@
+import {Mutex} from "async-mutex";
+
 export class EventListener<TData> {
     private readonly _callback: (data: TData) => Promise<void>;
 
@@ -12,18 +14,29 @@ export class EventListener<TData> {
 }
 
 export class EventEmitter<TData> {
-    private _listeners: EventListener<TData>[] = [];
+    protected _listeners: EventListener<TData>[] = [];
+
+    private _dispatchBuffer: TData[] = [];
+    private _mutex = new Mutex();
 
     public async dispatch(data: TData): Promise<void> {
-        const promises = this._listeners.map(listener => listener.invoke(data));
+        await this._mutex.runExclusive(async () => {
+            const promises = this._listeners.map(listener => listener.invoke(data));
 
-        await Promise.all(promises);
+            await Promise.all(promises);
 
-        this._listeners = this._listeners.filter(listener => !listener.invokeOnce);
+            this._listeners = this._listeners.filter(listener => !listener.invokeOnce);
+        })
     }
 
     public addListener(listener: EventListener<TData>): void {
         this._listeners.push(listener);
+
+        let front = this._dispatchBuffer.pop();
+        while (front != undefined) {
+            this.dispatch(front);
+            front = this._dispatchBuffer.pop();
+        }
     }
     public createAsyncListener(callback: (data: TData) => Promise<void>, invokeOnce: boolean = false): EventListener<TData> {
         let listener = new EventListener(callback, invokeOnce);

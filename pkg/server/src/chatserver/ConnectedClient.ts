@@ -9,14 +9,14 @@ import {
 import {EventEmitter} from "@sp24/common/util/EventEmitter.js";
 import {encode} from "base64-arraybuffer";
 import {webcrypto} from "node:crypto";
-import {IServerEntryPoint} from "./IServerEntryPoint.js";
+import {EntryPoint} from "./EntryPoint.js";
 import {calculateFingerprint} from "@sp24/common/util/crypto.js";
 
 // A server-side view of a client connected to it.
 export class ConnectedClient {
     private _transport: IServerToClientTransport;
 
-    public readonly entryPoint: IServerEntryPoint;
+    public readonly entryPoint: EntryPoint;
 
     public async sendMessage(message: ServerToClientSendable): Promise<void> {
         return await this._transport.sendMessage(message);
@@ -36,7 +36,7 @@ export class ConnectedClient {
         return this._fingerprint;
     }
 
-    public constructor(transport: IServerToClientTransport, entryPoint: IServerEntryPoint, initialVerifyKey: webcrypto.CryptoKey, initialFingerprint: string, initialCounter: number) {
+    public constructor(transport: IServerToClientTransport, entryPoint: EntryPoint, initialVerifyKey: webcrypto.CryptoKey, initialFingerprint: string, initialCounter: number) {
         this._transport = transport;
         this.entryPoint = entryPoint;
 

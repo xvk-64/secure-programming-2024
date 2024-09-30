@@ -1,5 +1,5 @@
 // Main logic for server
-import type {IServerEntryPoint} from "./IServerEntryPoint.js";
+import type {EntryPoint} from "./EntryPoint.js";
 import type {IServerToClientTransport} from "./IServerToClientTransport.js";
 import {EventListener} from "@sp24/common/util/EventEmitter.js";
 import {
@@ -23,7 +23,7 @@ export class ChatServer {
     private readonly _verifyKey: webcrypto.CryptoKey;
     private _counter: number = 0;
 
-    private _entryPoints: IServerEntryPoint[];
+    private _entryPoints: EntryPoint[];
 
     private _clients: ConnectedClient[] = [];
 
@@ -75,19 +75,6 @@ export class ChatServer {
         // Send client list
         const clientListMessage = new ClientList(clientList);
         this._clients.forEach(client => client.sendMessage(clientListMessage));
-    }
-
-    private async relayMessage(message: ServerToClientSendable & ServerToServerSendable, destinationAddress: string[] | "all") {
-        if (destinationAddress === "all") {
-            // Relay to all clients
-
-
-        } else {
-            // Relay to specific servers
-
-
-        }
-
     }
 
     private onClientMessage(client: ConnectedClient, message: ClientSendable) {
@@ -157,13 +144,13 @@ export class ChatServer {
 
         this._neighbourhoodServers[server.neighbourhoodEntry.address] = server;
 
-        // Reciprocate the connection with another server_hello.
-        const serverHelloMessage = await this.createServerHelloMessage();
-        await server.sendMessage(serverHelloMessage);
-
         const messageListener = server.onMessageReady.createAsyncListener(async message => {
             await this.onServerMessage(server, message);
         });
+
+        // Reciprocate the connection with another server_hello.
+        const serverHelloMessage = await this.createServerHelloMessage();
+        await server.sendMessage(serverHelloMessage);
 
         // Request client update
         await server.sendMessage(new ClientUpdateRequest());
@@ -175,6 +162,7 @@ export class ChatServer {
     }
 
     private async onServerMessage(server: ConnectedServer, message: ServerToServerSendable) {
+        // console.log(message);
         switch (message.type) {
             case "signed_data":
                 switch (message.data.type) {
@@ -195,6 +183,7 @@ export class ChatServer {
                 }
                 break;
             case "client_update_request":
+                // console.log(message)
                 // We need to send a client update.
 
                 const clientUpdateMessage = new ClientUpdate(this._clients.map(client => client.verifyKey));
@@ -209,7 +198,8 @@ export class ChatServer {
         }
     }
 
-    public constructor(address: string, entryPoints: IServerEntryPoint[], signKey: webcrypto.CryptoKey, verifyKey: webcrypto.CryptoKey) {
+
+    public constructor(address: string, entryPoints: EntryPoint[], signKey: webcrypto.CryptoKey, verifyKey: webcrypto.CryptoKey) {
         this.address = address;
 
         this._entryPoints = entryPoints;

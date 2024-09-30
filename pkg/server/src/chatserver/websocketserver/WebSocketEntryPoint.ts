@@ -1,6 +1,6 @@
 import { EventEmitter } from "@sp24/common/util/EventEmitter.js";
-import { IServerEntryPoint } from "../IServerEntryPoint.js";
-import { WebSocketServer } from "ws";
+import { EntryPoint } from "../EntryPoint.js";
+import { WebSocket, WebSocketServer } from "ws";
 import { Server } from "http";
 import { WebSocketServerToClientTransport } from "./WebSocketServerToClientTransport.js";
 import {ConnectedClient} from "../ConnectedClient.js";
@@ -11,12 +11,8 @@ import {calculateFingerprint} from "@sp24/common/util/crypto.js";
 import {NeighbourhoodAllowList} from "../NeighbourhoodAllowList.js";
 import {WebsocketServerToServerTransport} from "./WebsocketServerToServerTransport.js";
 
-export class WebSocketEntryPoint implements IServerEntryPoint {
+export class WebSocketEntryPoint extends EntryPoint {
     private readonly _webSocketServer;
-    readonly onClientConnect: EventEmitter<ConnectedClient> = new EventEmitter();
-    readonly onServerConnect: EventEmitter<ConnectedServer> = new EventEmitter();
-
-    private _neighbourhood: NeighbourhoodAllowList;
 
     private purgatory(transport: WebSocketTransport) {
         // Wait for a hello message...
@@ -68,10 +64,11 @@ export class WebSocketEntryPoint implements IServerEntryPoint {
     }
 
     public constructor(httpServer: Server, neighbourhood: NeighbourhoodAllowList) {
-        this._webSocketServer = new WebSocketServer({server: httpServer});
-        this._neighbourhood = neighbourhood;
+        super(neighbourhood);
 
-        this._webSocketServer.on("connection", (webSocket: WebSocket) => {
+        this._webSocketServer = new WebSocketServer({server: httpServer});
+
+        this._webSocketServer.on("connection", (webSocket: globalThis.WebSocket) => {
             this.purgatory(new WebSocketTransport(webSocket));
         });
     }
