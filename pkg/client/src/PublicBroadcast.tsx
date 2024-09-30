@@ -23,7 +23,7 @@ export default function PublicBroadcast() {
         <h4 className="heading">Public Broadcast</h4>
         <div className="chatDiv">
             <p>Will send an unencrypted message to ALL connected clients. Careful!</p><br/>
-            <p>Messages recently broadcast by you:</p>
+            <p>Messages recently broadcast:</p>
             <div className="broadcastDiv">
                 {sentMessages}
             </div>

@@ -98,7 +98,7 @@ export default function SideBarList({setGroupID, setIsVisible}) {
     return (
         <>
         <div>
-            <button onClick={() => setIsVisible(4)}>Broadcast Public Message</button>
+            <button onClick={() => setIsVisible(4)}>Public Broadcasts</button>
             <h4 className="heading">Chats: {groupCounter} <button onClick={() => setIsVisible(1)}>+</button></h4>
             <div className="sidebarSubDiv">
                 {groupList}
