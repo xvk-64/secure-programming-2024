@@ -5,6 +5,7 @@
     "paths": {
       "@sp24/common/*": ["../common/src/*"]
     },
+    "composite": true,
     "lib": ["dom"],
     "jsx": "react"
   },
