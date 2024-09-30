@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "start": "node ./dist/src/server.js",
     "build": "tsc -b",
     "dev": "tsx --watch ./src/server.ts devserver",
     "clean": "node ./_clean.mjs"

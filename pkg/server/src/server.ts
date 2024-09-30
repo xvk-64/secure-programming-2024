@@ -10,6 +10,8 @@ import {PEMToKey, PSSGenParams, PSSImportParams} from "@sp24/common/util/crypto.
 import {TestEntryPoint} from "./chatserver/testclient/TestEntryPoint.js";
 import * as fs from "node:fs";
 import {NeighbourhoodAllowList} from "./chatserver/NeighbourhoodAllowList.js";
+import * as readline from "node:readline";
+import {WebsocketServerToServerTransport} from "./chatserver/websocketserver/WebsocketServerToServerTransport.js";
 
 /*
     ------------------------------
@@ -48,8 +50,8 @@ let serverPrivateKey: webcrypto.CryptoKey | undefined;
 
 if (fs.existsSync(publicKeyFile) && fs.existsSync(privateKeyFile)) {
     // Load from file
-    serverPrivateKey = await PEMToKey(fs.readFileSync(privateKeyFile).toString(), PSSImportParams);
-    serverPublicKey = await PEMToKey(fs.readFileSync(privateKeyFile).toString(), PSSImportParams);
+    serverPrivateKey = await PEMToKey(fs.readFileSync(privateKeyFile).toString(), true, PSSImportParams);
+    serverPublicKey = await PEMToKey(fs.readFileSync(publicKeyFile).toString(), false, PSSImportParams);
 }
 
 if (serverPublicKey === undefined || serverPrivateKey === undefined) {
@@ -63,6 +65,7 @@ if (serverPublicKey === undefined || serverPrivateKey === undefined) {
 
 // Neighbourhood
 let neighbourhood: NeighbourhoodAllowList = [];
+let URLs: string[] = [];
 if (fs.existsSync(neighbourhoodFile)) {
     const parsed = JSON.parse(fs.readFileSync(neighbourhoodFile).toString());
 
@@ -70,11 +73,18 @@ if (fs.existsSync(neighbourhoodFile)) {
         for (const entry of parsed) {
             if (typeof entry.address !== "string") break;
             if (typeof entry.verifyKey !== "string") break;
+            if (typeof entry.URL !== "string") break;
+
+            if (entry.address === address)
+                // Don't add our own entry.
+                continue;
 
             neighbourhood.push({
                 address: entry.address,
-                verifyKey: await PEMToKey(entry.verifyKey, PSSImportParams)
+                verifyKey: await PEMToKey(entry.verifyKey, false, PSSImportParams)
             });
+
+            URLs.push(entry.URL);
         }
     }
 }
@@ -91,6 +101,16 @@ const client1Keys = await webcrypto.subtle.generateKey(PSSGenParams, true, ["sig
 const testTransport1 = new TestClientTransport(testEntryPoint);
 const testClient1 = await ChatClient.create(testTransport1, client1Keys.privateKey, client1Keys.publicKey);
 
+// Try connecting to other servers
+for (const URL of URLs) {
+    const transport = await WebsocketServerToServerTransport.connect(URL);
+
+    if (transport !== undefined) {
+        console.log(`Connecting to ${URL}`)
+        await wsEntryPoint.connectToServer(transport, await server.createServerHelloMessage())
+    }
+}
+
 setInterval(() => {
     testClient1.sendPublicChat("Yay!");
 }, 1000);
@@ -101,9 +121,3 @@ testClient1.onPublicChat.createListener(message => {
 testClient1.onChat.createListener(message => {
     console.log(`message: ${message.message} from ${message.senderFingerprint} ${message.groupID}`)
 })
-
-// const wss = new WebSocketServer({ server: httpServer });
-//
-// wss.on("connection", (ws) => {
-//     ws.send("Hello World!");
-// })

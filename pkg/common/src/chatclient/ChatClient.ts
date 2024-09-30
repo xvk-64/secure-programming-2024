@@ -57,6 +57,8 @@ export class ChatClient {
     private async onReceiveMessage(message: ServerToClientSendable) {
         switch (message.type) {
             case "client_list":
+                // console.log(message);
+
                 // Client list from the server
                 let clientListMessage = message as ClientList;
 

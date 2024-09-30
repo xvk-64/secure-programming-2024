@@ -77,19 +77,6 @@ export class ChatServer {
         this._clients.forEach(client => client.sendMessage(clientListMessage));
     }
 
-    private async relayMessage(message: ServerToClientSendable & ServerToServerSendable, destinationAddress: string[] | "all") {
-        if (destinationAddress === "all") {
-            // Relay to all clients
-
-
-        } else {
-            // Relay to specific servers
-
-
-        }
-
-    }
-
     private onClientMessage(client: ConnectedClient, message: ClientSendable) {
         let logMessage = `Client message from ${client.fingerprint}: ${message.type} `;
 
@@ -157,13 +144,13 @@ export class ChatServer {
 
         this._neighbourhoodServers[server.neighbourhoodEntry.address] = server;
 
-        // Reciprocate the connection with another server_hello.
-        const serverHelloMessage = await this.createServerHelloMessage();
-        await server.sendMessage(serverHelloMessage);
-
         const messageListener = server.onMessageReady.createAsyncListener(async message => {
             await this.onServerMessage(server, message);
         });
+
+        // Reciprocate the connection with another server_hello.
+        const serverHelloMessage = await this.createServerHelloMessage();
+        await server.sendMessage(serverHelloMessage);
 
         // Request client update
         await server.sendMessage(new ClientUpdateRequest());
@@ -175,6 +162,7 @@ export class ChatServer {
     }
 
     private async onServerMessage(server: ConnectedServer, message: ServerToServerSendable) {
+        // console.log(message);
         switch (message.type) {
             case "signed_data":
                 switch (message.data.type) {
@@ -195,6 +183,7 @@ export class ChatServer {
                 }
                 break;
             case "client_update_request":
+                // console.log(message)
                 // We need to send a client update.
 
                 const clientUpdateMessage = new ClientUpdate(this._clients.map(client => client.verifyKey));

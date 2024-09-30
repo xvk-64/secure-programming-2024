@@ -36,6 +36,8 @@ if (!fs.existsSync(outDir)) {
     fs.mkdirSync(outDir);
 }
 
+let neighbourhood: any[] = [];
+
 for (let i = 0; i < numKeys; i++) {
     const keyPair = await globalThis.crypto.subtle.generateKey(PSSGenParams, true, ["sign", "verify"]);
 
@@ -43,5 +45,13 @@ for (let i = 0; i < numKeys; i++) {
     const privatePEM = await keyToPEM(keyPair.privateKey);
 
     fs.writeFileSync(path.join(outDir, "key"+i+"public.spki.pem"), publicPEM);
-    fs.writeFileSync(path.join(outDir, "key"+i+"public.pkcs8.pem"), privatePEM);
+    fs.writeFileSync(path.join(outDir, "key"+i+"private.pkcs8.pem"), privatePEM);
+
+    neighbourhood.push({
+        address: "server"+i,
+        verifyKey: publicPEM,
+        URL: "ws://localhost:" + (3300 + i)
+    });
 }
+
+fs.writeFileSync(path.join(outDir, "neighbourhood.json"), JSON.stringify(neighbourhood));
