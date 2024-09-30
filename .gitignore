@@ -7,6 +7,7 @@ node_modules
 dist
 dist-ssr
 *.local
+**/generated_keys/
 
 # Editor directories and files
 .vscode/*

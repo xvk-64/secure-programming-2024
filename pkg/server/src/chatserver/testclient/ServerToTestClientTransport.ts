@@ -9,16 +9,14 @@ export class ServerToTestClientTransport implements IServerToClientTransport {
     onDisconnect: EventEmitter<void> = new EventEmitter<void>();
     onReceiveMessage: EventEmitter<ClientSendable> = new EventEmitter<ClientSendable>();
 
-    public readonly identifier = "Test Client";
-
-    sendMessage(message: ServerToClientSendable): Promise<void> {
-        this._testClientTransport.onReceiveMessage.dispatch(message);
+    async sendMessage(message: ServerToClientSendable): Promise<void> {
+        await this._testClientTransport.onReceiveMessage.dispatch(message);
 
         return Promise.resolve();
     }
 
     public constructor(testClientTransport: TestClientTransport) {
         this._testClientTransport = testClientTransport;
-        testClientTransport.onSendMessage.createListener((message: ClientSendable) => this.onReceiveMessage.dispatch(message));
+        testClientTransport.onSendMessage.createAsyncListener((message: ClientSendable) => this.onReceiveMessage.dispatch(message));
     }
 }
