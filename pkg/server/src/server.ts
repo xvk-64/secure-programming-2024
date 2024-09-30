@@ -111,6 +111,8 @@ for (const URL of URLs) {
     }
 }
 
+// Any servers which we aren't now connected to will have to connect to us later.
+
 setInterval(() => {
     testClient1.sendPublicChat("Yay!");
 }, 1000);
