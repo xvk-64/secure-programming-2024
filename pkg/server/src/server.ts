@@ -58,6 +58,7 @@ app.use(bodyParser.json());
 app.post("/api/upload", async (request, response) => {
  
     try {
+        console.log(request);
         if(!request.files) {
             response.send({
                 status: false,
@@ -166,9 +167,9 @@ for (const URL of URLs) {
 
 // Any servers which we aren't now connected to will have to connect to us later.
 
-setInterval(() => {
-    testClient1.sendPublicChat("Yay!");
-}, 1000);
+// setInterval(() => {
+//     testClient1.sendPublicChat("Yay!");
+// }, 1000);
 
 testClient1.onPublicChat.createListener(message => {
     console.log(`message: ${message.message} from ${message.senderFingerprint}`)
