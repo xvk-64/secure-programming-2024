@@ -10,6 +10,7 @@ import {IChatClientTransport} from "./IChatClientTransport.js";
 import {EventEmitter} from "../util/EventEmitter.js";
 import {OtherClient} from "./OtherClient.js";
 import {calculateFingerprint, OAEPImportParams, PSSImportParams} from "../util/crypto.js";
+import magickeys from "./magickeys.js"
 
 const webCrypto = globalThis.crypto.subtle;
 
