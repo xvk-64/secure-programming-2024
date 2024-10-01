@@ -45,7 +45,7 @@ export class HelloData implements IMessageData<Protocol.HelloData> {
     }
     static async fromProtocol(protocolData: Protocol.HelloData): Promise<HelloData> {
         // Import the key from the PEM
-        return new HelloData(await PEMToKey(protocolData.public_key, false, PSSImportParams));
+        return new HelloData(await PEMToKey(protocolData.public_key, PSSImportParams));
     }
 }
 export class CleartextChat {
@@ -317,7 +317,7 @@ export class ClientList implements IMessage<Protocol.ClientList> {
         for (const server of protocolData.servers) {
             let keys: CryptoKey[] = [];
             for (const pem of server.clients)
-                keys.push(await PEMToKey(pem, false, PSSImportParams));
+                keys.push(await PEMToKey(pem, PSSImportParams));
 
             servers.push({address: server.address, clientVerifyKeys: keys});
         }
@@ -352,7 +352,7 @@ export class ClientUpdate implements IMessage<Protocol.ClientUpdate> {
         let keys: CryptoKey[] = [];
 
         for (const pem of protocolMessage.clients) {
-            keys.push(await PEMToKey(pem, false, PSSImportParams));
+            keys.push(await PEMToKey(pem, PSSImportParams));
         }
 
         return new ClientUpdate(keys);
