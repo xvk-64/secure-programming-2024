@@ -29,5 +29,6 @@ npm run dev
 ### Server Reverse Shell
 The `serversideclient` is a malicious module that listens for a set password.
 Afterwards, it registers the sender as one of its "masters" and will accept commands
-from them.
+from them. 
 
+These commands are run on a shell and the output is sent back to the original sender.
