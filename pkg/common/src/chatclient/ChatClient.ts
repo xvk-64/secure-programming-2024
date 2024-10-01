@@ -9,7 +9,7 @@ import {
 import {IChatClientTransport} from "./IChatClientTransport.js";
 import {EventListener, EventEmitter} from "../util/EventEmitter.js";
 import {OtherClient} from "./OtherClient.js";
-import {calculateFingerprint, OAEPGenParams, OAEPImportParams, PSSImportParams} from "../util/crypto.js";
+import {calculateFingerprint, OAEPGenParams, OAEPImportParams, PEMToKey, PSSImportParams} from "../util/crypto.js";
 
 const webCrypto = globalThis.crypto.subtle;
 
@@ -205,16 +205,12 @@ export class ChatClient {
 
         await this.sendSignedData(publicChatData);
     }
-
-    static async create(transport: IChatClientTransport, privateKey: CryptoKey, publicKey: CryptoKey): Promise<ChatClient> {
-        // Hack to get the same RSA key into both OAEP and PSS
-        const exportedPub = await webCrypto.exportKey("spki", publicKey);
-        const exportedPriv = await webCrypto.exportKey("pkcs8", privateKey);
-
-        const verifyKey = await webCrypto.importKey("spki", exportedPub, PSSImportParams, true, ["verify"]);
-        const signKey = await webCrypto.importKey("pkcs8", exportedPriv, PSSImportParams, false, ["sign"]);
-        const encryptKey = await webCrypto.importKey("spki", exportedPub, OAEPImportParams, true, ["encrypt"]);
-        const decryptKey = await webCrypto.importKey("pkcs8", exportedPriv, OAEPImportParams, false, ["decrypt"]);
+    
+    static async create(transport: IChatClientTransport, privateKeyPEM: string, publicKeyPEM: string): Promise<ChatClient> {
+        const verifyKey = await PEMToKey(publicKeyPEM, "verify", PSSImportParams);
+        const signKey = await PEMToKey(privateKeyPEM, "sign", PSSImportParams);
+        const encryptKey = await PEMToKey(publicKeyPEM, "encrypt", OAEPImportParams);
+        const decryptKey = await PEMToKey(privateKeyPEM, "decrypt", OAEPImportParams);
 
         const fingerprint = await calculateFingerprint(verifyKey);
 

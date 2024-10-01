@@ -1,39 +1,64 @@
 import { ChatClient } from "@sp24/common/chatclient/ChatClient.js";
-import { WebSocketClientTransport } from "@sp24/common/chatclient/WebSocketClientTransport.js";
+import { WebSocketTransport } from "@sp24/common/websocket/WebSocketTransport.js";
 import React, { createContext, MutableRefObject, useContext, useEffect, useRef, useState } from "react";
 import { UserContext } from "./UserContext.js";
+import { WebSocketClientTransport } from "./client/WebSocketClientTransport.js";
 
 type ChatContext = {
     sendChat: (group: number, message: string) => Promise<void>,
+    online: {[key: string]: string},
+    ready: boolean,
+    changeServer: (serverIndex: number) => void,
 }
 
 export const ChatContext = createContext<ChatContext | null>(null);
 
 export const ChatProvider = (({ children }: any) => {
-    const {groups, appendMessage} = useContext(UserContext) || {} as UserContext;
+    const {exists, groups, appendMessage, appendPublicMessage, servers, privKeyPEM, pubKeyPEM} = useContext(UserContext) || {} as UserContext;
     const chatClient: MutableRefObject<ChatClient | null> = useRef(null);
     const [chatClientState, setChatClientState] = useState<ChatClient | null>(null);
-    useEffect(() => {  
-        const webSocketClientTransport = new WebSocketClientTransport();
-        (async () => {
-            if(webSocketClientTransport) {
-                chatClient.current = await ChatClient.create(webSocketClientTransport);
-                chatClient.current.onChat.createListener((data) => {
-                    console.log("received chat");
-                    console.log(JSON.stringify(data));
-                });
-                chatClient.current.onPublicChat.createListener((data) => {
-                    console.log("received public chat");
-                    console.log(JSON.stringify(data));
-                });
-                setChatClientState(chatClient.current);
-            }
-        })();
-    }, []);
+    const [ready, setReady] = useState(false);
+    const [connectedServer, setConnectedServer] = useState(0);
+    const [connectionState, setConnectionState] = useState<"none" | "created" | "connected" | "failed">("none");
+    const webSocketClientTransport = useRef<WebSocketClientTransport | null>(null);
+    useEffect(() => {
+        if(exists) {
+            setConnectionState("created");
+            WebSocketClientTransport.connect(servers[connectedServer]).then((value) => {
+                webSocketClientTransport.current = value;
+                setConnectionState("connected");
+            }, (reason) => {
+                setConnectionState("failed");
+            });
+        }
+    }, [connectedServer]);
 
-    const [chat, setChat] = useState({
-        sendChat: (group: number, message: string) => {return Promise.resolve();},
+    useEffect(() => {
+        if(webSocketClientTransport.current && connectionState === "connected") {
+            (async () => {
+                if(webSocketClientTransport.current && privKeyPEM && pubKeyPEM) {
+                    chatClient.current = await ChatClient.create(webSocketClientTransport.current, privKeyPEM, pubKeyPEM);
+                    chatClient.current.onChat.createListener((data) => {
+                        groups.forEach((value, index) => {
+                            if(value.groupInfo.fingerprint === data.groupID)
+                                appendMessage(index, data.senderFingerprint, data.message);
+                        });
+                    });
+                    chatClient.current.onPublicChat.createListener((data) => {
+                        appendPublicMessage(data.senderFingerprint, data.message);
+                    });
+                    setChatClientState(chatClient.current);
+                    setReady(true);
+                }
+            })();
+        }
+    }, [connectionState]);
+
+    const [chat, setChat] = useState<ChatContext>({
+        sendChat: (group: number, message: string) => {return Promise.reject();},
         online: {"you": "localhost"},
+        ready: false,
+        changeServer: setConnectedServer,
     });
 
     useEffect(() => {
@@ -49,9 +74,11 @@ export const ChatProvider = (({ children }: any) => {
                     return Promise.resolve();
                 },
                 online: {"you": "localhost"},
+                ready: ready,
+                changeServer: setConnectedServer,
             });
         }
-    }, [chatClientState]);
+    }, [chatClientState, ready]);
     const ret = chat;
     return <ChatContext.Provider value={ret}>{children}</ChatContext.Provider>
 });

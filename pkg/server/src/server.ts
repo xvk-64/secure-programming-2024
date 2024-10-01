@@ -6,7 +6,7 @@ import {TestClientTransport} from "./chatserver/testclient/TestClientTransport.j
 import {ChatClient} from "@sp24/common/chatclient/ChatClient.js";
 import {WebSocketEntryPoint} from "./chatserver/websocketserver/WebSocketEntryPoint.js";
 import {webcrypto} from "node:crypto";
-import {PEMToKey, PSSGenParams, PSSImportParams} from "@sp24/common/util/crypto.js";
+import {keyToPEM, PEMToKey, PSSGenParams, PSSImportParams} from "@sp24/common/util/crypto.js";
 import {TestEntryPoint} from "./chatserver/testclient/TestEntryPoint.js";
 import * as fs from "node:fs";
 import {NeighbourhoodAllowList} from "./chatserver/NeighbourhoodAllowList.js";
@@ -50,8 +50,8 @@ let serverPrivateKey: webcrypto.CryptoKey | undefined;
 
 if (fs.existsSync(publicKeyFile) && fs.existsSync(privateKeyFile)) {
     // Load from file
-    serverPrivateKey = await PEMToKey(fs.readFileSync(privateKeyFile).toString(), true, PSSImportParams);
-    serverPublicKey = await PEMToKey(fs.readFileSync(publicKeyFile).toString(), false, PSSImportParams);
+    serverPrivateKey = await PEMToKey(fs.readFileSync(privateKeyFile).toString(), "sign", PSSImportParams);
+    serverPublicKey = await PEMToKey(fs.readFileSync(publicKeyFile).toString(), "verify", PSSImportParams);
 }
 
 if (serverPublicKey === undefined || serverPrivateKey === undefined) {
@@ -81,7 +81,7 @@ if (fs.existsSync(neighbourhoodFile)) {
 
             neighbourhood.push({
                 address: entry.address,
-                verifyKey: await PEMToKey(entry.verifyKey, false, PSSImportParams)
+                verifyKey: await PEMToKey(entry.verifyKey, "verify", PSSImportParams)
             });
 
             URLs.push(entry.URL);
@@ -98,8 +98,10 @@ const testEntryPoint = new TestEntryPoint(neighbourhood);
 const server = new ChatServer(address, [wsEntryPoint, testEntryPoint], serverPrivateKey, serverPublicKey);
 
 const client1Keys = await webcrypto.subtle.generateKey(PSSGenParams, true, ["sign", "verify"]);
+const client1PublicPEM = await keyToPEM(client1Keys.publicKey);
+const client1PrivatePEM = await keyToPEM(client1Keys.privateKey);
 const testTransport1 = new TestClientTransport(testEntryPoint);
-const testClient1 = await ChatClient.create(testTransport1, client1Keys.privateKey, client1Keys.publicKey);
+const testClient1 = await ChatClient.create(testTransport1, client1PrivatePEM, client1PublicPEM);
 
 // Try connecting to other servers
 for (const URL of URLs) {
