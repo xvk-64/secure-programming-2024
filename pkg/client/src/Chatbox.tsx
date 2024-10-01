@@ -1,7 +1,7 @@
 import React, { ReactElement, useContext, useState } from 'react'
+import {UserContext} from "./UserContext.js";
+import {ChatContext} from "./ChatContext.js";
 
-import { User, UserContext } from './UserContext'
-import { ChatContext } from './ChatContext';
 
 export default function ChatBox(){
     const {groups} = useContext(UserContext) || {} as UserContext;

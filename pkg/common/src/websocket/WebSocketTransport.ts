@@ -17,6 +17,10 @@ export class WebSocketTransport {
         this._webSocket.onclose = (event: CloseEvent) => {this.onDisconnect.dispatch()};
     }
 
+    disconnect() {
+        this._webSocket.close();
+    }
+
     private async onMessage(message: string) {
         // console.log(message);
 

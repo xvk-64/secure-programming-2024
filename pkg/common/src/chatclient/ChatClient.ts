@@ -206,6 +206,11 @@ export class ChatClient {
         await this.sendSignedData(publicChatData);
     }
 
+    // Disconnect the client. After running this you have to make a new client.
+    public disconnect() {
+        this._transport.disconnect();
+    }
+
     static async create(transport: IChatClientTransport, privateKey: CryptoKey, publicKey: CryptoKey): Promise<ChatClient> {
         // Hack to get the same RSA key into both OAEP and PSS
         const exportedPub = await webCrypto.exportKey("spki", publicKey);

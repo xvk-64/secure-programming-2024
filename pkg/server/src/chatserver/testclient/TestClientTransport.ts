@@ -1,5 +1,5 @@
 import {EventEmitter} from "@sp24/common/util/EventEmitter.js"
-import type {TestEntryPoint} from "./TestEntryPoint.js";
+import  {TestEntryPoint} from "./TestEntryPoint.js";
 import {IChatClientTransport} from "@sp24/common/chatclient/IChatClientTransport.js";
 import {ClientSendable, ServerToClientSendable} from "@sp24/common/messageTypes.js";
 
@@ -15,6 +15,10 @@ export class TestClientTransport implements IChatClientTransport {
     }
 
     readonly onDisconnect: EventEmitter<void> = new EventEmitter();
+
+    disconnect(): void {
+        this.onDisconnect.dispatch();
+    }
 
     constructor(entryPoint: TestEntryPoint) {
         this._serverEntryPoint = entryPoint;

@@ -8,6 +8,7 @@ import {
     ServerToClientSendable,
     SignedData
 } from "@sp24/common/messageTypes.js";
+import * as URL from "node:url";
 
 
 export class WebSocketClientTransport implements IChatClientTransport {
@@ -38,6 +39,10 @@ export class WebSocketClientTransport implements IChatClientTransport {
 
     async sendMessage(message: ClientSendable): Promise<void> {
         await this._transport.sendMessage(message);
+    }
+
+    disconnect() {
+        this._transport.disconnect();
     }
 
     public static async connect(URL: string): Promise<WebSocketClientTransport | undefined> {
