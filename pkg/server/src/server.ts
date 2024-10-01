@@ -49,8 +49,8 @@ let serverPrivateKey: webcrypto.CryptoKey | undefined;
 
 if (fs.existsSync(publicKeyFile) && fs.existsSync(privateKeyFile)) {
     // Load from file
-    serverPrivateKey = await PEMToKey(fs.readFileSync(privateKeyFile).toString(), true, PSSImportParams);
-    serverPublicKey = await PEMToKey(fs.readFileSync(publicKeyFile).toString(), false, PSSImportParams);
+    serverPrivateKey = await PEMToKey(fs.readFileSync(privateKeyFile).toString(), PSSImportParams);
+    serverPublicKey = await PEMToKey(fs.readFileSync(publicKeyFile).toString(), PSSImportParams);
 }
 
 if (serverPublicKey === undefined || serverPrivateKey === undefined) {
@@ -80,7 +80,7 @@ if (fs.existsSync(neighbourhoodFile)) {
 
             neighbourhood.push({
                 address: entry.address,
-                verifyKey: await PEMToKey(entry.verifyKey, false, PSSImportParams)
+                verifyKey: await PEMToKey(entry.verifyKey, PSSImportParams)
             });
 
             URLs.push(entry.URL);
