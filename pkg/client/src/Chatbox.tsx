@@ -1,11 +1,11 @@
-import React, { ReactElement, useContext, useState } from 'react'
+import React, { ReactElement, useContext, useEffect, useState } from 'react'
 
 import { UserContext } from './UserContext.js'
 import { ChatContext } from './ChatContext.js';
 
 export default function ChatBox(){
-    const {groups} = useContext(UserContext) || {} as UserContext;
-    const {sendChat} = useContext(ChatContext) || {sendChat: (group, message) => {}, online: {"you":"server"}};
+    const {groups, addGroup} = useContext(UserContext) || {} as UserContext;
+    const {sendChat, ready} = useContext(ChatContext) || {sendChat: (group, message) => {}, online: {"you":"server"}};
     const [groupId, setGroupId] = useState(0);
     const [message, setMessage] = useState("");
     const [groupIdDraft, setGroupIdDraft] = useState("");
@@ -14,10 +14,12 @@ export default function ChatBox(){
     const idInput = <input type="text" onChange={(event) => {setGroupIdDraft(event.target.value)}}></input>
     const messageInput = <input type="text" onChange={(event) => {setMessage(event.target.value)}}></input>
     return <>
+        <p>{JSON.stringify(ready)}</p>
         {idInput}
         <button onClick={() => {setGroupId(Number(groupIdDraft));}}>groupId</button>
         {messageInput}
-        <button onClick={() => {sendChat(groupId, message); console.log(message);}}>message</button>
+        <button onClick={() => {sendChat(groupId, message);}}>message</button>
         {messages}
+        <button onClick={() => {addGroup({users: ["TEST1", "TEST2"], fingerprint:"tttt"})}}>add</button>
     </>
 }

@@ -1,7 +1,7 @@
 import { PEMToKey } from "@sp24/common/util/crypto.js";
 import React, { createContext, useEffect, useState } from "react";
 
-export interface GroupInfo {
+export type GroupInfo = {
     users: string[],
     fingerprint: string,
 }
@@ -11,12 +11,12 @@ type ChatMessage = {
     message: string,
 }
 
-export interface Group {
+export type Group = {
     groupInfo: GroupInfo,
     chatLog: ChatMessage[],
 }
 
-export interface User {
+export type User = {
     // the user's keys
     privKeyPEM: string,
     pubKeyPEM: string,
@@ -29,49 +29,55 @@ export interface User {
     servers: string[],
 }
 
+/*** for using UserContext ****/
 export type UserContext = {
+    // if there is a user loaded
     exists: boolean,
+    // their public and private key
     privKeyPEM: string | null,
     pubKeyPEM: string | null,
+    // for changing the current user
     setUser: (user: User) => void,
+    // the map from fingerprints to nicknames
     friends: Map<string, string>,
-    updateFriend: (publicKey: string, newUsername: string) => void,
-    removeFriend: (publicKey: string) => void,
+    updateFriend: (fingerprint: string, newUsername: string) => void,
+    removeFriend: (fingerprint: string) => void,
+    // the groups, including their chat logs
+    // see the Group type and its sub types
     groups: Group[],
-    addGroup: (group: Group) => void,
+    addGroup: (groupInfo: GroupInfo) => void,
     appendMessage: (groupIndex: number, sender: string, message: string) => void,
     appendPublicMessage: (sender: string, message: string) => void,
+    // the list of servers that the client will connect to
     servers: string[],
     addServer: (server: string) => void,
 }
 
-// TODO: map out this type
 export const UserContext: React.Context<UserContext | null> = createContext<UserContext | null>(null);
 
-// TODO: what is this type?
 export const UserProvider = ({ children }: any) => {
     const [loaded, setLoaded] = useState(false);
     const [exists, setExists] = useState(false);
 
     const [friends, setFriends] = useState(new Map<string, string>());
-    const updateFriend = (publicKey: string, newUsername: string) => {
+    const updateFriend = (fingerprint: string, newUsername: string) => {
         setFriends(prevFriends => {
             const newMap = new Map(prevFriends);
-            newMap.set(publicKey, newUsername);
+            newMap.set(fingerprint, newUsername);
             return newMap;
         });
     } // check for name collision
-    const removeFriend = (publicKey: string) => {
+    const removeFriend = (fingerprint: string) => {
         setFriends(prevFriends => {
             const newMap = new Map(prevFriends);
-            newMap.delete(publicKey);
+            newMap.delete(fingerprint);
             return newMap;
         });
     }
     
     const [groups, setGroups] = useState<Group[]>([]);
-    const addGroup = (group: Group) => {
-        setGroups(prevGroups => [...prevGroups, group])
+    const addGroup = (groupInfo: GroupInfo) => {
+        setGroups((prevGroups) => {return [...prevGroups, {groupInfo: groupInfo, chatLog: []}]});
     }
     const appendMessage = (groupIndex: number, sender: string, message: string) => {
         const newGroups = groups.slice();
@@ -111,7 +117,7 @@ export const UserProvider = ({ children }: any) => {
             let localGroups = localStorage.getItem("groups");
             if(localGroups) {setGroups(JSON.parse(localGroups));}
             let localPublicGroup = localStorage.getItem("publicGroup");
-            if(localPublicGroup) {setGroups(JSON.parse(localPublicGroup));}
+            if(localPublicGroup) {setPublicGroup(JSON.parse(localPublicGroup));}
             let localServers = localStorage.getItem("servers");
             if(localServers) {setServers(JSON.parse(localServers));}
             setExists(true);
@@ -120,8 +126,9 @@ export const UserProvider = ({ children }: any) => {
     }, []);
 
     useEffect(() => {
-        if(loaded)
-            localStorage.setItem("friends", JSON.stringify(friends));
+        if(loaded) {
+            localStorage.setItem("friends", JSON.stringify(Object.fromEntries(friends.entries())));
+        }
     }, [friends, loaded]);
     useEffect(() => {
         if(loaded)

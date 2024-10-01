@@ -9,7 +9,7 @@ type ChatContext = {
     sendChat: (group: number, message: string) => Promise<void>,
     sendPublicChat: (message: string) => Promise<void>,
     // list of who is online and on which server
-    online: {[fingerprint: string]: string},
+    online: {[fingerprint: string]: string}, // ***** TODO
     // if the chat is ready for messages to be sent
     ready: boolean,
     // function to change ths serever
@@ -36,7 +36,7 @@ export const ChatProvider = (({ children }: any) => {
                 setConnectionState("failed");
             });
         }
-    }, [connectedServer]);
+    }, [connectedServer, exists]);
 
     useEffect(() => {
         if(webSocketClientTransport.current && connectionState === "connected") {
@@ -73,7 +73,7 @@ export const ChatProvider = (({ children }: any) => {
                 sendChat: async (group: number, message: string) => {
                     const fingerprintList = groups[group].groupInfo.users;
                     if(chatClientState) {
-                        const groupId = await chatClientState.getGroupID(fingerprintList);
+                        const groupId = chatClientState.getGroupID(fingerprintList);
                         chatClientState.sendChat(message, groupId);
                         appendMessage(group, chatClientState.fingerprint, message);
                     }
