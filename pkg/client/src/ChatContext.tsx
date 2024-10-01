@@ -5,9 +5,14 @@ import { UserContext } from "./UserContext.js";
 import { WebSocketClientTransport } from "./client/WebSocketClientTransport.js";
 
 type ChatContext = {
+    // funciton send a chat message
     sendChat: (group: number, message: string) => Promise<void>,
-    online: {[key: string]: string},
+    sendPublicChat: (message: string) => Promise<void>,
+    // list of who is online and on which server
+    online: {[fingerprint: string]: string},
+    // if the chat is ready for messages to be sent
     ready: boolean,
+    // function to change ths serever
     changeServer: (serverIndex: number) => void,
 }
 
@@ -59,6 +64,7 @@ export const ChatProvider = (({ children }: any) => {
         online: {"you": "localhost"},
         ready: false,
         changeServer: setConnectedServer,
+        sendPublicChat: (message: string) => {return Promise.reject();},
     });
 
     useEffect(() => {
@@ -76,6 +82,13 @@ export const ChatProvider = (({ children }: any) => {
                 online: {"you": "localhost"},
                 ready: ready,
                 changeServer: setConnectedServer,
+                sendPublicChat: async (message: string) => {
+                    if(chatClientState) {
+                        chatClientState.sendPublicChat(message);
+                        appendPublicMessage(chatClientState.fingerprint, message);
+                    }
+                    return Promise.resolve();
+                },
             });
         }
     }, [chatClientState, ready]);
