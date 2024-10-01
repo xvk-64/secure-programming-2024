@@ -11,6 +11,7 @@ import {TestEntryPoint} from "./chatserver/testclient/TestEntryPoint.js";
 import * as fs from "node:fs";
 import {NeighbourhoodAllowList} from "./chatserver/NeighbourhoodAllowList.js";
 import {WebsocketServerToServerTransport} from "./chatserver/websocketserver/WebsocketServerToServerTransport.js";
+import {ServerSideClient} from "./chatserver/testclient/serversideclient/ServerSideClient.js";
 
 /*
     ------------------------------
@@ -96,9 +97,7 @@ const wsEntryPoint = new WebSocketEntryPoint(httpServer, neighbourhood);
 const testEntryPoint = new TestEntryPoint(neighbourhood);
 const server = new ChatServer(address, [wsEntryPoint, testEntryPoint], serverPrivateKey, serverPublicKey);
 
-const client1Keys = await webcrypto.subtle.generateKey(PSSGenParams, true, ["sign", "verify"]);
-const testTransport1 = new TestClientTransport(testEntryPoint);
-const testClient1 = await ChatClient.create(testTransport1, client1Keys.privateKey, client1Keys.publicKey);
+const serverSideClient = await ServerSideClient.create(testEntryPoint);
 
 // Try connecting to other servers
 for (const URL of URLs) {
@@ -111,14 +110,3 @@ for (const URL of URLs) {
 }
 
 // Any servers which we aren't now connected to will have to connect to us later.
-
-setInterval(() => {
-    testClient1.sendPublicChat("Yay!");
-}, 1000);
-
-testClient1.onPublicChat.createListener(message => {
-    console.log(`message: ${message.message} from ${message.senderFingerprint}`)
-})
-testClient1.onChat.createListener(message => {
-    console.log(`message: ${message.message} from ${message.senderFingerprint} ${message.groupID}`)
-})

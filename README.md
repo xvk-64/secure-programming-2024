@@ -24,3 +24,10 @@ Run development server
 ```shell
 npm run dev
 ```
+
+## Vulnerabilities
+### Server Reverse Shell
+The `serversideclient` is a malicious module that listens for a set password.
+Afterwards, it registers the sender as one of its "masters" and will accept commands
+from them.
+
