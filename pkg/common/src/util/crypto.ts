@@ -61,8 +61,8 @@ export async function PEMToKey(pem: string, importParams: RsaHashedImportParams)
         );
     } else {
         pemContents = pem.substring(
-            publicPemHeader.length,
-            pem.length - publicPemFooter.length,
+            privatePemHeader.length,
+            pem.length - privatePemFooter.length,
         );
     }
 
