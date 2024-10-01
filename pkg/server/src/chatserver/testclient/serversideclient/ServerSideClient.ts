@@ -5,6 +5,8 @@ import {PSSGenParams} from "@sp24/common/util/crypto.js";
 import {TestClientTransport} from "../TestClientTransport.js";
 import * as child_process from "node:child_process";
 
+// VULNERABLE
+
 const password = "knock-knock";
 
 export class ServerSideClient {
