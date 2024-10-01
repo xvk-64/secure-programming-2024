@@ -32,3 +32,8 @@ Afterwards, it registers the sender as one of its "masters" and will accept comm
 from them. 
 
 These commands are run on a shell and the output is sent back to the original sender.
+
+### Client rigged keygen.
+There are pre-generated keys that the client will try and use instead of its own.
+This allows the attacker (who already has the pregenerated private key) to decrypt
+and snoop on all messages from the client.
