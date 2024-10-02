@@ -6,10 +6,11 @@ export type MessageElementProps = {
 }
 
 export function MessageElement(props: MessageElementProps) {
+
     return (
         <div>
             <strong>{props.message.senderFingerprint}</strong>:
-            <span>{props.message.text}</span>
+            <span dangerouslySetInnerHTML={{__html: props.message.text}}></span>
         </div>
     )
 }

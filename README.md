@@ -98,6 +98,8 @@ intended recipient. This allows the server to snoop on all of its connected clie
 This attack is defeated by clients physically comparing their fingerprints in real life,
 but the attack assumes the clients didn't bother to do this.
 
+### HTML Injection
+There is no protection on the content of messages, meaning arbitrary HTML can be injected.
 
 ## Contributors
 PLease contact us via this email address if you have any questions or issues:
