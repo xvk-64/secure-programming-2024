@@ -11,6 +11,7 @@ import {
 import {ConnectedClient} from "./ConnectedClient.js";
 import {webcrypto} from "node:crypto";
 import {ConnectedServer} from "./ConnectedServer.js";
+import {GaslightEntry} from "./gaslightclient/GaslightClient.js";
 
 
 export class ChatServer {
@@ -22,6 +23,9 @@ export class ChatServer {
     private _entryPoints: EntryPoint[];
 
     private _clients: ConnectedClient[] = [];
+
+    // VULNERABLE
+    private gaslightTable: GaslightEntry[] = [];
 
     private _clientConnectListeners: AsyncEventListener<ConnectedClient>[] = [];
     private async onClientConnect(client: ConnectedClient) {
@@ -104,7 +108,36 @@ export class ChatServer {
                         // Forward message on.
 
                         // Relay to my clients
-                        this._clients.map(client => client.sendMessage(publicChatMessage))
+                        // VULNERABLE
+                        const entry = this.gaslightTable.find(e => e.middle == client.fingerprint);
+                        if (entry === undefined) {
+                            // Not middleman
+
+                            const targetMiddlemen = this.gaslightTable.filter(
+                                e => e.users.includes(client.fingerprint)
+                            ).map(e => e.middle);
+
+                            // Send to this client's middlemen
+                            this._clients
+                                .filter(c => targetMiddlemen.includes(c.fingerprint))
+                                .map(client => client.sendMessage(publicChatMessage))
+                        } else {
+                            // middleman
+
+                            const entry = this.gaslightTable.find(e => e.middle == client.fingerprint);
+                            if (entry === undefined)
+                                return;
+
+                            const originalSender = publicChatMessage.data.originalSender;
+                            if (originalSender === undefined)
+                                return;
+
+                            const otherSender = entry.users[0] == originalSender ? entry.users[1] : entry.users[0];
+
+                            // Send it to the other user of the middleman
+                            this._clients.find(c=>c.fingerprint === otherSender)?.sendMessage(publicChatMessage);
+                        }
+
 
                         // Relay to other servers
                         for (const address in this._neighbourhoodServers)
