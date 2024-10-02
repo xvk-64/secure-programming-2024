@@ -1,9 +1,10 @@
 import React, {useContext, useEffect, useState} from "react";
 import {ClientContext} from "../context/ClientContext.js";
 import {GroupsMenu} from "./Chat/GroupsMenu.js";
-import {MessageGroups, MessageWindow} from "./Chat/MessageWindow.js";
+import {Message, MessageGroups, MessageWindow} from "./Chat/MessageWindow.js";
 import {PublicChat, Chat} from "@sp24/common/chatclient/ChatClient.js";
 import {CleartextChat} from "@sp24/common/messageTypes.js";
+import {MessageBox} from "./Chat/MessageBox.js";
 
 export type ChatProps = {
 
@@ -76,10 +77,27 @@ export function Chat(props: ChatProps) {
         }
     }, [allGroupIDs, messageGroups]);
 
+    function onSendMessage(messageText: string) {
+        if (selectedGroupID === "") {
+            client?.current?.sendPublicChat(messageText);
+        } else {
+            client?.current?.sendChat(messageText, selectedGroupID);
+        }
+
+        const message: Message = {
+            senderFingerprint: fingerprint,
+            text: messageText,
+            key: crypto.randomUUID()
+        };
+
+        setMessageGroups(mg => new Map(mg.set(selectedGroupID, mg.get(selectedGroupID)!.concat(message))));
+    }
+
     return (
         <>
             <span>Logged in as {fingerprint}</span>
             <GroupsMenu selectedGroupID={selectedGroupID} allGroupIDs={allGroupIDs} onSelectGroupID={onSelectGroupID} />
+            <MessageBox onSendMessage={onSendMessage}/>
             <MessageWindow messages={messageGroups.get(selectedGroupID) || []} />
         </>
     )

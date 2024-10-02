@@ -11,7 +11,7 @@ export function Login(props: LoginProps) {
     const [serverAddress, setServerAddress] = useState<string>("ws://localhost:3307");
     const [inputEnabled, setInputEnabled] = useState<boolean>(true);
 
-    const onFormSubmit:  React.FormEventHandler<HTMLFormElement> = e => {
+    const onFormSubmit: React.FormEventHandler<HTMLFormElement> = e => {
         e.preventDefault();
 
         setInputEnabled(false);
