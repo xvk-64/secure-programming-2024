@@ -1,12 +1,16 @@
+#root {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
 .main {
     font-family: "Courier New";
-    width: 1200px; 
+    width: 1200px;
     height: 600px;
     padding: 15px;
     border-style : ridge;
     border-color:rgb(195,196,200);
     border-width: thin;
-    display: block; 
+    display: block;
     float: none;
     flex:1;
     line-height: normal;
@@ -16,25 +20,23 @@
 .leftDiv {
     overflow-y: scroll;
     font-family: "Courier New";
-    width: 220px; 
+    width: 220px;
     height: 570px;
     padding: 10px;
     /* margin: 2px; */
     border-style : ridge;
     border-color:rgb(195,196,200);
     border-width: thin;
-    display: block; 
+    display: block;
     float: left;
     flex:1;
     line-height: normal;
     background-color: rgb(252,252,252)
 }
 
-
-
 .middleDiv {
     font-family: "Courier New";
-    width: 650px; 
+    width: 650px;
     height: 600px;
     /* margin: 20px; */
     margin-left: 20px;
@@ -46,7 +48,7 @@
 .rightDiv {
     overflow-y: scroll;
     font-family: "Courier New";
-    width: 200px; 
+    width: 200px;
     height: 570px;
     padding: 10px;
     /* margin: 2px; */
@@ -55,7 +57,7 @@
     border-style : ridge;
     border-color:rgb(195,196,200);
     border-width: thin;
-    display: block; 
+    display: block;
     float: right;
     /* flex:1; */
     line-height: normal;
@@ -65,7 +67,7 @@
 .chatDiv {
     overflow-y: scroll;
     font-family: "Courier New";
-    width: 650px; 
+    width: 650px;
     height: 450px;
     padding: 10px;
     margin: 2px;
@@ -73,7 +75,7 @@
     border-style : inset;
     border-color:rgb(195,196,200);
     border-width: thin;
-    display: block; 
+    display: block;
     float: left;
     flex:1;
     line-height: normal;
@@ -82,14 +84,14 @@
 
 .createChatDiv {
     font-family: "Courier New";
-    width: 650px; 
+    width: 650px;
     height: 400px;
     padding: 10px;
     margin: 2px;
     border-style : inset;
     border-color:rgb(195,196,200);
     border-width: thin;
-    display: block; 
+    display: block;
     float: left;
     flex:1;
     line-height: normal;
@@ -149,5 +151,5 @@ p.clickable:hover {
     border-style : ridge;
     border-color:rgb(195,196,200);
     border-width: thin;
-    
+
 }
