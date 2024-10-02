@@ -30,6 +30,9 @@ Run development server
 npm run dev
 ```
 
+Your terminal should show you which port the server is currently running on. In most cases,
+it will run on port 3307 or 8000. Navigate to either http://localhost:3307 or http://localhost:8000 to access the app.
+
 ## How to navigate the GUI
 
 # Initial Setup:
