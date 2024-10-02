@@ -1,5 +1,6 @@
 import React, {useContext, useEffect, useState} from "react";
-import { UserContext } from "./UserContext";
+import { UserContext } from "./UserContext.js";
+import {ChatClient} from "@sp24/common/chatclient/ChatClient.js";
 
 
 export function CreateGroupChat() {
@@ -17,7 +18,7 @@ export function CreateGroupChat() {
     // store the members
     const handleSubmit = (event: { preventDefault: () => void; }) => {
         event.preventDefault();
-        addGroup({users: groupMembers, fingerprint: "unused"});
+        addGroup({users: groupMembers, chatLog: [], groupID: ChatClient.calculateGroupID(groupMembers)});
     }
 
     const [fingerprint, setFingerprint] = useState("");

@@ -1,8 +1,8 @@
 import React, {useContext, useState} from "react";
-import { ChatContext } from "./ChatContext";
+import { ChatContext } from "./ChatContext.js";
 
 export type ChatInputProps = {
-    groupId: number,
+    groupId: string,
 }
 export function ChatInput(props: ChatInputProps) {
     const {sendChat} = useContext(ChatContext) || {} as ChatContext;

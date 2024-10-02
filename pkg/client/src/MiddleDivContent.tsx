@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import ChatBox from "./ChatBox.js";
+import {ChatBox} from "./ChatBox.js";
 import {CreateGroupChat} from "./CreateGroupChat.js";
 import {AddFriend} from "./AddFriend.js";
 import AddServer from "./AddServer.js";
@@ -20,7 +20,7 @@ const msgList = [
 ];
 
 export type MiddleDivContentProps  = {
-    groupID: number;
+    groupID: string;
     isVisible: number;
 }
 export function MiddleDivContent(props: MiddleDivContentProps) {

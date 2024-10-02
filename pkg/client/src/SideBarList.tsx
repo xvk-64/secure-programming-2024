@@ -1,6 +1,6 @@
 import React, {useContext, useEffect, useState} from "react";
 import { Dropdown } from "react-bootstrap";
-import { UserContext } from "./UserContext";
+import { UserContext } from "./UserContext.js";
 
 // TODO
 // - import dynamic friend list. get offline/online
@@ -9,7 +9,7 @@ import { UserContext } from "./UserContext";
 // 
 
 export type SideBarListProps = {
-    setGroupID: (id: number) => void;
+    setGroupID: (id: string) => void;
     setIsVisible: (isVisible: number) => void;
 }
 export function SideBarList(props: SideBarListProps) {
@@ -44,7 +44,7 @@ export function SideBarList(props: SideBarListProps) {
         groupList.push(
             <Dropdown.Item as="p" className="clickable" key={index} eventKey={index}
                            onClick={() => {
-                               props.setGroupID(index);
+                               props.setGroupID(group.groupID);
                                props.setIsVisible(0)}}
             >group: {index}</Dropdown.Item>
         );

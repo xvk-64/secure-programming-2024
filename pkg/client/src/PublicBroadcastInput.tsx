@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from "react";
-import { ChatContext } from "./ChatContext";
+import {ChatContext} from "./ChatContext.js";
 
 // TODO
 // - send unencrypted message to all clients

@@ -12,7 +12,8 @@ type ChatMessage = {
 }
 
 export type Group = {
-    groupInfo: GroupInfo,
+    groupID: string;
+    users: string[];
     chatLog: ChatMessage[],
 }
 
@@ -45,8 +46,8 @@ export type UserContext = {
     // the groups, including their chat logs
     // see the Group type and its sub types
     groups: Group[],
-    addGroup: (groupInfo: GroupInfo) => void,
-    appendMessage: (groupIndex: number, sender: string, message: string) => void,
+    addGroup: (group: Group) => void,
+    appendMessage: (groupID: string, sender: string, message: string) => void,
     publicGroup: {sender: string, message: string}[],
     appendPublicMessage: (sender: string, message: string) => void,
     // the list of servers that the client will connect to
@@ -77,12 +78,12 @@ export const UserProvider = ({ children }: any) => {
     }
     
     const [groups, setGroups] = useState<Group[]>([]);
-    const addGroup = (groupInfo: GroupInfo) => {
-        setGroups((prevGroups) => {return [...prevGroups, {groupInfo: groupInfo, chatLog: []}]});
+    const addGroup = (group: Group) => {
+        setGroups((prevGroups) => {return [...prevGroups, group]});
     }
-    const appendMessage = (groupIndex: number, sender: string, message: string) => {
+    const appendMessage = (groupID: string, sender: string, message: string) => {
         const newGroups = groups.slice();
-        newGroups[groupIndex].chatLog.push({sender, message});
+        newGroups.find(g => g.groupID == groupID)?.chatLog.push({sender, message});
         setGroups(newGroups);
     }
     const [publicGroup, setPublicGroup] = useState<ChatMessage[]>([]);

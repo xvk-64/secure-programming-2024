@@ -9,9 +9,12 @@ import { UserContext } from "./UserContext.js";
 // - send message logic
 // - send file logic
 
-export default function ChatBox({groupID}) {
+export type ChatBoxProps = {
+    groupID: string;
+}
+export function ChatBox(props: ChatBoxProps) {
     const {friends, groups} = useContext(UserContext) || {} as UserContext;
-    const msgList = groups[groupID]?.chatLog;
+    const msgList = groups.find(g => g.groupID == props.groupID)?.chatLog;
 
     let chatbox: React.ReactElement[] = [];
     msgList?.forEach((message, index) => {
@@ -22,10 +25,10 @@ export default function ChatBox({groupID}) {
     });
 
     return <>
-        <h4 className="heading">Group {groupID}</h4>
+        <h4 className="heading">Group {props.groupID}</h4>
         <div className="chatDiv">
             {chatbox}
         </div>
-        <ChatInput groupId={groupID}></ChatInput>
+        <ChatInput groupId={props.groupID}></ChatInput>
     </>
 }

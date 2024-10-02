@@ -39,7 +39,7 @@ export class ChatClient {
 
     private _groups: { [groupID: string]: string[]} = {}
 
-    public getGroupID(recipientFingerprints: string[]): string {
+    public static calculateGroupID(recipientFingerprints: string[]): string {
         let sorted = recipientFingerprints.slice().sort();
 
         let result = ""
@@ -48,9 +48,19 @@ export class ChatClient {
             result += sorted[i % sorted.length][i];
         }
 
-        this._groups[result] = sorted;
-
         return result;
+    }
+
+    public getGroupID(recipientFingerprints: string[]): string {
+        const groupID = ChatClient.calculateGroupID(recipientFingerprints);
+
+        this._groups[groupID] = recipientFingerprints;
+
+        return groupID;
+    }
+
+    public getRecipients(groupID: string): string[] {
+        return this._groups[groupID];
     }
 
     private async onReceiveMessage(message: ServerToClientSendable) {

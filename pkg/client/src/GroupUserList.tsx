@@ -1,5 +1,6 @@
 import React, {useContext, useEffect, useState} from "react";
-import { UserContext } from "./UserContext";
+import { UserContext } from "./UserContext.js";
+import {ChatContext} from "./ChatContext.js";
 
 
 // TODO:
@@ -9,16 +10,16 @@ import { UserContext } from "./UserContext";
 
 export type GroupUserListProps = {
     isVisible: number;
-    groupId: number,
+    groupId: string,
 }
 export function GroupUserList(props: GroupUserListProps) {
     let userDisplayOnline: React.ReactElement[] = []
     let userDisplayOffline: React.ReactElement[] = []
 
     const {groups} = useContext(UserContext) || {} as UserContext;
-    
+
     // if user is online, add to one list, otherwise, add to another
-    groups[props.groupId]?.groupInfo.users.forEach((user, index) => {
+    groups.find(g => g.groupID == props.groupId)?.users.forEach((user, index) => {
         // if status true
         if(true) {
             userDisplayOnline.push(<p key={index}>● <strong>{user}</strong></p>);

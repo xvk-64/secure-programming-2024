@@ -8,7 +8,7 @@ import {GroupUserList} from "./GroupUserList.js";
 
 
 export function ChatWrapper() {
-    const [groupID, setGroupID] = useState(0)
+    const [groupID, setGroupID] = useState("")
     const [isVisible, setIsVisible] = useState(0)
 
     return <>

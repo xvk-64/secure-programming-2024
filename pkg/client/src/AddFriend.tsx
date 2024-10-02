@@ -1,5 +1,5 @@
 import React, {useContext, useState} from "react";
-import { UserContext } from "./UserContext";
+import { UserContext } from "./UserContext.js";
 
 // TODO
 // - dynamically update list of friends

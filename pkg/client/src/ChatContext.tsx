@@ -6,7 +6,7 @@ import { OAEPImportParams, PEMToKey } from "@sp24/common/util/crypto.js";
 
 export type ChatContext = {
     // funciton send a chat message
-    sendChat: (group: number, message: string) => Promise<void>,
+    sendChat: (groupID: string, message: string) => Promise<void>,
     sendPublicChat: (message: string) => Promise<void>,
     // list of who is online and on which server
     online: {[fingerprint: string]: string}, // ***** TODO
@@ -48,8 +48,8 @@ export const ChatProvider = (({ children }: any) => {
                     chatClient.current = await ChatClient.create(webSocketClientTransport.current, privKey, pubKey);
                     chatClient.current.onChat.createListener((data) => {
                         groups.forEach((value, index) => {
-                            if(value.groupInfo.fingerprint === data.groupID)
-                                appendMessage(index, data.senderFingerprint, data.message);
+                            if(value.groupID === data.groupID)
+                                appendMessage(value.groupID, data.senderFingerprint, data.message);
                         });
                     });
                     chatClient.current.onPublicChat.createListener((data) => {
@@ -63,7 +63,7 @@ export const ChatProvider = (({ children }: any) => {
     }, [connectionState]);
 
     const [chat, setChat] = useState<ChatContext>({
-        sendChat: (group: number, message: string) => {return Promise.reject();},
+        sendChat: (group: string, message: string) => {return Promise.reject();},
         online: {"you": "localhost"},
         ready: false,
         changeServer: setConnectedServer,
@@ -73,13 +73,14 @@ export const ChatProvider = (({ children }: any) => {
     useEffect(() => {
         if(chatClientState) {
             setChat({
-                sendChat: async (group: number, message: string) => {
-                    const fingerprintList = groups[group].groupInfo.users;
+                sendChat: async (groupID: string, message: string) => {
+                    const fingerprintList = chatClient.current?.getRecipients(groupID);
+
                     if(chatClientState) {
-                        const groupId = chatClientState.getGroupID(fingerprintList);
-                        chatClientState.sendChat(message, groupId);
-                        appendMessage(group, chatClientState.fingerprint, message);
+                        chatClientState.sendChat(message, groupID);
+                        appendMessage(groupID, chatClientState.fingerprint, message);
                     }
+
                     return Promise.resolve();
                 },
                 online: {"you": "localhost"},
