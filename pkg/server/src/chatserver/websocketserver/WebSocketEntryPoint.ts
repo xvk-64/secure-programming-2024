@@ -51,7 +51,7 @@ export class WebSocketEntryPoint extends EntryPoint {
                     // Remove listener as we have received the message we want.
                     transport.onReceiveMessage.removeListener(messageListener);
 
-                    const connectedServer = new ConnectedServer(new WebsocketServerToServerTransport(transport), this, entry, message.counter);
+                    const connectedServer = new ConnectedServer(new WebsocketServerToServerTransport(transport), this, entry, message.counter, this._neighbourhood);
 
                     await this.onServerConnect.dispatch(connectedServer);
                 }

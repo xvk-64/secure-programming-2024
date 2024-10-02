@@ -24,6 +24,10 @@ export type PublicChat = {
     message: string;
     senderFingerprint: string;
 }
+export type OnlineClient = {
+    fingerprint: string;
+    serverAddress: string;
+}
 
 // Class holding most functionality of the client.
 export class ChatClient {
@@ -39,6 +43,17 @@ export class ChatClient {
     public get fingerprint() {return this._fingerprint;}
 
     private _otherClients: { [fingerprint: string]: OtherClient } = {};
+    public getOnlineClients() {
+        let result: OnlineClient[] = [];
+
+        for (const fingerprint in this._otherClients) {
+            const client = this._otherClients[fingerprint];
+
+            result.push({fingerprint: client.fingerprint, serverAddress: client.serverAddress});
+        }
+
+        return result;
+    }
 
     private _groups: { [groupID: string]: string[]} = {}
 
@@ -57,6 +72,8 @@ export class ChatClient {
 
         return result;
     }
+
+    public onClientUpdate: EventEmitter<void> = new EventEmitter<void>();
 
     private async onReceiveMessage(message: ServerToClientSendable) {
         switch (message.type) {
@@ -88,6 +105,8 @@ export class ChatClient {
                         await this.updateKeys(privKey, pubKey);
                     }
                 }
+
+                this.onClientUpdate.dispatch();
                 break;
             case "signed_data":
                 // Signed data from another client

@@ -51,8 +51,8 @@ export class ChatServer {
 
         // Do client_update to other servers
         const clientUpdateMessage = new ClientUpdate(this._clients.map(client => client.verifyKey));
-        for (const address in this._neighbourhoodServers)
-            await this._neighbourhoodServers[address].sendMessage(clientUpdateMessage);
+        for (const server of this._neighbourhoodServers)
+            await server.sendMessage(clientUpdateMessage);
 
         // Handle disconnection
         client.onDisconnect.createListener(() => {
