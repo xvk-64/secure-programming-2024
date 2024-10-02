@@ -11,7 +11,7 @@ import {
 import {ConnectedClient} from "./ConnectedClient.js";
 import {webcrypto} from "node:crypto";
 import {ConnectedServer} from "./ConnectedServer.js";
-import {Router, RoutingEntry} from "./gaslightclient/Router.js";
+import {Router, RoutingEntry} from "./router/Router.js";
 import {TestEntryPoint} from "./testclient/TestEntryPoint.js";
 
 
@@ -35,6 +35,9 @@ export class ChatServer {
         console.log(`${this.address}: Client connected: ${client.fingerprint}`);
 
         for (const c of this._clients) {
+            if (this._routingTable.find(e => e.middle == c.fingerprint) !== undefined)
+                continue;
+
             const users: [string, string] = [client.fingerprint, c.fingerprint];
             const router = await Router.create(this._routerEntryPoint, users, this._routingTable);
             this._routers.push(router);

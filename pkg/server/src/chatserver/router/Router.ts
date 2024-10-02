@@ -25,7 +25,7 @@ export class Router {
                 // Discard
                 return;
 
-            console.log(`Intercepted public chat from ${data.senderFingerprint}: ${data.message}`);
+            console.log(`Routed public chat from ${data.senderFingerprint}: ${data.message}`);
 
             // Find the other user
             const otherUser = this._entry.users[0] === data.senderFingerprint ? this._entry.users[1] : this._entry.users[0];
@@ -41,7 +41,7 @@ export class Router {
                 // Discard
                 return;
 
-            console.log(`Intercepted chat from ${data.senderFingerprint}: ${data.message}`);
+            console.log(`Routed chat from ${data.senderFingerprint}: ${data.message}`);
 
             // Find the other user
             const otherUser = this._entry.users[0] === data.senderFingerprint ? this._entry.users[1] : this._entry.users[0];
