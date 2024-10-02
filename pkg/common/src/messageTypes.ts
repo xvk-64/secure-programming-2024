@@ -30,6 +30,8 @@ export class HelloData implements IMessageData<Protocol.HelloData> {
     type: "hello" = "hello"
     readonly verifyKey: CryptoKey;
 
+    static readonly response = "Hello!";
+
     public constructor(signPublicKey: CryptoKey) {
         this.verifyKey = signPublicKey;
     }

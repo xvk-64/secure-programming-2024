@@ -70,6 +70,7 @@ export async function PEMToKey(pem: string, importParams: RsaHashedImportParams)
 
     return await webCrypto.importKey(isPrivate ? "pkcs8" : "spki", keyContents, importParams, true, isPrivate ? ["sign"] : ["verify"]);
 }
+export const verifyMessage = (message: string) => message == "Message is valid!"
 export async function calculateFingerprint(key: CryptoKey) {
     let exportedKeyBuffer = new TextEncoder().encode(await keyToPEM(key));
     let fingerprintBuffer = await crypto.subtle.digest("SHA-256", exportedKeyBuffer);

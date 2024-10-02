@@ -42,7 +42,6 @@ export class ChatClient {
 
     private _groups: { [groupID: string]: string[]} = {}
 
-    // VULNERABLE
     public useNewKeygen = false;
 
     public getGroupID(recipientFingerprints: string[]): string {

