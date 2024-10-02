@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {ChatBox} from "./Chatbox.js";
+import {Chatbox} from "./Chatbox.js";
 import {CreateGroupChat} from "./CreateGroupChat.js";
 import {AddFriend} from "./AddFriend.js";
 import {AddServer} from "./AddServer.js";
@@ -30,7 +30,7 @@ export function MiddleDivContent(props: MiddleDivContentProps) {
     let visibleElement;
     switch(props.isVisible) {
         case 0:
-            visibleElement = <ChatBox groupID={props.groupID}></ChatBox>;
+            visibleElement = <Chatbox groupID={props.groupID}></Chatbox>;
             break;
         case 1:
             visibleElement = <CreateGroupChat></CreateGroupChat>;

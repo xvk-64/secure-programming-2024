@@ -11,26 +11,22 @@ import {ChatInput} from "./ChatInput.js";
 export type ChatBoxProps = {
     groupID: string;
 }
-export function ChatBox(props: ChatBoxProps) {
-
-
+export function Chatbox(props: ChatBoxProps) {
+    let chatbox: React.ReactElement[] = []
+    // let messageList = ["wowowowoww", "cool message bro", "i like soup"];
     // const msgList = groupList[groupID];
-
+    //
     // msgList.forEach((user, index) => {
     //     chatbox.push(
     //         <p key={index}>[{user.timestamp}] <strong>{user.name}:  </strong>{user.message}</p>
     //     );
     // });
 
-    const onSendMessage = (message: string) => {
-
-    }
-
     return <>
         <h4 className="heading">Group {props.groupID}</h4>
         <div className="chatDiv">
-            {/*{chatbox}*/}
+            {chatbox}
         </div>
-        <ChatInput onSubmit={onSendMessage}></ChatInput>
+        <ChatInput onSubmit={message => {}}></ChatInput>
     </>
 }
