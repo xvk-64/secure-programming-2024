@@ -1,26 +1,20 @@
-import React, {useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import { Dropdown } from 'react-bootstrap';
 import {ServerList} from "./ServerList.js";
 import {CreateGroupChat} from "./CreateGroupChat.js";
+import { UserContext } from "./UserContext.js";
 
 export type DropDownMenusProps = {
-    setGroupID: (groupID: string) => void;
+    setGroupID: (groupID: number) => void;
 }
 export function DropDownMenus(props: DropDownMenusProps){
-      let groupDropdownList: React.ReactElement[] = []
-      // let messageList = ["wowowowoww", "cool message bro", "i like soup"];
-      const groupList = [
-          {groupID: "0", groupName: 'group1'},
-          {groupID: "1", groupName: 'group2'},
-          {groupID: "2", groupName: 'group4'},
-      ];
-      let counter = 1;
-      groupList.forEach((group, index) => {
-          groupDropdownList.push(
-            //  href="#/action-1">
-              <><Dropdown.Item eventKey={index} onClick={() => props.setGroupID(group.groupID)}>{group.groupName}</Dropdown.Item><br/><br/></>
-          );
-      });
+    const {groups} = useContext(UserContext) || {} as UserContext;
+    let groupDropdownList: React.ReactElement[] = [];
+    for(let i = 0; i < groups.length; i++) {
+        groupDropdownList.push(
+            <><Dropdown.Item eventKey={i} onClick={() => props.setGroupID(i)}>group {i}</Dropdown.Item><br/><br/></>
+        );
+    }
 
       const [toggle1, setToggle1] = useState(false);
       const [toggle2, setToggle2] = useState(false);

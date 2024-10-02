@@ -1,5 +1,6 @@
-import React, {useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import { Dropdown } from "react-bootstrap";
+import { UserContext } from "./UserContext";
 
 // TODO
 // - import dynamic friend list. get offline/online
@@ -8,11 +9,11 @@ import { Dropdown } from "react-bootstrap";
 // 
 
 export type SideBarListProps = {
-    setGroupID: (id: string) => void;
+    setGroupID: (id: number) => void;
     setIsVisible: (isVisible: number) => void;
 }
 export function SideBarList(props: SideBarListProps) {
-
+    const {groups, servers} = useContext(UserContext) || {} as UserContext;
     ////////// FRIEND LIST ////////////
     let userDisplayOnline: React.ReactElement[] = []
     let userDisplayOffline: React.ReactElement[] = []
@@ -38,24 +39,18 @@ export function SideBarList(props: SideBarListProps) {
 
     ////// GROUP CHATS //////////////
     let groupList: React.ReactElement[] = []
-    // let messageList = ["wowowowoww", "cool message bro", "i like soup"];
-    const groupsOriginal = [
-        {groupID: "0", groupName: 'group1'},
-        {groupID: "1", groupName: 'group2'},
-        {groupID: "2", groupName: 'group4'},
-    ];
    
-    groupsOriginal.forEach((group, index) => {
+    groups.forEach((group, index) => {
         groupList.push(
             <Dropdown.Item as="p" className="clickable" key={index} eventKey={index}
                            onClick={() => {
-                               props.setGroupID(group.groupID);
+                               props.setGroupID(index);
                                props.setIsVisible(0)}}
-            >{group.groupName}</Dropdown.Item>
+            >group: {index}</Dropdown.Item>
         );
     });
 
-    const groupCounter = groupsOriginal.length;
+    const groupCounter = groups.length;
 
 
     /////// SERVERS //////////
@@ -63,26 +58,21 @@ export function SideBarList(props: SideBarListProps) {
     let onlineServerList: React.ReactElement[] = []
     let offlineServerList: React.ReactElement[] = []
 
-    // let messageList = ["wowowowoww", "cool message bro", "i like soup"];
-    const userServerList = [
-        {name: 'abcdc12', online:true, connected:false},
-        {name: 'zyx256', online:false, connected:false},
-        {name: 'fhds42', online:true, connected:true},
-    ];
+
    // if user is online, add to one list, otherwise, add to another
-    userServerList.forEach((server, index) => {
+    servers.forEach((server, index) => {
         // if status true
-        if (server.connected) {
+        if (index === 0) {
             connectedServer.push(
-                <Dropdown.Item as="p" key={index}>● [<strong>{server.name}</strong>]</Dropdown.Item>
+                <Dropdown.Item as="p" key={index}>● [<strong>{server}</strong>]</Dropdown.Item>
             );
-        } else if (server.online){
+        } else if (server){
             onlineServerList.push(
-                <Dropdown.Item as="p" key={index}>● {server.name}</Dropdown.Item>
+                <Dropdown.Item as="p" key={index}>● {server}</Dropdown.Item>
             );
         } else {
             offlineServerList.push(
-                <Dropdown.Item as="p" key={index}>◌  {server.name}</Dropdown.Item>
+                <Dropdown.Item as="p" key={index}>◌  {server}</Dropdown.Item>
             );
         }
     });
@@ -100,7 +90,7 @@ export function SideBarList(props: SideBarListProps) {
                 <h4 className="heading">Offline: {userDisplayOffline.length}</h4>
                 {userDisplayOffline}
             </div>
-            <h4 className="heading">Server List: {userServerList.length} <button onClick={() => props.setIsVisible(3)}>+</button></h4>
+            <h4 className="heading">Server List: {servers.length} <button onClick={() => props.setIsVisible(3)}>+</button></h4>
             <div className="sidebarSubDiv">
                 <h4 >Online: {userDisplayOnline.length}</h4>
                 {connectedServer}

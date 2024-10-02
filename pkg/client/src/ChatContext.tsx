@@ -1,10 +1,10 @@
 import { ChatClient } from "@sp24/common/chatclient/ChatClient.js";
-import { WebSocketTransport } from "@sp24/common/websocket/WebSocketTransport.js";
 import React, { createContext, MutableRefObject, useContext, useEffect, useRef, useState } from "react";
 import { UserContext } from "./UserContext.js";
 import { WebSocketClientTransport } from "./client/WebSocketClientTransport.js";
+import { OAEPImportParams, PEMToKey } from "@sp24/common/util/crypto.js";
 
-type ChatContext = {
+export type ChatContext = {
     // funciton send a chat message
     sendChat: (group: number, message: string) => Promise<void>,
     sendPublicChat: (message: string) => Promise<void>,
@@ -42,7 +42,10 @@ export const ChatProvider = (({ children }: any) => {
         if(webSocketClientTransport.current && connectionState === "connected") {
             (async () => {
                 if(webSocketClientTransport.current && privKeyPEM && pubKeyPEM) {
-                    chatClient.current = await ChatClient.create(webSocketClientTransport.current, privKeyPEM, pubKeyPEM);
+                    console.log(privKeyPEM);
+                    const privKey = await PEMToKey(privKeyPEM, OAEPImportParams);
+                    const pubKey = await PEMToKey(pubKeyPEM, OAEPImportParams);
+                    chatClient.current = await ChatClient.create(webSocketClientTransport.current, privKey, pubKey);
                     chatClient.current.onChat.createListener((data) => {
                         groups.forEach((value, index) => {
                             if(value.groupInfo.fingerprint === data.groupID)

@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from "react";
-import {Chatbox} from "./Chatbox.js";
+import ChatBox from "./ChatBox.js";
 import {CreateGroupChat} from "./CreateGroupChat.js";
 import {AddFriend} from "./AddFriend.js";
-import {AddServer} from "./AddServer.js";
+import AddServer from "./AddServer.js";
 import {PublicBroadcast} from "./PublicBroadcast.js";
 import {PatBaba} from "./PatBaba.js";
 
@@ -20,7 +20,7 @@ const msgList = [
 ];
 
 export type MiddleDivContentProps  = {
-    groupID: string;
+    groupID: number;
     isVisible: number;
 }
 export function MiddleDivContent(props: MiddleDivContentProps) {
@@ -30,7 +30,7 @@ export function MiddleDivContent(props: MiddleDivContentProps) {
     let visibleElement;
     switch(props.isVisible) {
         case 0:
-            visibleElement = <Chatbox groupID={props.groupID}></Chatbox>;
+            visibleElement = <ChatBox groupID={props.groupID}></ChatBox>;
             break;
         case 1:
             visibleElement = <CreateGroupChat></CreateGroupChat>;
@@ -39,7 +39,7 @@ export function MiddleDivContent(props: MiddleDivContentProps) {
             visibleElement = <AddFriend></AddFriend>;
             break;
         case 3:
-            visibleElement = <AddServer onSubmit={onAddServer}></AddServer>;
+            visibleElement = <AddServer></AddServer>;
             break;
         case 4:
             visibleElement = <PublicBroadcast></PublicBroadcast>;

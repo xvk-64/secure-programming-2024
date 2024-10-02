@@ -1,4 +1,5 @@
-import React, {useEffect, useState} from "react";
+import React, {useContext, useState} from "react";
+import { UserContext } from "./UserContext";
 
 // TODO
 // - dynamically update list of friends
@@ -21,42 +22,37 @@ export function AddFriend() {
         setFingerprint(e.target.value);
     }
 
+    const {friends, updateFriend} = useContext(UserContext) || {} as UserContext;
+    
     // store friends
-    const handleSubmit = (event: { preventDefault: () => void; }) => {
-      event.preventDefault();
-    //   alert(inputs.nickname+inputs.publicKey);
-    //   groupList.push(inputs)
-    //   console.log(groupList)
-     
+    const addFriend = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        updateFriend(fingerprint, nickname);
     }
-    let groupCounter = 1;
 
-    return (
-        <>
+    let friendsList: React.ReactElement[] = Array.from(friends).reduce<React.ReactElement[]>((acc, current, index) => {
+        return [...acc, <p key={index}>{current[0]}: {current[1]}</p>]
+    }, []);
+
+    return <>
         <h4 className="heading">Add Friend</h4>
         <div className="chatDiv">
-            <form onSubmit={handleSubmit}>
             <p>Register a friend by giving their fingerprint a nickname.</p>
-            <p> All instances where this friend is present will show their nickname rather than fingerprint</p><br/>
-            
-            <label>Nickname</label><br/><br/>
-
-  
-            <input type="text" name="nickname" value={nickname || ""} onChange={onNicknameChange}/><br/><br/>
-       
-            <label>User's fingerprint</label><br/>
-            {/* get fingerprint*/}
-            <input type="text" name="publicKey" className="chatInputBox" value={fingerprint || ""} onChange={onFingerprintChange}/><br/><br/>
-
-            <button type="submit">Register friend</button><br/>
-
-            <h4>Registered Friend List:</h4><br/>
+            <p> All instances where this friend is present will show their nickname rather than fingerprint</p>
+            <br/>
+            <form onSubmit={addFriend}>
+                <label>Nickname</label>
+                <br/><br/>
+                <input type="text" name="nickname" value={nickname || ""} onChange={onNicknameChange}/>
+                <br/><br/>
+                <label>User's fingerprint</label><br/>
+                <input type="text" name="fingerprint" className="chatInputBox" value={fingerprint || ""} onChange={onFingerprintChange}/>
+                <br/><br/>
+                <button type="submit">Register friend</button><br/>
              </form>
- 
-
-
+             <h4>Registered Friend List:</h4>
+             <br/>
+             {friendsList}
         </div>
-        </>
-
-    )
+    </>
 }

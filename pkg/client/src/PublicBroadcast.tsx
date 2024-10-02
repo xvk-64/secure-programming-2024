@@ -1,5 +1,6 @@
-import React, {useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import {PublicBroadcastInput} from "./PublicBroadcastInput.js";
+import { UserContext } from "./UserContext.js";
 
 
 // TODO
@@ -7,13 +8,13 @@ import {PublicBroadcastInput} from "./PublicBroadcastInput.js";
 // - log messages
 
 export function PublicBroadcast() {
+    const {publicGroup} = useContext(UserContext) || {} as UserContext;
     let sentMessages: React.ReactElement[] = []
-    let msgList = ["wowowowoww", "cool message bro", "i like soup"];
  
 
-    msgList.forEach((message) => {
+    publicGroup.forEach((message, index) => {
         sentMessages.push(
-            <><p>{message}</p></>
+            <p key={index}>{message.sender}: {message.message}</p>
         );
     });
 

@@ -47,6 +47,7 @@ export type UserContext = {
     groups: Group[],
     addGroup: (groupInfo: GroupInfo) => void,
     appendMessage: (groupIndex: number, sender: string, message: string) => void,
+    publicGroup: {sender: string, message: string}[],
     appendPublicMessage: (sender: string, message: string) => void,
     // the list of servers that the client will connect to
     servers: string[],
@@ -162,6 +163,7 @@ export const UserProvider = ({ children }: any) => {
         groups,
         addGroup,
         appendMessage,
+        publicGroup,
         appendPublicMessage,
         servers,
         addServer,

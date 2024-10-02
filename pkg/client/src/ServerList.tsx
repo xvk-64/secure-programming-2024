@@ -1,4 +1,5 @@
-import React, {useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
+import { UserContext } from "./UserContext";
 
 
 
@@ -7,26 +8,22 @@ export function ServerList() {
     let onlineServerList: React.ReactElement[] = []
     let offlineServerList: React.ReactElement[] = []
 
-    // let messageList = ["wowowowoww", "cool message bro", "i like soup"];
-    const userServerList = [
-        {name: 'abcdc12', online:true, connected:false},
-        {name: 'zyx256', online:false, connected:false},
-        {name: 'fhds42', online:true, connected:true},
-    ];
+    const {servers} = useContext(UserContext) || {} as UserContext;
+
    // if user is online, add to one list, otherwise, add to another
-    userServerList.forEach((server) => {
+    servers.forEach((server, index) => {
         // if status true
-        if (server.connected) {
+        if (index === 0) { // bludge: assume you are connected to the first server
             connectedServer.push(
                 <>
-                <p>● [<strong>{server.name}</strong>]</p>
+                <p key={index}>● [<strong>{server}</strong>]</p>
                 </>)
-            } else if (server.online){
+            } else if (server){ // we don't have a way of telling implemented
                 onlineServerList.push(
-                    <><p>● {server.name}</p></>)
+                    <><p key={index}>● {server}</p></>)
             } else {
                 offlineServerList.push(
-                    <><p>◌  {server.name}</p></>)
+                    <><p key={index}>◌  {server}</p></>)
             }
     });
     // let userDisplay: React.ReactElement[] = [...userDisplayOnline, ...userDisplayOffline]

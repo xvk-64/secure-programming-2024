@@ -1,7 +1,9 @@
-import React, {useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
+import { UserContext } from "./UserContext";
 
 
 export function CreateGroupChat() {
+    const {groups, addGroup} = useContext(UserContext) || {} as UserContext;
     const [groupMembers, setGroupInputs] = useState<string[]>([]);
 
     // event handler to grab values from fields
@@ -15,7 +17,7 @@ export function CreateGroupChat() {
     // store the members
     const handleSubmit = (event: { preventDefault: () => void; }) => {
         event.preventDefault();
-        console.log(groupMembers);
+        addGroup({users: groupMembers, fingerprint: "unused"});
     }
 
     const [fingerprint, setFingerprint] = useState("");

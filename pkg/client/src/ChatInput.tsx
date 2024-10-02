@@ -1,19 +1,17 @@
-import React, {useState} from "react";
+import React, {useContext, useState} from "react";
+import { ChatContext } from "./ChatContext";
 
 export type ChatInputProps = {
-    onSubmit: (message: string) => void;
+    groupId: number,
 }
 export function ChatInput(props: ChatInputProps) {
-
+    const {sendChat} = useContext(ChatContext) || {} as ChatContext;
     const [message, setMessage] = useState("");
 
     const onSubmit: React.FormEventHandler<HTMLFormElement> = e => {
         e.preventDefault();
 
-        console.log("Sent message " + message);
-
-        props.onSubmit(message);
-        setMessage("");
+        sendChat(props.groupId, message);
     }
 
     return <>
