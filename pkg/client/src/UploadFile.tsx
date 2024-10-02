@@ -26,10 +26,14 @@ export default function UploadFile(){
             body: formData,
           });
   
-          const link = await result.json();
+          const object = await result.json();
   
           console.log("this made it to the other side:");
-          console.log(link);
+          console.log(object);
+          let link = 'http://localhost:3307/filestore/' + object.filename;
+          //// FULL LINK TO SEND TO USER
+          console.log(link)
+
         } catch (error) {
           console.error(error);
         }

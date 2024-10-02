@@ -71,12 +71,12 @@ app.post("/api/upload", (request, response) => {
             let parts = tempName.split('.');
             const file_extension = parts.length > 1 ? parts[parts.length - 1] : "";
        
-            let link = newFileName + '.' + file_extension;
-            file.mv('./filestore/' + link, (err) => {
+            let filename = newFileName + '.' + file_extension;
+            file.mv('./filestore/' + filename, (err) => {
                 if (err) {
                     response.status(500).send("Internal Server Error: File Could Not Be Saved");
                 } else {
-                    response.send({link});
+                    response.send({filename});
                 }
             })
         }
