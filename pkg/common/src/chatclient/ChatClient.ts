@@ -23,6 +23,10 @@ export type PublicChat = {
     message: string;
     senderFingerprint: string;
 }
+export type OnlineClient = {
+    fingerprint: string;
+    serverAddress: string;
+}
 
 // Class holding most functionality of the client.
 export class ChatClient {
@@ -36,6 +40,17 @@ export class ChatClient {
     public readonly fingerprint: string;
 
     private _otherClients: { [fingerprint: string]: OtherClient } = {};
+    public getOnlineClients() {
+        let result: OnlineClient[] = [];
+
+        for (const fingerprint in this._otherClients) {
+            const client = this._otherClients[fingerprint];
+
+            result.push({fingerprint: client.fingerprint, serverAddress: client.serverAddress});
+        }
+
+        return result;
+    }
 
     private _groups: { [groupID: string]: string[]} = {}
 

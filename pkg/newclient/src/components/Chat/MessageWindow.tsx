@@ -9,15 +9,14 @@ export type Message = {
 
 export type MessageGroups = Map<string, Message[]>;
 export type MessageWindowProps = {
-    selectedGroupID: string;
-    messageGroups: MessageGroups;
+    messages: Message[];
 }
 
 export function MessageWindow(props: MessageWindowProps) {
     return (
         <>
             <div>
-                {(props.messageGroups.get(props.selectedGroupID)?.map(message =>
+                {(props.messages.map(message =>
                     <MessageElement key={message.key} message={message} />
                 ))}
             </div>

@@ -5,6 +5,7 @@ import {PSSGenParams} from "@sp24/common/util/crypto.js";
 import {ClientContext, ClientContextType} from "./context/ClientContext.js";
 import {ChatClient} from "@sp24/common/chatclient/ChatClient.js";
 import {Chat} from "./components/Chat.js";
+import "./styles/App.css"
 
 export function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);

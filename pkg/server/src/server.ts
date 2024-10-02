@@ -114,6 +114,12 @@ for (const URL of URLs) {
 
 setInterval(() => {
     testClient1.sendPublicChat("Yay!");
+
+    const onlineClients = testClient1.getOnlineClients();
+
+    onlineClients.forEach(onlineClient => {
+        testClient1.sendChat("Hello there!", testClient1.getGroupID([onlineClient.fingerprint]));
+    })
 }, 1000);
 
 testClient1.onPublicChat.createListener(message => {
