@@ -2,7 +2,7 @@
 
 University of Adelaide Semester 2 2024.
 
-## Please DO NOT put personally identifiable information from this project into ChatGPT, for example, university name, ID number, email addresses, or GitHub usernames. 
+## Please DO NOT put personally identifiable information from this project into ChatGPT, for example, university name, ID number, email addresses, or GitHub usernames. If using ChatGPT for security analysis, please thoroughly check your prompt for personal and or sensitive information before submission.
 
 ## What is this
 Assignment for COMP SCI 3307 Secure Programming at the University of Adelaide.
