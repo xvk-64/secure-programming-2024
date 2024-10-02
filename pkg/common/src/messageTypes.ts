@@ -32,8 +32,8 @@ export class HelloData implements IMessageData<Protocol.HelloData> {
 
     static readonly response = "Hello!";
 
-    public constructor(signPublicKey: CryptoKey) {
-        this.verifyKey = signPublicKey;
+    public constructor(verifyKey: CryptoKey) {
+        this.verifyKey = verifyKey;
     }
 
     async toProtocol(): Promise<Protocol.HelloData> {
@@ -219,7 +219,12 @@ export class SignedData<TData extends IMessageData<Protocol.SignedDataEntry>> im
         const payloadString = JSON.stringify(await this.data.toProtocol()) + this.counter.toString();
         const encodedPayload = new TextEncoder().encode(payloadString);
 
-        return await crypto.subtle.verify(PSSParams, verifyKey, this.signature, encodedPayload);
+        try {
+            return await crypto.subtle.verify(PSSParams, verifyKey, this.signature, encodedPayload);
+        } catch (e) {
+            console.log(e);
+            return false
+        }
     }
 
     static async create<TData extends IMessageData<Protocol.SignedDataEntry>>

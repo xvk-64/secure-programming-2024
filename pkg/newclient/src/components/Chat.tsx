@@ -31,8 +31,6 @@ export function Chat(props: ChatProps) {
             setFingerprint(client?.current?.fingerprint || "");
 
             setOnlineUsers(client?.current?.getOnlineClients().map(c => c.fingerprint).filter(f => f != fingerprint) || []);
-            console.log(fingerprint);
-            console.log(onlineUsers);
         });
 
         // Cleanup
@@ -66,8 +64,6 @@ export function Chat(props: ChatProps) {
                 setAllGroupIDs([...allGroupIDs, data.groupID]);
             if (!(messageGroups.has(data.groupID)))
                 setMessageGroups(mg => new Map(mg.set(data.groupID, [])));
-
-            console.log(messageGroups.get(data.groupID));
 
             setMessageGroups(mg => new Map(mg.set(data.groupID, mg.get(data.groupID)!.concat({
                 senderFingerprint: data.senderFingerprint,
@@ -103,8 +99,6 @@ export function Chat(props: ChatProps) {
     }
 
     function onGroup(groupID: string) {
-        console.log(groupID)
-
         if (!allGroupIDs.includes(groupID))
             setAllGroupIDs([...allGroupIDs, groupID]);
     }

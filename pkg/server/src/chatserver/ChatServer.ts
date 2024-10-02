@@ -142,14 +142,21 @@ export class ChatServer {
             case "signed_data":
                 switch (message.data.type) {
                     case "hello":
-                        // A client may have changed keys, send client update.
-                        await this.sendClientList();
-
                         // Do client_update to other servers
                         const clientUpdateMessage = new ClientUpdate(this._clients.map(client => client.verifyKey));
                         for (const server of this._neighbourhoodServers)
                             await server.sendMessage(clientUpdateMessage);
 
+                        // Update routers
+                        for (const entry of this._routingTable) {
+                            if (entry.users[0] === client.previousFingerprint)
+                                entry.users[0] = client.fingerprint;
+                            if (entry.users[1] === client.previousFingerprint)
+                                entry.users[1] = client.fingerprint;
+
+                        // A client may have changed keys, send client update.
+                        await this.sendClientList();
+                        }
                         break;
                     case "chat": {
                         // Route to destination servers
@@ -180,14 +187,10 @@ export class ChatServer {
                             const targetRouters = this._routingTable.filter(
                                 e => e.users.includes(client.fingerprint)
                             ).map(e => e.middle);
-                            this._clients
+                            await Promise.all(this._clients
                                 .filter(c => targetRouters.includes(c.fingerprint))
-                                .map(client => client.sendMessage(publicChatMessage))
+                                .map(client => client.sendMessage(publicChatMessage)))
                         } else {
-                            const entry = this._routingTable.find(e => e.middle == client.fingerprint);
-                            if (entry === undefined)
-                                return;
-
                             const originalSender = publicChatMessage.data.originalSender;
                             if (originalSender === undefined)
                                 return;

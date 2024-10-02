@@ -22,6 +22,7 @@ export function App() {
 
         // Create client
         const newClient = await ChatClient.create(transport, keyPair.privateKey, keyPair.publicKey);
+        newClient.useBetterKeygen = true;
 
         client.current = newClient;
         setIsLoggedIn(true);

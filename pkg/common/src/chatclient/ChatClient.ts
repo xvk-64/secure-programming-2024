@@ -86,7 +86,6 @@ export class ChatClient {
                 for (const server of clientListMessage.servers) {
                     for (const verifyKey of server.clientVerifyKeys) {
                         const fingerprint = await calculateFingerprint(verifyKey);
-
                         if (fingerprint in this._otherClients) {
                             // TODO set online status?
                         } else {
@@ -101,7 +100,7 @@ export class ChatClient {
 
                     const fprint = await calculateFingerprint(pubKey);
 
-                    if (!(fprint in this._otherClients)) {
+                    if (fprint !== this.fingerprint && !(fprint in this._otherClients)) {
                         await this.updateKeys(privKey, pubKey);
                     }
                 }
@@ -185,14 +184,14 @@ export class ChatClient {
         const exportedPriv = await webCrypto.exportKey("pkcs8", privateKey);
 
         this._verifyKey = await webCrypto.importKey("spki", exportedPub, PSSImportParams, true, ["verify"]);
-        this._signKey = await webCrypto.importKey("pkcs8", exportedPriv, PSSImportParams, false, ["sign"]);
+        this._signKey = await webCrypto.importKey("pkcs8", exportedPriv, PSSImportParams, true, ["sign"]);
         this._encryptKey = await webCrypto.importKey("spki", exportedPub, OAEPImportParams, true, ["encrypt"]);
-        this._decryptKey = await webCrypto.importKey("pkcs8", exportedPriv, OAEPImportParams, false, ["decrypt"]);
+        this._decryptKey = await webCrypto.importKey("pkcs8", exportedPriv, OAEPImportParams, true, ["decrypt"]);
 
         this._fingerprint = await calculateFingerprint(this._verifyKey);
 
         // Say hello
-        await this.sendSignedData(new HelloData(this._signKey));
+        await this.sendSignedData(new HelloData(this._verifyKey));
     }
 
     private constructor(
@@ -268,9 +267,9 @@ export class ChatClient {
         const exportedPriv = await webCrypto.exportKey("pkcs8", privateKey);
 
         const verifyKey = await webCrypto.importKey("spki", exportedPub, PSSImportParams, true, ["verify"]);
-        const signKey = await webCrypto.importKey("pkcs8", exportedPriv, PSSImportParams, false, ["sign"]);
+        const signKey = await webCrypto.importKey("pkcs8", exportedPriv, PSSImportParams, true, ["sign"]);
         const encryptKey = await webCrypto.importKey("spki", exportedPub, OAEPImportParams, true, ["encrypt"]);
-        const decryptKey = await webCrypto.importKey("pkcs8", exportedPriv, OAEPImportParams, false, ["decrypt"]);
+        const decryptKey = await webCrypto.importKey("pkcs8", exportedPriv, OAEPImportParams, true, ["decrypt"]);
 
         const fingerprint = await calculateFingerprint(verifyKey);
 

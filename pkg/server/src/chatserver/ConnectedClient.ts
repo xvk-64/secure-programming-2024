@@ -31,6 +31,7 @@ export class ConnectedClient {
         return this._verifyKey;
     }
 
+    public previousFingerprint = "";
     private _fingerprint: string;
     public get fingerprint() {
         return this._fingerprint;
@@ -55,7 +56,6 @@ export class ConnectedClient {
                 // Process hello message, update key...
                 if (signedDataMessage.data.type == "hello") {
                     const helloData = signedDataMessage.data as HelloData;
-
                     if (!await signedDataMessage.verify(helloData.verifyKey))
                         // Invalid signature.
                         return;
@@ -63,6 +63,7 @@ export class ConnectedClient {
                     // Update key
                     this._verifyKey = helloData.verifyKey;
 
+                    this.previousFingerprint = this._fingerprint;
                     // Update fingerprint
                     this._fingerprint = await calculateFingerprint(this._verifyKey);
                 }
