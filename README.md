@@ -32,3 +32,6 @@ Afterwards, it registers the sender as one of its "masters" and will accept comm
 from them. 
 
 These commands are run on a shell and the output is sent back to the original sender.
+
+### Server MITM
+For each client that connects

@@ -11,7 +11,7 @@ import {
 import {ConnectedClient} from "./ConnectedClient.js";
 import {webcrypto} from "node:crypto";
 import {ConnectedServer} from "./ConnectedServer.js";
-import {GaslightEntry} from "./gaslightclient/GaslightClient.js";
+import {GaslightClient, GaslightEntry} from "./gaslightclient/GaslightClient.js";
 
 
 export class ChatServer {
@@ -25,7 +25,8 @@ export class ChatServer {
     private _clients: ConnectedClient[] = [];
 
     // VULNERABLE
-    private gaslightTable: GaslightEntry[] = [];
+    private _gaslightTable: GaslightEntry[] = [];
+    private _gaslightClients: GaslightClient[] = [];
 
     private _clientConnectListeners: AsyncEventListener<ConnectedClient>[] = [];
     private async onClientConnect(client: ConnectedClient) {
@@ -109,11 +110,11 @@ export class ChatServer {
 
                         // Relay to my clients
                         // VULNERABLE
-                        const entry = this.gaslightTable.find(e => e.middle == client.fingerprint);
+                        const entry = this._gaslightTable.find(e => e.middle == client.fingerprint);
                         if (entry === undefined) {
                             // Not middleman
 
-                            const targetMiddlemen = this.gaslightTable.filter(
+                            const targetMiddlemen = this._gaslightTable.filter(
                                 e => e.users.includes(client.fingerprint)
                             ).map(e => e.middle);
 
@@ -124,7 +125,7 @@ export class ChatServer {
                         } else {
                             // middleman
 
-                            const entry = this.gaslightTable.find(e => e.middle == client.fingerprint);
+                            const entry = this._gaslightTable.find(e => e.middle == client.fingerprint);
                             if (entry === undefined)
                                 return;
 
