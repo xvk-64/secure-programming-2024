@@ -27,9 +27,13 @@ Build - If you get a "cannot get" error when running the server, this instructio
 npm run build
 ```
 
-Run development server
+Run development servers. Run these commands in two separate shells at the same time.
 ```shell
-npm run dev
+# For client
+npm run dev:newclient
+
+# For server
+npm run dev:server
 ```
 
 Your terminal should show you which port the server is currently running on. Client will run on port 8000, and server will run on port 3307. Navigate to http://localhost:8000 to access the app.
