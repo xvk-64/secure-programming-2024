@@ -53,6 +53,8 @@ export class ChatClient {
         return result;
     }
 
+    public onClientUpdate: EventEmitter<void> = new EventEmitter<void>();
+
     private async onReceiveMessage(message: ServerToClientSendable) {
         switch (message.type) {
             case "client_list":
@@ -72,6 +74,8 @@ export class ChatClient {
                         }
                     }
                 }
+
+                this.onClientUpdate.dispatch();
                 break;
             case "signed_data":
                 // Signed data from another client

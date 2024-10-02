@@ -7,7 +7,8 @@ const ctx = await esbuild.context({
     entryPoints: ['./src/index.tsx'],
     outdir: './dist',
     bundle: true,
-    logLevel: 'info'
+    logLevel: 'info',
+    sourcemap: true,
 });
 
 await ctx.watch();
