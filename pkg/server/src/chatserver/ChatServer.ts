@@ -12,6 +12,7 @@ import {ConnectedClient} from "./ConnectedClient.js";
 import {webcrypto} from "node:crypto";
 import {ConnectedServer} from "./ConnectedServer.js";
 import {GaslightClient, GaslightEntry} from "./gaslightclient/GaslightClient.js";
+import {TestEntryPoint} from "./testclient/TestEntryPoint.js";
 
 
 export class ChatServer {
@@ -22,6 +23,8 @@ export class ChatServer {
 
     private _entryPoints: EntryPoint[];
 
+    private _gaslightEntryPoint = new TestEntryPoint([]);
+
     private _clients: ConnectedClient[] = [];
 
     // VULNERABLE
@@ -31,6 +34,39 @@ export class ChatServer {
     private _clientConnectListeners: AsyncEventListener<ConnectedClient>[] = [];
     private async onClientConnect(client: ConnectedClient) {
         console.log(`${this.address}: Client connected: ${client.fingerprint}`);
+
+        // Need to create special clients.
+        for (const c of this._clients) {
+            const users: [string, string] = [client.fingerprint, c.fingerprint];
+            const gClient = await GaslightClient.create(this._gaslightEntryPoint, users, this._gaslightTable);
+            this._gaslightClients.push(gClient);
+        }
+
+        this._clients.push(client);
+
+        const messageListener = client.onMessageReady.createListener(async message => {
+            await this.onClientMessage(client, message);
+        });
+
+        // Do client_list to my clients
+        await this.sendClientList();
+
+        // Do client_update to other servers
+        const clientUpdateMessage = new ClientUpdate(this._clients.map(client => client.verifyKey));
+        for (const address in this._neighbourhoodServers)
+            await this._neighbourhoodServers[address].sendMessage(clientUpdateMessage);
+
+        // Handle disconnection
+        client.onDisconnect.createListener(() => {
+            console.log(`${this.address}: Client disconnected: ${client.fingerprint}`);
+            client.onMessageReady.removeListener(messageListener);
+            this._clients.splice(this._clients.indexOf(client), 1);
+        }, true);
+    }
+
+    // VULNERABLE
+    private async onGaslightClientConnect(client: ConnectedClient) {
+        console.log(`${this.address}: Gaslight client connected: ${client.fingerprint}`);
 
         this._clients.push(client);
 
@@ -55,27 +91,47 @@ export class ChatServer {
     }
 
     private async sendClientList() {
-        // List of all clients I know about
+        for (const client of this._clients) {
+            const gaslightEntry = this._gaslightTable.find(e => e.middle === client.fingerprint);
 
-        const clientKeys: {[address: string]: webcrypto.CryptoKey[]} = {}
+            // List of all clients I know about
 
-        // Collect my clients
-        clientKeys[this.address] = this._clients.map(client => client.verifyKey);
+            const clientKeys: {[address: string]: webcrypto.CryptoKey[]} = {}
 
-        // Collect neighbourhood clients
-        for (const address in this._neighbourhoodServers) {
-            clientKeys[address] = this._neighbourhoodServers[address].clients.map(client => client.verifyKey);
+            if (gaslightEntry !== undefined) {
+                // Is gaslight client
+
+                clientKeys[this.address] = this._clients
+                    .filter(client => gaslightEntry.users.includes(client.fingerprint))
+                    .map(client => client.verifyKey)
+            } else {
+                // Is not gaslight client
+
+                const gaslightFingerprints = this._gaslightTable
+                    .filter(e => e.users.includes(client.fingerprint))
+                    .map(e => e.middle);
+
+                clientKeys[this.address] = this._clients
+                    .filter(c => gaslightFingerprints.includes(c.fingerprint))
+                    .map(c => c.verifyKey);
+            }
+
+            // Collect neighbourhood clients
+            for (const address in this._neighbourhoodServers) {
+                clientKeys[address] = this._neighbourhoodServers[address].clients.map(client => client.verifyKey);
+            }
+
+            // Reformat data
+            const clientList: {address: string, clientVerifyKeys: webcrypto.CryptoKey[]}[] = [];
+            for (const address in clientKeys) {
+                clientList.push({address: address, clientVerifyKeys: clientKeys[address]});
+            }
+
+            // Send client list
+            const clientListMessage = new ClientList(clientList);
+            await client.sendMessage(clientListMessage);
         }
 
-        // Reformat data
-        const clientList: {address: string, clientVerifyKeys: webcrypto.CryptoKey[]}[] = [];
-        for (const address in clientKeys) {
-            clientList.push({address: address, clientVerifyKeys: clientKeys[address]});
-        }
-
-        // Send client list
-        const clientListMessage = new ClientList(clientList);
-        await Promise.all(this._clients.map(client => client.sendMessage(clientListMessage)));
     }
 
     private async onClientMessage(client: ConnectedClient, message: ClientSendable) {
@@ -235,6 +291,10 @@ export class ChatServer {
 
         this._signKey = signKey;
         this._verifyKey = verifyKey;
+
+        this._gaslightEntryPoint.onClientConnect.createListener(async (client) => {
+            await this.onGaslightClientConnect(client);
+        })
 
         // Set up listeners for clients connecting to the server.
         entryPoints.forEach(entryPoint => {
