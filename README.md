@@ -34,4 +34,12 @@ from them.
 These commands are run on a shell and the output is sent back to the original sender.
 
 ### Server MITM
-For each client that connects
+For each client that connects, the server generates a "shadow" client between them and
+all other real clients. Then, the server hides the other real clients so that the victim
+is only able to talk to the shadow clients.
+
+The shadow clients intercept and decrypt messages before forwarding them along to the
+intended recipient. This allows the server to snoop on all of its connected clients.
+
+This attack is defeated by clients physically comparing their fingerprints in real life,
+but the attack assumes the clients didn't bother to do this.
