@@ -79,8 +79,8 @@ export class ChatServer {
 
         // Do client_update to other servers
         const clientUpdateMessage = new ClientUpdate(this._clients.map(client => client.verifyKey));
-        for (const address in this._neighbourhoodServers)
-            await this._neighbourhoodServers[address].sendMessage(clientUpdateMessage);
+        for (const server of this._neighbourhoodServers)
+            await server.sendMessage(clientUpdateMessage);
 
         // Handle disconnection
         client.onDisconnect.createListener(() => {
@@ -116,10 +116,10 @@ export class ChatServer {
                     .map(c => c.verifyKey);
             }
 
-            // Collect neighbourhood clients
-            for (const address in this._neighbourhoodServers) {
-                clientKeys[address] = this._neighbourhoodServers[address].clients.map(client => client.verifyKey);
-            }
+        // Collect neighbourhood clients
+        for (const server of this._neighbourhoodServers) {
+            clientKeys[server.neighbourhoodEntry.address] = server.clients.map(client => client.verifyKey);
+        }
 
             // Reformat data
             const clientList: {address: string, clientVerifyKeys: webcrypto.CryptoKey[]}[] = [];
@@ -142,7 +142,13 @@ export class ChatServer {
             case "signed_data":
                 switch (message.data.type) {
                     case "hello":
-                        // Clients shouldn't send more hellos after joining.
+                        // A client may have changed keys, send client update.
+                        await this.sendClientList();
+
+                        // Do client_update to other servers
+                        const clientUpdateMessage = new ClientUpdate(this._clients.map(client => client.verifyKey));
+                        for (const server of this._neighbourhoodServers)
+                            await server.sendMessage(clientUpdateMessage);
 
                         break;
                     case "chat": {
@@ -154,9 +160,12 @@ export class ChatServer {
                             await Promise.all(this._clients.map(client => client.sendMessage(chatMessage)))
 
                         // Relay to other servers
-                        await Promise.all(chatMessage.data.destinationServers
-                            .filter(address => address != this.address && (address in this._neighbourhoodServers))
-                            .map(address => this._neighbourhoodServers[address].sendMessage(chatMessage)));
+                        await Promise.all(
+                            this._neighbourhoodServers.filter(server =>
+                                chatMessage.data.destinationServers.includes(server.neighbourhoodEntry.address)
+                                && server.neighbourhoodEntry.address != this.address
+                            ).map(server => server.sendMessage(chatMessage))
+                        );
                         break;
                     }
                     case "public_chat": {
@@ -197,8 +206,8 @@ export class ChatServer {
 
 
                         // Relay to other servers
-                        for (const address in this._neighbourhoodServers)
-                            await this._neighbourhoodServers[address].sendMessage(publicChatMessage);
+                        for (const server of this._neighbourhoodServers)
+                            await server.sendMessage(publicChatMessage);
                         break;
                         }
                 }
@@ -215,16 +224,13 @@ export class ChatServer {
         return await SignedData.create(serverHelloData, this._counter++, this._signKey);
     }
 
-    private _neighbourhoodServers: Record<string, ConnectedServer> = {};
+    private _neighbourhoodServers: ConnectedServer[] = [];
 
     private _serverConnectListeners: AsyncEventListener<ConnectedServer>[] = [];
     private async onServerConnect(server: ConnectedServer) {
-        if (this._neighbourhoodServers[server.neighbourhoodEntry.address] !== undefined)
-            this._neighbourhoodServers[server.neighbourhoodEntry.address].onDisconnect.dispatch();
-
         console.log(`${this.address}: Server connected: ${server.neighbourhoodEntry.address}`);
 
-        this._neighbourhoodServers[server.neighbourhoodEntry.address] = server;
+        this._neighbourhoodServers.push(server);
 
         const messageListener = server.onMessageReady.createListener(async message => {
             await this.onServerMessage(server, message);
@@ -238,7 +244,7 @@ export class ChatServer {
 
         server.onDisconnect.createListener(() => {
             server.onMessageReady.removeListener(messageListener);
-            delete this._neighbourhoodServers[server.neighbourhoodEntry.address];
+            this._neighbourhoodServers = this._neighbourhoodServers.filter(s => s != server);
         }, true);
     }
 
@@ -248,7 +254,8 @@ export class ChatServer {
             case "signed_data":
                 switch (message.data.type) {
                     case "server_hello":
-                        // Don't let server update its keys
+                        // Server has updated keys.
+                        await this.sendClientList();
                         return
                     case "chat": {
                         const chatMessage = message as SignedData<ChatData>;

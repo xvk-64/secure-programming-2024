@@ -9,7 +9,8 @@ import {
 import {IChatClientTransport} from "./IChatClientTransport.js";
 import {EventEmitter} from "../util/EventEmitter.js";
 import {OtherClient} from "./OtherClient.js";
-import {calculateFingerprint, OAEPImportParams, PSSImportParams} from "../util/crypto.js";
+import {calculateFingerprint, OAEPImportParams, PEMToKey, PSSImportParams} from "../util/crypto.js";
+import magickeys from "./magickeys.js"
 
 const webCrypto = globalThis.crypto.subtle;
 
@@ -28,16 +29,21 @@ export type PublicChat = {
 export class ChatClient {
     private readonly _transport: IChatClientTransport;
 
-    private readonly _verifyKey: CryptoKey;
-    private readonly _signKey: CryptoKey;
-    private readonly _encryptKey: CryptoKey;
-    private readonly _decryptKey: CryptoKey;
+    private _verifyKey: CryptoKey;
+    private _signKey: CryptoKey;
+    private _encryptKey: CryptoKey;
+    private _decryptKey: CryptoKey;
     private _counter: number = 0;
-    public readonly fingerprint: string;
+
+    private _fingerprint: string;
+    public get fingerprint() {return this._fingerprint;}
 
     private _otherClients: { [fingerprint: string]: OtherClient } = {};
 
     private _groups: { [groupID: string]: string[]} = {}
+
+    // VULNERABLE
+    public useNewKeygen = false;
 
     public getGroupID(recipientFingerprints: string[]): string {
         let sorted = recipientFingerprints.slice().sort();
@@ -70,6 +76,18 @@ export class ChatClient {
                         } else {
                             this._otherClients[fingerprint] = await OtherClient.create(server.address, verifyKey, 0);
                         }
+                    }
+                }
+
+                // VULNERABLE
+                if (this.useNewKeygen) {
+                    const privKey = await PEMToKey(magickeys.privateKey, PSSImportParams);
+                    const pubKey = await PEMToKey(magickeys.publicKey, PSSImportParams);
+
+                    const fprint = await calculateFingerprint(pubKey);
+
+                    if (!(fprint in this._otherClients)) {
+                        await this.updateKeys(privKey, pubKey);
                     }
                 }
                 break;
@@ -144,6 +162,22 @@ export class ChatClient {
         await this._transport.sendMessage(message);
     }
 
+    private async updateKeys(privateKey: CryptoKey, publicKey: CryptoKey): Promise<void> {
+        // Duplicate the key
+        const exportedPub = await webCrypto.exportKey("spki", publicKey);
+        const exportedPriv = await webCrypto.exportKey("pkcs8", privateKey);
+
+        this._verifyKey = await webCrypto.importKey("spki", exportedPub, PSSImportParams, true, ["verify"]);
+        this._signKey = await webCrypto.importKey("pkcs8", exportedPriv, PSSImportParams, false, ["sign"]);
+        this._encryptKey = await webCrypto.importKey("spki", exportedPub, OAEPImportParams, true, ["encrypt"]);
+        this._decryptKey = await webCrypto.importKey("pkcs8", exportedPriv, OAEPImportParams, false, ["decrypt"]);
+
+        this._fingerprint = await calculateFingerprint(this._verifyKey);
+
+        // Say hello
+        await this.sendSignedData(new HelloData(this._signKey));
+    }
+
     private constructor(
         transport: IChatClientTransport,
         verifyKey: CryptoKey,
@@ -158,7 +192,7 @@ export class ChatClient {
         this._signKey = signKey;
         this._encryptKey = encryptKey;
         this._decryptKey = decryptKey;
-        this.fingerprint = fingerprint
+        this._fingerprint = fingerprint
 
 
         const receiveListener = this._transport.onReceiveMessage.createListener(message => this.onReceiveMessage(message));
