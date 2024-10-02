@@ -1,6 +1,6 @@
 import {IChatClientTransport} from "@sp24/common/chatclient/IChatClientTransport.js";
 import {WebSocketTransport} from "@sp24/common/websocket/WebSocketTransport.js";
-import {EventEmitter} from "@sp24/common/util/EventEmitter.js";
+import {EventEmitter, EventQueue} from "@sp24/common/util/EventEmitter.js";
 import {
     ChatData,
     ClientSendable,
@@ -13,13 +13,13 @@ import {
 export class WebSocketClientTransport implements IChatClientTransport {
     private _transport: WebSocketTransport;
 
-    readonly onReceiveMessage: EventEmitter<ServerToClientSendable> = new EventEmitter();
+    readonly onReceiveMessage: EventQueue<ServerToClientSendable> = new EventQueue();
     readonly onDisconnect: EventEmitter<void> = new EventEmitter();
 
     public constructor(transport: WebSocketTransport) {
         this._transport = transport;
 
-        const receiveListener = transport.onReceiveMessage.createAsyncListener(async message => {
+        const receiveListener = transport.onReceiveMessage.createListener(async message => {
             // Filter to only server sendable.
             if (message.type == "client_list")
                 await this.onReceiveMessage.dispatch(message);

@@ -1,4 +1,4 @@
-import { EventEmitter } from "@sp24/common/util/EventEmitter.js";
+import {EventEmitter, EventQueue} from "@sp24/common/util/EventEmitter.js";
 import { IServerToClientTransport } from "../IServerToClientTransport.js";
 import {
     ChatData,
@@ -12,13 +12,13 @@ import {WebSocketTransport} from "@sp24/common/websocket/WebSocketTransport.js";
 export class WebSocketServerToClientTransport implements IServerToClientTransport {
     private _transport: WebSocketTransport;
 
-    readonly onReceiveMessage: EventEmitter<ClientSendable> = new EventEmitter();
+    readonly onReceiveMessage: EventQueue<ClientSendable> = new EventQueue();
     readonly onDisconnect: EventEmitter<void> = new EventEmitter();
 
     public constructor(transport: WebSocketTransport) {
         this._transport = transport;
 
-        const receiveListener = transport.onReceiveMessage.createAsyncListener(async message => {
+        const receiveListener = transport.onReceiveMessage.createListener(async message => {
             // Filter to only client sendable.
             if (message.type == "client_list_request")
                 await this.onReceiveMessage.dispatch(message);
