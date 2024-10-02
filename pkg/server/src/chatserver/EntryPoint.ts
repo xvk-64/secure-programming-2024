@@ -39,7 +39,7 @@ export abstract class EntryPoint {
                     // Remove listener as we have received the message we want.
                     serverTransport.onReceiveMessage.removeListener(messageListener);
 
-                    const connectedServer = new ConnectedServer(serverTransport, this, entry, message.counter);
+                    const connectedServer = new ConnectedServer(serverTransport, this, entry, message.counter, this._neighbourhood);
 
                     this.onServerConnect.dispatch(connectedServer);
                 }
