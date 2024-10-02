@@ -1,13 +1,12 @@
 import React, {useEffect, useState} from "react";
-import ChatInput from "./ChatInput.js";
-import PublicBroadcastInput from "./PublicBroadcastInput.js";
+import {PublicBroadcastInput} from "./PublicBroadcastInput.js";
 
 
 // TODO
 // - broadcast message unencrypted to all clients
 // - log messages
 
-export default function PublicBroadcast() {
+export function PublicBroadcast() {
     let sentMessages: React.ReactElement[] = []
     let msgList = ["wowowowoww", "cool message bro", "i like soup"];
  

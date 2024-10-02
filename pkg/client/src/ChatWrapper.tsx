@@ -1,14 +1,14 @@
 import React, {useEffect, useState} from "react";
+import {SideBarList} from "./SideBarList.js";
+import {MiddleDivContent} from "./MiddleDivContent.js";
+import {GroupUserList} from "./GroupUserList.js";
 
-import GroupUserList from "./GroupUserList.js";
-import SideBarList from "./SideBarList.js";
-import MiddleDivContent from "./MiddleDivContent.js";
 
     //TODO add group id link to groupuserlist to display users correctly
 
 
-export default function ChatWrapper() {
-    const [groupID, setGroupID] = useState(0)
+export function ChatWrapper() {
+    const [groupID, setGroupID] = useState("")
     const [isVisible, setIsVisible] = useState(0)
 
     return <>

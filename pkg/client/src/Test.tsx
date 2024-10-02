@@ -1,7 +1,6 @@
+import React from "react";
 
 
-function Test(){
+export function Test(){
     return<h1>wowowowowowowowowowowowowowowoowow</h1>;
 }
-
-export default Test;

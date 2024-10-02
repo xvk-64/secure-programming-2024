@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from "react";
 import "./App.css";
-
-import ChatWrapper from "./ChatWrapper.js";
+import {ChatWrapper} from "./ChatWrapper.js";
 
 
 export const App : React.FC = () => {

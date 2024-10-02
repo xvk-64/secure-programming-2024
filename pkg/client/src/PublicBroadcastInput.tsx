@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 
 // TODO
 // - send unencrypted message to all clients
-export default function PublicBroadcastInput() {
+export function PublicBroadcastInput() {
 
     return (
         <>

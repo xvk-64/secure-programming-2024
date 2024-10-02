@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 
 
 
-export default function ServerList() {
+export function ServerList() {
     let connectedServer: React.ReactElement[] = []
     let onlineServerList: React.ReactElement[] = []
     let offlineServerList: React.ReactElement[] = []

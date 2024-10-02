@@ -1,27 +1,24 @@
 import React, {useEffect, useState} from "react";
 import { Dropdown } from 'react-bootstrap';
-// import Menu from 'react-bootstrap';
-// import Item from 'react-bootstrap';
-// import Header from 'react-bootstrap';
-import ServerList from "./ServerList.js";
-import CreateGroupChat from "./CreateGroupChat.js";
+import {ServerList} from "./ServerList.js";
+import {CreateGroupChat} from "./CreateGroupChat.js";
 
-export default function DropDownMenus({setGroupID}){
-    
-  
-
+export type DropDownMenusProps = {
+    setGroupID: (groupID: string) => void;
+}
+export function DropDownMenus(props: DropDownMenusProps){
       let groupDropdownList: React.ReactElement[] = []
       // let messageList = ["wowowowoww", "cool message bro", "i like soup"];
       const groupList = [
-          {groupID: 0, groupName: 'group1'},
-          {groupID: 1, groupName: 'group2'},
-          {groupID: 2, groupName: 'group4'},
+          {groupID: "0", groupName: 'group1'},
+          {groupID: "1", groupName: 'group2'},
+          {groupID: "2", groupName: 'group4'},
       ];
       let counter = 1;
       groupList.forEach((group, index) => {
           groupDropdownList.push(
             //  href="#/action-1">
-              <><Dropdown.Item eventKey={index} onClick={() => setGroupID(group.groupID)}>{group.groupName}</Dropdown.Item><br/><br/></>
+              <><Dropdown.Item eventKey={index} onClick={() => props.setGroupID(group.groupID)}>{group.groupName}</Dropdown.Item><br/><br/></>
           );
       });
 

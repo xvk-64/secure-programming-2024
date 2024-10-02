@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 
 
-export default function GroupChatList() {
+export function GroupChatList() {
     let grouplist: React.ReactElement[] = []
     // let messageList = ["wowowowoww", "cool message bro", "i like soup"];
     const groupList = [

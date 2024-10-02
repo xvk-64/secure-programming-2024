@@ -6,21 +6,21 @@ import React, {useEffect, useState} from "react";
 // - show list of friends, including nickname/public key pair
 // - delete friends, pop from list
 
-export default function AddFriend() {
+export function AddFriend() {
 
-    const [inputs, setInputs] = useState({});
+    const [nickname, setNickname] = useState("");
+    const [fingerprint, setFingerprint] = useState("");
+
     // store group members as group
     let groupList: React.ReactElement[] = []
 
-    // event handler to grab values from fields
-    const handleChange = (event: { target: { name: string; value: string; }; }) => {
-      const name = event.target.name;
-      const value = event.target.value;
-   
-      
-      setInputs(values => ({...values, [name]: value}))
-    } 
-  
+    const onNicknameChange:  React.ChangeEventHandler<HTMLInputElement> = e => {
+        setNickname(e.target.value);
+    }
+    const onFingerprintChange:  React.ChangeEventHandler<HTMLInputElement> = e => {
+        setFingerprint(e.target.value);
+    }
+
     // store friends
     const handleSubmit = (event: { preventDefault: () => void; }) => {
       event.preventDefault();
@@ -42,11 +42,11 @@ export default function AddFriend() {
             <label>Nickname</label><br/><br/>
 
   
-            <input type="text" name="nickname" value={inputs.nickname || ""} onChange={handleChange}/><br/><br/>
+            <input type="text" name="nickname" value={nickname || ""} onChange={onNicknameChange}/><br/><br/>
        
             <label>User's fingerprint</label><br/>
             {/* get fingerprint*/}
-            <input type="text" name="publicKey" className="chatInputBox" value={inputs.fingerprint || ""} onChange={handleChange}/><br/><br/>
+            <input type="text" name="publicKey" className="chatInputBox" value={fingerprint || ""} onChange={onFingerprintChange}/><br/><br/>
 
             <button type="submit">Register friend</button><br/>
 

@@ -1,20 +1,26 @@
 import React, {useEffect, useState} from "react";
 
 
-export default function CreateGroupChat() {
+export function CreateGroupChat() {
     const [groupMembers, setGroupInputs] = useState<string[]>([]);
 
     // event handler to grab values from fields
     const addMember = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const newGroupMember = event.target[0].value;
-        setGroupInputs(values => [...values, newGroupMember])
+
+        setGroupInputs(values => [...values, fingerprint])
+        setFingerprint("");
     }
   
     // store the members
     const handleSubmit = (event: { preventDefault: () => void; }) => {
         event.preventDefault();
         console.log(groupMembers);
+    }
+
+    const [fingerprint, setFingerprint] = useState("");
+    const onChangeFingerprint: React.ChangeEventHandler<HTMLInputElement> = e => {
+        setFingerprint(e.target.value);
     }
 
     const groupMemberElements = groupMembers.reduce<React.ReactElement[]>((acc, current, index) => [...acc, <p key={index}>{current}</p>], []);
@@ -26,7 +32,7 @@ export default function CreateGroupChat() {
             <form onSubmit={addMember}>
                 <label>User's fingerprint</label>
                 <br/>
-                <input type="text" name="fingerprint" className="chatInputBox"/>
+                <input type="text" name="fingerprint" className="chatInputBox" value={fingerprint} onChange={onChangeFingerprint}/>
                 <br/><br/>
                 <button type="submit">Add user to chat</button>
             </form>

@@ -5,7 +5,11 @@ import React, {useEffect, useState} from "react";
 // - make it dynamic for each group
 // - query online list/offline list
 // - if fingerprint in friend list, display nickname
-export default function GroupUserList({isVisible}) {
+
+export type GroupUserListProps = {
+    isVisible: number;
+}
+export function GroupUserList(props: GroupUserListProps) {
     let userDisplayOnline: React.ReactElement[] = []
     let userDisplayOffline: React.ReactElement[] = []
     
@@ -27,7 +31,7 @@ export default function GroupUserList({isVisible}) {
     // let userDisplay: React.ReactElement[] = [...userDisplayOnline, ...userDisplayOffline]
 
     return <>
-        {isVisible == 0 && (
+        {props.isVisible == 0 && (
             <div className="rightDiv">
             <h4 className="heading">Group Chat Members:</h4>
             <h4 className="heading">Online: {userDisplayOnline.length}</h4>

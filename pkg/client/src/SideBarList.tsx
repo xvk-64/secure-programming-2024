@@ -1,7 +1,5 @@
 import React, {useEffect, useState} from "react";
-import { Dropdown } from 'react-bootstrap';
-import ServerList from "./ServerList.js";
-import CreateGroupChat from "./CreateGroupChat.js";
+import { Dropdown } from "react-bootstrap";
 
 // TODO
 // - import dynamic friend list. get offline/online
@@ -9,7 +7,11 @@ import CreateGroupChat from "./CreateGroupChat.js";
 // - click on server to connect
 // 
 
-export default function SideBarList({setGroupID, setIsVisible}) {
+export type SideBarListProps = {
+    setGroupID: (id: string) => void;
+    setIsVisible: (isVisible: number) => void;
+}
+export function SideBarList(props: SideBarListProps) {
 
     ////////// FRIEND LIST ////////////
     let userDisplayOnline: React.ReactElement[] = []
@@ -38,14 +40,18 @@ export default function SideBarList({setGroupID, setIsVisible}) {
     let groupList: React.ReactElement[] = []
     // let messageList = ["wowowowoww", "cool message bro", "i like soup"];
     const groupsOriginal = [
-        {groupID: 0, groupName: 'group1'},
-        {groupID: 1, groupName: 'group2'},
-        {groupID: 2, groupName: 'group4'},
+        {groupID: "0", groupName: 'group1'},
+        {groupID: "1", groupName: 'group2'},
+        {groupID: "2", groupName: 'group4'},
     ];
    
     groupsOriginal.forEach((group, index) => {
         groupList.push(
-            <Dropdown.Item as="p" className="clickable" key={index} eventKey={index} onClick={() => setGroupID(group.groupID) & setIsVisible(0)}>{group.groupName}</Dropdown.Item>
+            <Dropdown.Item as="p" className="clickable" key={index} eventKey={index}
+                           onClick={() => {
+                               props.setGroupID(group.groupID);
+                               props.setIsVisible(0)}}
+            >{group.groupName}</Dropdown.Item>
         );
     });
 
@@ -82,19 +88,19 @@ export default function SideBarList({setGroupID, setIsVisible}) {
     });
   
     return <>
-            <button onClick={() => setIsVisible(4)}>Public Broadcasts</button>
-            <h4 className="heading">Chats: {groupCounter} <button onClick={() => setIsVisible(1)}>+</button></h4>
+            <button onClick={() => props.setIsVisible(4)}>Public Broadcasts</button>
+            <h4 className="heading">Chats: {groupCounter} <button onClick={() => props.setIsVisible(1)}>+</button></h4>
             <div className="sidebarSubDiv">
                 {groupList}
             </div>
-            <h4 className="heading" >Friend List: {friendList.length} <button onClick={() => setIsVisible(2)}>+</button></h4>
+            <h4 className="heading" >Friend List: {friendList.length} <button onClick={() => props.setIsVisible(2)}>+</button></h4>
             <div className="sidebarSubDiv">
                 <h4 className="heading">Online: {userDisplayOnline.length}</h4>
                 {userDisplayOnline}
                 <h4 className="heading">Offline: {userDisplayOffline.length}</h4>
                 {userDisplayOffline}
             </div>
-            <h4 className="heading">Server List: {userServerList.length} <button onClick={() => setIsVisible(3)}>+</button></h4>
+            <h4 className="heading">Server List: {userServerList.length} <button onClick={() => props.setIsVisible(3)}>+</button></h4>
             <div className="sidebarSubDiv">
                 <h4 >Online: {userDisplayOnline.length}</h4>
                 {connectedServer}
@@ -102,6 +108,6 @@ export default function SideBarList({setGroupID, setIsVisible}) {
                 <h4 className="heading">Offline: {userDisplayOffline.length}</h4>
                 {offlineServerList}
             </div>
-            <button onClick={() => setIsVisible(5)}>Pat Baba</button>
+            <button onClick={() => props.setIsVisible(5)}>Pat Baba</button>
         </>
 }
