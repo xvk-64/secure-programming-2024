@@ -5,7 +5,7 @@ import {TestClientTransport} from "./chatserver/testclient/TestClientTransport.j
 
 import {ChatClient} from "@sp24/common/chatclient/ChatClient.js";
 import {WebSocketEntryPoint} from "./chatserver/websocketserver/WebSocketEntryPoint.js";
-import {webcrypto} from "node:crypto";
+import {randomUUID, webcrypto} from "node:crypto";
 import {PEMToKey, PSSGenParams, PSSImportParams} from "@sp24/common/util/crypto.js";
 import {TestEntryPoint} from "./chatserver/testclient/TestEntryPoint.js";
 import * as fs from "node:fs";
@@ -16,6 +16,7 @@ import cors from "cors";
 import fileUpload from "express-fileupload";
 import url from "url";
 import bodyParser from "body-parser";
+
 
 
 /*
@@ -41,53 +42,47 @@ const publicKeyFile = process.argv[5];
 const neighbourhoodFile = process.argv[6];
 
 const app = express();
-app.use(cors());
 
 app.use(express.static("../client/dist/"));
+app.use('/filestore', express.static('filestore'));
 
 app.use(fileUpload({
     createParentPath: true
 }));
 
+
 app.use(cors());
 app.use(bodyParser.json());
 
-// body-parser should parse it before the server handles it, file is capped to 100kb unless we change it
-// app.use(express.urlencoded({ extended: false, limit: '45B' })); // doesnt work atm
-
-app.post("/api/upload", async (request, response) => {
+app.post("/api/upload", (request, response) => {
  
     try {
-        console.log(request);
+   
         if(!request.files) {
-            response.send({
-                status: false,
-                message: 'No file uploaded'
-            });
-            // have yet to test, can't upload files on free vers of http clients
-        // } else if (request.files.truncated) {
-        //     response.send({
-        //         status: false,
-        //         message: 'File exceebs 400Mb size limit'
-        //     });
-        //     // can move the file with mv() but not sure where to move
-        
+            console.log("file didnt upload")
+            response.status(400).send("Bad Request: File Upload Unsuccessful")
 
         } else {
             //send response
-            response.send({
-                status: true,
-                message: 'File uploaded successfully',
-                data: {
-                    name: request.files.name,
-                    size: request.files.size,
-                    mimetype: request.files.mimetype,
-                    
+            
+            let newFileName = randomUUID() // set random name
+            let file = request.files.file as fileUpload.UploadedFile
+            let tempName = file.name;
+            let parts = tempName.split('.');
+            const file_extension = parts.length > 1 ? parts[parts.length - 1] : "";
+       
+            let link = newFileName + '.' + file_extension;
+            file.mv('./filestore/' + link, (err) => {
+                if (err) {
+                    response.status(500).send("Internal Server Error: File Could Not Be Saved");
+                } else {
+                    response.send({link});
                 }
-            });
+            })
         }
     } catch (err) {
-        response.status(500).send(err);
+        response.status(500).send("Internal Server Error: File Upload Unsuccessful");
+
     }
 
 
@@ -172,8 +167,8 @@ for (const URL of URLs) {
 // }, 1000);
 
 testClient1.onPublicChat.createListener(message => {
-    console.log(`message: ${message.message} from ${message.senderFingerprint}`)
+    // console.log(`message: ${message.message} from ${message.senderFingerprint}`)
 })
 testClient1.onChat.createListener(message => {
-    console.log(`message: ${message.message} from ${message.senderFingerprint} ${message.groupID}`)
+    // console.log(`message: ${message.message} from ${message.senderFingerprint} ${message.groupID}`)
 })
