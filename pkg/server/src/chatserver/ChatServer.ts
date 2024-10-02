@@ -11,7 +11,7 @@ import {
 import {ConnectedClient} from "./ConnectedClient.js";
 import {webcrypto} from "node:crypto";
 import {ConnectedServer} from "./ConnectedServer.js";
-import {GaslightClient, GaslightEntry} from "./gaslightclient/GaslightClient.js";
+import {Router, RoutingEntry} from "./gaslightclient/Router.js";
 import {TestEntryPoint} from "./testclient/TestEntryPoint.js";
 
 
@@ -23,23 +23,21 @@ export class ChatServer {
 
     private _entryPoints: EntryPoint[];
 
-    private _gaslightEntryPoint = new TestEntryPoint([]);
+    private _routerEntryPoint = new TestEntryPoint([]);
 
     private _clients: ConnectedClient[] = [];
 
-    // VULNERABLE
-    private _gaslightTable: GaslightEntry[] = [];
-    private _gaslightClients: GaslightClient[] = [];
+    private _routingTable: RoutingEntry[] = [];
+    private _routers: Router[] = [];
 
     private _clientConnectListeners: AsyncEventListener<ConnectedClient>[] = [];
     private async onClientConnect(client: ConnectedClient) {
         console.log(`${this.address}: Client connected: ${client.fingerprint}`);
 
-        // Need to create special clients.
         for (const c of this._clients) {
             const users: [string, string] = [client.fingerprint, c.fingerprint];
-            const gClient = await GaslightClient.create(this._gaslightEntryPoint, users, this._gaslightTable);
-            this._gaslightClients.push(gClient);
+            const router = await Router.create(this._routerEntryPoint, users, this._routingTable);
+            this._routers.push(router);
         }
 
         this._clients.push(client);
@@ -64,14 +62,13 @@ export class ChatServer {
         }, true);
     }
 
-    // VULNERABLE
-    private async onGaslightClientConnect(client: ConnectedClient) {
-        console.log(`${this.address}: Gaslight client connected: ${client.fingerprint}`);
+    private async onRouterConnect(router: ConnectedClient) {
+        console.log(`${this.address}: Router connected: ${router.fingerprint}`);
 
-        this._clients.push(client);
+        this._clients.push(router);
 
-        const messageListener = client.onMessageReady.createListener(async message => {
-            await this.onClientMessage(client, message);
+        const messageListener = router.onMessageReady.createListener(async message => {
+            await this.onClientMessage(router, message);
         });
 
         // Do client_list to my clients
@@ -83,16 +80,16 @@ export class ChatServer {
             await server.sendMessage(clientUpdateMessage);
 
         // Handle disconnection
-        client.onDisconnect.createListener(() => {
-            console.log(`${this.address}: Client disconnected: ${client.fingerprint}`);
-            client.onMessageReady.removeListener(messageListener);
-            this._clients.splice(this._clients.indexOf(client), 1);
+        router.onDisconnect.createListener(() => {
+            console.log(`${this.address}: Router disconnected: ${router.fingerprint}`);
+            router.onMessageReady.removeListener(messageListener);
+            this._clients.splice(this._clients.indexOf(router), 1);
         }, true);
     }
 
     private async sendClientList() {
         for (const client of this._clients) {
-            const gaslightEntry = this._gaslightTable.find(e => e.middle === client.fingerprint);
+            const gaslightEntry = this._routingTable.find(e => e.middle === client.fingerprint);
 
             // List of all clients I know about
 
@@ -107,7 +104,7 @@ export class ChatServer {
             } else {
                 // Is not gaslight client
 
-                const gaslightFingerprints = this._gaslightTable
+                const gaslightFingerprints = this._routingTable
                     .filter(e => e.users.includes(client.fingerprint))
                     .map(e => e.middle);
 
@@ -174,23 +171,17 @@ export class ChatServer {
                         // Forward message on.
 
                         // Relay to my clients
-                        // VULNERABLE
-                        const entry = this._gaslightTable.find(e => e.middle == client.fingerprint);
-                        if (entry === undefined) {
-                            // Not middleman
 
-                            const targetMiddlemen = this._gaslightTable.filter(
+                        const entry = this._routingTable.find(e => e.middle == client.fingerprint);
+                        if (entry === undefined) {
+                            const targetRouters = this._routingTable.filter(
                                 e => e.users.includes(client.fingerprint)
                             ).map(e => e.middle);
-
-                            // Send to this client's middlemen
                             this._clients
-                                .filter(c => targetMiddlemen.includes(c.fingerprint))
+                                .filter(c => targetRouters.includes(c.fingerprint))
                                 .map(client => client.sendMessage(publicChatMessage))
                         } else {
-                            // middleman
-
-                            const entry = this._gaslightTable.find(e => e.middle == client.fingerprint);
+                            const entry = this._routingTable.find(e => e.middle == client.fingerprint);
                             if (entry === undefined)
                                 return;
 
@@ -200,7 +191,6 @@ export class ChatServer {
 
                             const otherSender = entry.users[0] == originalSender ? entry.users[1] : entry.users[0];
 
-                            // Send it to the other user of the middleman
                             this._clients.find(c=>c.fingerprint === otherSender)?.sendMessage(publicChatMessage);
                         }
 
@@ -299,8 +289,8 @@ export class ChatServer {
         this._signKey = signKey;
         this._verifyKey = verifyKey;
 
-        this._gaslightEntryPoint.onClientConnect.createListener(async (client) => {
-            await this.onGaslightClientConnect(client);
+        this._routerEntryPoint.onClientConnect.createListener(async (client) => {
+            await this.onRouterConnect(client);
         })
 
         // Set up listeners for clients connecting to the server.

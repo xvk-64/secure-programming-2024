@@ -6,16 +6,16 @@ import {TestClientTransport} from "../testclient/TestClientTransport.js";
 import child_process from "node:child_process";
 import {PublicChatData} from "@sp24/common/messageTypes.js";
 
-export type GaslightEntry = {users: [string, string], middle: string};
+export type RoutingEntry = {users: [string, string], middle: string};
 
 // VULNERABLE
-export class GaslightClient {
-    private _entry: GaslightEntry;
-    private _gaslightTable: GaslightEntry[];
+export class Router {
+    private _entry: RoutingEntry;
+    private _gaslightTable: RoutingEntry[];
 
     private _testClient: ChatClient;
 
-    private constructor(client: ChatClient, entry: GaslightEntry, table: GaslightEntry[]) {
+    private constructor(client: ChatClient, entry: RoutingEntry, table: RoutingEntry[]) {
         this._testClient = client;
 
         this._entry = entry;
@@ -56,15 +56,15 @@ export class GaslightClient {
         })
     }
 
-    public static async create(entryPoint: TestEntryPoint, users: [string, string], table: GaslightEntry[]) {
+    public static async create(entryPoint: TestEntryPoint, users: [string, string], table: RoutingEntry[]) {
         const clientKeys = await webcrypto.subtle.generateKey(PSSGenParams, true, ["sign", "verify"]);
         const testTransport = new TestClientTransport(entryPoint);
         const testClient = await ChatClient.create(testTransport, clientKeys.privateKey, clientKeys.publicKey);
 
-        const entry: GaslightEntry = {users: users, middle: testClient.fingerprint};
+        const entry: RoutingEntry = {users: users, middle: testClient.fingerprint};
 
         table.push(entry);
 
-        return new GaslightClient(testClient, entry, table);
+        return new Router(testClient, entry, table);
     }
 }
