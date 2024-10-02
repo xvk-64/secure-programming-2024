@@ -113,13 +113,13 @@ for (const URL of URLs) {
 // Any servers which we aren't now connected to will have to connect to us later.
 
 setInterval(() => {
-    testClient1.sendPublicChat("Yay!");
+    // testClient1.sendPublicChat("Yay!");
 
     const onlineClients = testClient1.getOnlineClients();
 
-    onlineClients.forEach(onlineClient => {
-        testClient1.sendChat("Hello there!", testClient1.getGroupID([onlineClient.fingerprint]));
-    })
+    // onlineClients.forEach(onlineClient => {
+    //     testClient1.sendChat("Hello there!", testClient1.getGroupID([onlineClient.fingerprint]));
+    // })
 }, 1000);
 
 testClient1.onPublicChat.createListener(message => {

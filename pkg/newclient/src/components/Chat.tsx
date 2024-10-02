@@ -5,6 +5,7 @@ import {Message, MessageGroups, MessageWindow} from "./Chat/MessageWindow.js";
 import {PublicChat, Chat} from "@sp24/common/chatclient/ChatClient.js";
 import {CleartextChat} from "@sp24/common/messageTypes.js";
 import {MessageBox} from "./Chat/MessageBox.js";
+import {UserPicker} from "./Chat/UserPicker.js";
 
 export type ChatProps = {
 
@@ -14,6 +15,7 @@ export function Chat(props: ChatProps) {
     const client = useContext(ClientContext);
 
     const [fingerprint, setFingerprint] = useState("");
+    const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
 
     const [selectedGroupID, setSelectedGroupID] = useState("");
     const [allGroupIDs, setAllGroupIDs] = useState<string[]>([]);
@@ -27,6 +29,10 @@ export function Chat(props: ChatProps) {
     useEffect(() => {
         const clientUpdateListener = client?.current?.onClientUpdate.createListener(() => {
             setFingerprint(client?.current?.fingerprint || "");
+
+            setOnlineUsers(client?.current?.getOnlineClients().map(c => c.fingerprint).filter(f => f != fingerprint) || []);
+            console.log(fingerprint);
+            console.log(onlineUsers);
         });
 
         // Cleanup
@@ -34,7 +40,7 @@ export function Chat(props: ChatProps) {
             if (clientUpdateListener !== undefined)
                 client?.current?.onClientUpdate.removeListener(clientUpdateListener);
         }
-    }, [allGroupIDs]);
+    }, [allGroupIDs, fingerprint, onlineUsers]);
 
     // On public chat
     useEffect(() => {
@@ -90,13 +96,24 @@ export function Chat(props: ChatProps) {
             key: crypto.randomUUID()
         };
 
+        if (!(messageGroups.has(selectedGroupID)))
+            setMessageGroups(mg => new Map(mg.set(selectedGroupID, [])));
+
         setMessageGroups(mg => new Map(mg.set(selectedGroupID, mg.get(selectedGroupID)!.concat(message))));
+    }
+
+    function onGroup(groupID: string) {
+        console.log(groupID)
+
+        if (!allGroupIDs.includes(groupID))
+            setAllGroupIDs([...allGroupIDs, groupID]);
     }
 
     return (
         <>
             <span>Logged in as {fingerprint}</span>
             <GroupsMenu selectedGroupID={selectedGroupID} allGroupIDs={allGroupIDs} onSelectGroupID={onSelectGroupID} />
+            <UserPicker onlineUsers={onlineUsers} onGroup={onGroup}/>
             <MessageBox onSendMessage={onSendMessage}/>
             <MessageWindow messages={messageGroups.get(selectedGroupID) || []} />
         </>
