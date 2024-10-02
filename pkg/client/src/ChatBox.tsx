@@ -13,21 +13,17 @@ export default function ChatBox({groupList, groupID}) {
     // let messageList = ["wowowowoww", "cool message bro", "i like soup"];
     const msgList = groupList[groupID];
 
-    msgList.forEach((user) => {
+    msgList.forEach((user, index) => {
         chatbox.push(
-            <><p>[{user.timestamp}] <strong>{user.name}:  </strong>{user.message}</p></>
+            <p key={index}>[{user.timestamp}] <strong>{user.name}:  </strong>{user.message}</p>
         );
     });
 
-    return (
-        <>
+    return <>
         <h4 className="heading">Group {groupID}</h4>
         <div className="chatDiv">
             {chatbox}
-            
         </div>
         <ChatInput></ChatInput>
-        </>
-
-    )
+    </>
 }
