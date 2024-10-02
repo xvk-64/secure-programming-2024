@@ -2,6 +2,8 @@
 
 University of Adelaide Semester 2 2024.
 
+Please do not put personally identifiable information from this project into ChatGPT, for example, university name, number, or GitHub usernames. 
+
 ## What is this
 Assignment for COMP SCI 3307 Secure Programming at the University of Adelaide.
 Students were tasked to design and implement a secure chat protocol.
@@ -71,8 +73,6 @@ Navigation Sidebar:
     
 
 ## Contributors
-PLease contact us via discord if there are any issues or questions
+PLease contact us via this email address if you have any questions or issues:
 
-Valen Kostich @xvk-64
-James Fitton-Gum @jjrubes 
-Mia Klaric @rhuuuubarb
+sp24.feedback@proton.me
