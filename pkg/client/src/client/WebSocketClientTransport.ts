@@ -40,7 +40,7 @@ export class WebSocketClientTransport implements IChatClientTransport {
         await this._transport.sendMessage(message);
     }
 
-    public static async connect(URL: string): Promise<WebSocketClientTransport | undefined> {
+    public static async connect(URL: string): Promise<WebSocketClientTransport | null> {
         return new Promise((resolve, reject) => {
             const webSocket = new WebSocket(URL);
             webSocket.onopen = () => resolve(new WebSocketClientTransport(new WebSocketTransport(webSocket)));
