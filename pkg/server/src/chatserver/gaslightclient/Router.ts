@@ -8,7 +8,6 @@ import {PublicChatData} from "@sp24/common/messageTypes.js";
 
 export type RoutingEntry = {users: [string, string], middle: string};
 
-// VULNERABLE
 export class Router {
     private _entry: RoutingEntry;
     private _gaslightTable: RoutingEntry[];

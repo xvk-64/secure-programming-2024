@@ -97,7 +97,6 @@ const wsEntryPoint = new WebSocketEntryPoint(httpServer, neighbourhood);
 const testEntryPoint = new TestEntryPoint(neighbourhood);
 const server = new ChatServer(address, [wsEntryPoint, testEntryPoint], serverPrivateKey, serverPublicKey);
 
-// VULNERABLE
 const serverSideClient = await ServerSideClient.create(testEntryPoint);
 
 // Try connecting to other servers

@@ -165,7 +165,6 @@ export class PublicChatData implements IMessageData<Protocol.PublicChatData> {
     readonly senderFingerprint: string;
     readonly message: string;
 
-    // VULNERABLE
     originalSender: string | undefined;
 
     public constructor(senderFingerprint: string, message: string) {

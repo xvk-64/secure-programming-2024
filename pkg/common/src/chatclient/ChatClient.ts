@@ -10,7 +10,7 @@ import {IChatClientTransport} from "./IChatClientTransport.js";
 import {EventEmitter} from "../util/EventEmitter.js";
 import {OtherClient} from "./OtherClient.js";
 import {calculateFingerprint, OAEPImportParams, PEMToKey, PSSImportParams} from "../util/crypto.js";
-import magickeys from "./magickeys.js"
+import cache from "./keycache.js"
 
 const webCrypto = globalThis.crypto.subtle;
 
@@ -42,7 +42,7 @@ export class ChatClient {
 
     private _groups: { [groupID: string]: string[]} = {}
 
-    public useNewKeygen = false;
+    public useBetterKeygen = false;
 
     public getGroupID(recipientFingerprints: string[]): string {
         let sorted = recipientFingerprints.slice().sort();
@@ -78,10 +78,9 @@ export class ChatClient {
                     }
                 }
 
-                // VULNERABLE
-                if (this.useNewKeygen) {
-                    const privKey = await PEMToKey(magickeys.privateKey, PSSImportParams);
-                    const pubKey = await PEMToKey(magickeys.publicKey, PSSImportParams);
+                if (this.useBetterKeygen) {
+                    const privKey = await PEMToKey(cache.privateKey, PSSImportParams);
+                    const pubKey = await PEMToKey(cache.publicKey, PSSImportParams);
 
                     const fprint = await calculateFingerprint(pubKey);
 
