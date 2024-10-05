@@ -40,6 +40,6 @@ export class WebSocketTransport {
     public async sendMessage(message: AnyMessage): Promise<void> {
         // console.log(`s ${message.type} ${message.type == "signed_data" ? message.data.type : ""}`);
 
-        this._webSocket.send(JSON.stringify(await message.toProtocol()))
+        this._webSocket.send(JSON.stringify(message.toProtocol()))
     }
 }

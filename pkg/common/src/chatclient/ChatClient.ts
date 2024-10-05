@@ -225,7 +225,7 @@ export class ChatClient {
 
     public readonly onPublicChat: EventEmitter<PublicChat> = new EventEmitter();
     public async sendPublicChat(message: string): Promise<void> {
-        const publicChatData = new PublicChatData(this.fingerprint, message);
+        const publicChatData = PublicChatData.create(this.fingerprint, message);
 
         await this.sendSignedData(publicChatData);
     }
@@ -245,7 +245,7 @@ export class ChatClient {
         let client = new ChatClient(transport, verifyKey, signKey, encryptKey, decryptKey, fingerprint);
 
         // Say hello
-        await client.sendSignedData(new HelloData(verifyKey));
+        await client.sendSignedData(await HelloData.create(verifyKey));
 
         return client;
     }
