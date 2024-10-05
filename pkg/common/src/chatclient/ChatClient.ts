@@ -9,7 +9,8 @@ import {
 import {IChatClientTransport} from "./IChatClientTransport.js";
 import {EventEmitter} from "../util/EventEmitter.js";
 import {OtherClient} from "./OtherClient.js";
-import {calculateFingerprint, OAEPImportParams, PSSImportParams} from "../util/crypto.js";
+import {calculateFingerprint, compareKey, OAEPImportParams, PSSImportParams} from "../util/crypto.js";
+import {hello} from "../hello.js";
 
 const webCrypto = globalThis.crypto.subtle;
 
@@ -39,13 +40,11 @@ export class ChatClient {
     private _counter: number = 0;
     public readonly fingerprint: string;
 
-    private _otherClients: { [fingerprint: string]: OtherClient } = {};
+    private _otherClients: OtherClient[] = [];
     public getOnlineClients() {
         let result: OnlineClient[] = [];
 
-        for (const fingerprint in this._otherClients) {
-            const client = this._otherClients[fingerprint];
-
+        for (const client of this._otherClients) {
             result.push({fingerprint: client.fingerprint, serverAddress: client.serverAddress});
         }
 
@@ -78,14 +77,17 @@ export class ChatClient {
                 // Client list from the server
                 let clientListMessage = message as ClientList;
 
-                for (const server of clientListMessage.servers) {
-                    for (const verifyKey of server.clientVerifyKeys) {
-                        const fingerprint = await calculateFingerprint(verifyKey);
+                for (const [i, server] of clientListMessage.servers.entries()) {
+                    for (const [j, verifyKey] of server.clientVerifyKeys.entries()) {
+                        const client = this._otherClients.find(c => compareKey(c.verifyKey, verifyKey));
 
-                        if (fingerprint in this._otherClients) {
-                            // TODO set online status?
+                        if (client === undefined) {
+                            const originalExportedKey = message.protocol.servers[i].clients[j];
+
+                            this._otherClients.push(await OtherClient.create(server.address, await calculateFingerprint(originalExportedKey), verifyKey, 0));
                         } else {
-                            this._otherClients[fingerprint] = await OtherClient.create(server.address, verifyKey, 0);
+                            // Client already exists
+                            // TODO set online status?
                         }
                     }
                 }
@@ -100,9 +102,7 @@ export class ChatClient {
                 // Locate the sender
                 let otherClient: OtherClient | undefined;
 
-                for (const fingerprint in this._otherClients) {
-                    let client = this._otherClients[fingerprint];
-
+                for (const client of this._otherClients) {
                     if (await client.isValidSignedData(message)) {
                         otherClient = client;
                         break;
@@ -196,29 +196,27 @@ export class ChatClient {
         let recipientFingerprints = this._groups[groupID];
 
         let destinationServers: string[] = [];
-        let recipientEncryptKeys: CryptoKey[] = [];
+        let recipients: [string, CryptoKey][] = [];
 
-        for (const fingerprint in this._otherClients) {
-            if (!recipientFingerprints.includes(fingerprint))
+        for (const client of this._otherClients) {
+            if (!recipientFingerprints.includes(client.fingerprint))
                 continue;
-
-            const client = this._otherClients[fingerprint];
 
             if (!destinationServers.includes(client.serverAddress))
                 destinationServers.push(client.serverAddress);
 
-            recipientEncryptKeys.push(client.encryptKey);
+            recipients.push([client.fingerprint, client.encryptKey]);
         }
 
         if (destinationServers.length === 0)
             // No destination servers
             return;
 
-        if (recipientEncryptKeys.length === 0)
+        if (recipients.length === 0)
             // No recipients
             return;
 
-        const chatData = await ChatData.create(message, this.fingerprint, recipientEncryptKeys, destinationServers);
+        const chatData = await ChatData.create(message, this.fingerprint, recipients, destinationServers);
 
         await this.sendSignedData(chatData);
     }
@@ -240,12 +238,14 @@ export class ChatClient {
         const encryptKey = await webCrypto.importKey("spki", exportedPub, OAEPImportParams, true, ["encrypt"]);
         const decryptKey = await webCrypto.importKey("pkcs8", exportedPriv, OAEPImportParams, false, ["decrypt"]);
 
-        const fingerprint = await calculateFingerprint(verifyKey);
+        const helloData = await HelloData.create(verifyKey);
+
+        const fingerprint = await helloData.calculateFingerprint();
 
         let client = new ChatClient(transport, verifyKey, signKey, encryptKey, decryptKey, fingerprint);
 
         // Say hello
-        await client.sendSignedData(await HelloData.create(verifyKey));
+        await client.sendSignedData(helloData);
 
         return client;
     }

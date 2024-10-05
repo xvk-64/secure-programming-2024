@@ -73,8 +73,14 @@ export async function PEMToKey(pem: string, importParams: RsaHashedImportParams)
 
     return key;
 }
-export async function calculateFingerprint(key: CryptoKey) {
-    let exportedKeyBuffer = new TextEncoder().encode(await keyToPEM(key));
+export async function compareKey(key1: CryptoKey, key2: CryptoKey) {
+    const exportKey1 = encode(await crypto.subtle.exportKey("spki", key1));
+    const exportKey2 = encode(await crypto.subtle.exportKey("spki", key2));
+
+    return exportKey1 === exportKey2;
+}
+export async function calculateFingerprint(exportedKey: string) {
+    let exportedKeyBuffer = new TextEncoder().encode(exportedKey);
     let fingerprintBuffer = await crypto.subtle.digest("SHA-256", exportedKeyBuffer);
     return encode(fingerprintBuffer);
 }

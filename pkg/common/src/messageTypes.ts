@@ -2,7 +2,6 @@ import  {type Protocol} from "./protocol/messageTypes.js";
 import {decode, encode} from "base64-arraybuffer";
 import {
     AESGenParams,
-    calculateFingerprint,
     OAEPParams,
     PEMToKey,
     PSSParams,
@@ -20,29 +19,28 @@ abstract class MessageBase<TProtocolMessage extends Protocol.ProtocolMessage> {
     type: TProtocolMessage["type"];
 
     protected readonly _protocolMessage: TProtocolMessage;
+    get protocol() {
+        return this._protocolMessage;
+    };
 
     protected constructor(protocolMessage: TProtocolMessage) {
         this._protocolMessage = protocolMessage;
         this.type = protocolMessage.type;
     }
-
-    toProtocol() {
-        return this._protocolMessage;
-    };
 }
 abstract class MessageDataBase<TData extends Protocol.SignedDataEntry> {
     type: TData["type"];
 
-    protected readonly _protocolData: TData;
+    protected readonly _protocol: TData;
+    get protocol() {
+        return this._protocol;
+    };
 
     protected constructor(protocolData: TData) {
-        this._protocolData = protocolData;
+        this._protocol = protocolData;
         this.type = protocolData.type;
     }
 
-    toProtocol() {
-        return this._protocolData;
-    };
 }
 
 
@@ -52,6 +50,12 @@ export class HelloData extends MessageDataBase<Protocol.HelloData> {
     private constructor(protocolData: Protocol.HelloData, verifyKey: CryptoKey) {
         super(protocolData);
         this.verifyKey = verifyKey;
+    }
+
+    async calculateFingerprint() {
+        let exportedKeyBuffer = new TextEncoder().encode(this.protocol.public_key);
+        let fingerprintBuffer = await crypto.subtle.digest("SHA-256", exportedKeyBuffer);
+        return encode(fingerprintBuffer);
     }
 
     static async create(verifyKey: CryptoKey) {
@@ -140,10 +144,10 @@ export class ChatData extends MessageDataBase<Protocol.ChatData> {
         );
     }
 
-    static async create(message: string, senderFingerprint: string, recipientEncryptKeys: CryptoKey[], destinationServers: string[]): Promise<ChatData> {
+    static async create(message: string, senderFingerprint: string, recipients: [string, CryptoKey][], destinationServers: string[]): Promise<ChatData> {
         let participantFingerprints = [senderFingerprint];
-        for (const key of recipientEncryptKeys)
-            participantFingerprints.push(await calculateFingerprint(key));
+        for (const recipient of recipients)
+            participantFingerprints.push(recipient[0]);
 
         const chat: Protocol.Chat = {
             participants: participantFingerprints,
@@ -167,8 +171,8 @@ export class ChatData extends MessageDataBase<Protocol.ChatData> {
 
         // Encrypt keys for recipients
         let recipientSymmKeys = [];
-        for (const key of recipientEncryptKeys)
-            recipientSymmKeys.push(await crypto.subtle.encrypt(OAEPParams, key, exportedKey));
+        for (const recipient of recipients)
+            recipientSymmKeys.push(await crypto.subtle.encrypt(OAEPParams, recipient[1], exportedKey));
 
 
         const protocolData: Protocol.ChatData = {
@@ -240,7 +244,7 @@ export class SignedData<TData extends MessageDataBase<Protocol.SignedDataEntry>>
     }
 
     public async verify(verifyKey: CryptoKey): Promise<boolean> {
-        const payloadString = JSON.stringify(await this.data.toProtocol()) + this.counter.toString();
+        const payloadString = JSON.stringify(this.data.protocol) + this.counter.toString();
         const encodedPayload = new TextEncoder().encode(payloadString);
 
         return await crypto.subtle.verify(PSSParams, verifyKey, this.signature, encodedPayload);
@@ -249,14 +253,14 @@ export class SignedData<TData extends MessageDataBase<Protocol.SignedDataEntry>>
     static async create<TData extends MessageDataBase<Protocol.SignedDataEntry>>
         (data: TData, counter: number, signKey: CryptoKey): Promise<SignedData<TData>> {
         // Generate signature.
-        const payloadString = JSON.stringify(data.toProtocol()) + counter.toString();
+        const payloadString = JSON.stringify(data.protocol) + counter.toString();
         const encodedPayload = new TextEncoder().encode(payloadString);
 
         const signature = await webCrypto.sign(PSSParams, signKey, encodedPayload);
 
         const protocolMessage: Protocol.SignedData = {
             type: "signed_data",
-            data: data.toProtocol(),
+            data: data.protocol,
             counter: counter,
             signature: encode(signature)
         };

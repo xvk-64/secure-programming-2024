@@ -3,7 +3,7 @@ import {
     ClientToClientSendable,
     PublicChatData, SignedData
 } from "../messageTypes.js";
-import {calculateFingerprint, duplicateKey} from "../util/crypto.js";
+import {duplicateKey} from "../util/crypto.js";
 
 const webCrypto = globalThis.crypto.subtle;
 
@@ -62,9 +62,7 @@ export class OtherClient {
         return decrypted;
     }
 
-    static async create(serverAddress: string, verifyKey: CryptoKey, counter: number) {
-        const fingerprint = await calculateFingerprint(verifyKey);
-
+    static async create(serverAddress: string, fingerprint: string, verifyKey: CryptoKey, counter: number) {
         // Hack to get the same RSA key into both OAEP and PSS
         const newKeys = await duplicateKey(verifyKey);
 
