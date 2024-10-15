@@ -46,6 +46,9 @@ export class ChatClient {
         for (const fingerprint in this._otherClients) {
             const client = this._otherClients[fingerprint];
 
+            if (!client.isOnline)
+                continue;
+
             result.push({fingerprint: client.fingerprint, serverAddress: client.serverAddress});
         }
 
@@ -75,6 +78,11 @@ export class ChatClient {
             case "client_list":
                 // console.log(message);
 
+                // Set all clients to offline
+                for (const fingerprint in this._otherClients) {
+                    this._otherClients[fingerprint].isOnline = false;
+                }
+
                 // Client list from the server
                 let clientListMessage = message as ClientList;
 
@@ -82,8 +90,12 @@ export class ChatClient {
                     for (const verifyKey of server.clientVerifyKeys) {
                         const fingerprint = await calculateFingerprint(verifyKey);
 
+                        if (fingerprint === this.fingerprint)
+                            // Don't include self
+                            continue;
+
                         if (fingerprint in this._otherClients) {
-                            // TODO set online status?
+                            this._otherClients[fingerprint].isOnline = true;
                         } else {
                             this._otherClients[fingerprint] = await OtherClient.create(server.address, verifyKey, 0);
                         }

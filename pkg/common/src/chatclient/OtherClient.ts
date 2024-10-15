@@ -5,14 +5,14 @@ import {
 } from "../messageTypes.js";
 import {calculateFingerprint, duplicateKey} from "../util/crypto.js";
 
-const webCrypto = globalThis.crypto.subtle;
-
 // Represents a client's view of other clients in the network
 export class OtherClient {
     public readonly fingerprint: string;
     public readonly serverAddress: string;
     public readonly verifyKey: CryptoKey;
     public readonly encryptKey: CryptoKey;
+
+    public isOnline: boolean = true;
 
     private _counter: number;
 
