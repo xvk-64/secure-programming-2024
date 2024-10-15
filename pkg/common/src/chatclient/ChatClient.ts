@@ -1,15 +1,15 @@
 import {
-    ChatData, CleartextChat, ClientList,
-    ClientSendableSignedData, ClientSendableSignedDataEntry,
+    ChatData, ClientList,
+    ClientSendableSignedDataEntry,
     HelloData,
     PublicChatData,
-    ServerToClientSendable, ServerToClientSendableSignedData,
+    ServerToClientSendable,
     SignedData
 } from "../messageTypes.js";
 import {IChatClientTransport} from "./IChatClientTransport.js";
-import {EventListener, EventEmitter} from "../util/EventEmitter.js";
+import {EventEmitter} from "../util/EventEmitter.js";
 import {OtherClient} from "./OtherClient.js";
-import {calculateFingerprint, OAEPGenParams, OAEPImportParams, PSSImportParams} from "../util/crypto.js";
+import {calculateFingerprint, OAEPImportParams, PSSImportParams} from "../util/crypto.js";
 
 const webCrypto = globalThis.crypto.subtle;
 
@@ -22,6 +22,10 @@ export type Chat = {
 export type PublicChat = {
     message: string;
     senderFingerprint: string;
+}
+export type OnlineClient = {
+    fingerprint: string;
+    serverAddress: string;
 }
 
 // Class holding most functionality of the client.
@@ -36,6 +40,20 @@ export class ChatClient {
     public readonly fingerprint: string;
 
     private _otherClients: { [fingerprint: string]: OtherClient } = {};
+    public getOnlineClients() {
+        let result: OnlineClient[] = [];
+
+        for (const fingerprint in this._otherClients) {
+            const client = this._otherClients[fingerprint];
+
+            if (!client.isOnline)
+                continue;
+
+            result.push({fingerprint: client.fingerprint, serverAddress: client.serverAddress});
+        }
+
+        return result;
+    }
 
     private _groups: { [groupID: string]: string[]} = {}
 
@@ -53,11 +71,17 @@ export class ChatClient {
         return result;
     }
 
-    private _receiveListener: EventListener<ServerToClientSendable>;
+    public onClientUpdate: EventEmitter<void> = new EventEmitter<void>();
+
     private async onReceiveMessage(message: ServerToClientSendable) {
         switch (message.type) {
             case "client_list":
                 // console.log(message);
+
+                // Set all clients to offline
+                for (const fingerprint in this._otherClients) {
+                    this._otherClients[fingerprint].isOnline = false;
+                }
 
                 // Client list from the server
                 let clientListMessage = message as ClientList;
@@ -66,13 +90,19 @@ export class ChatClient {
                     for (const verifyKey of server.clientVerifyKeys) {
                         const fingerprint = await calculateFingerprint(verifyKey);
 
+                        if (fingerprint === this.fingerprint)
+                            // Don't include self
+                            continue;
+
                         if (fingerprint in this._otherClients) {
-                            // TODO set online status?
+                            this._otherClients[fingerprint].isOnline = true;
                         } else {
                             this._otherClients[fingerprint] = await OtherClient.create(server.address, verifyKey, 0);
                         }
                     }
                 }
+
+                this.onClientUpdate.dispatch();
                 break;
             case "signed_data":
                 // Signed data from another client
@@ -112,7 +142,7 @@ export class ChatClient {
                         const otherParticipants = [cleartext.senderFingerprint, ...cleartext.recipientFingerprints].filter(fingerprint => fingerprint != this.fingerprint);
 
                         // Do something with the cleartext.
-                        await this.onChat.dispatch({
+                        this.onChat.dispatch({
                             message: cleartext.message,
                             groupID: this.getGroupID(otherParticipants),
                             senderFingerprint: cleartext.senderFingerprint,
@@ -130,7 +160,7 @@ export class ChatClient {
                             return;
 
                         // Do something with public chat.
-                        await this.onPublicChat.dispatch({
+                        this.onPublicChat.dispatch({
                             message: publicChatMessage.data.message,
                             senderFingerprint: publicChatMessage.data.senderFingerprint
                         });
@@ -154,13 +184,19 @@ export class ChatClient {
         fingerprint: string
     ) {
         this._transport = transport;
-        this._receiveListener = this._transport.onReceiveMessage.createAsyncListener(message => this.onReceiveMessage(message));
 
         this._verifyKey = verifyKey;
         this._signKey = signKey;
         this._encryptKey = encryptKey;
         this._decryptKey = decryptKey;
         this.fingerprint = fingerprint
+
+
+        const receiveListener = this._transport.onReceiveMessage.createListener(message => this.onReceiveMessage(message));
+
+        this._transport.onDisconnect.createListener(() => {
+            this._transport.onReceiveMessage.removeListener(receiveListener);
+        })
     }
 
     public readonly onChat: EventEmitter<Chat> = new EventEmitter();

@@ -10,7 +10,6 @@ import {PEMToKey, PSSGenParams, PSSImportParams} from "@sp24/common/util/crypto.
 import {TestEntryPoint} from "./chatserver/testclient/TestEntryPoint.js";
 import * as fs from "node:fs";
 import {NeighbourhoodAllowList} from "./chatserver/NeighbourhoodAllowList.js";
-import * as readline from "node:readline";
 import {WebsocketServerToServerTransport} from "./chatserver/websocketserver/WebsocketServerToServerTransport.js";
 import cors from "cors";
 import fileUpload from "express-fileupload";
@@ -55,22 +54,22 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.post("/api/upload", (request, response) => {
- 
+
     try {
-   
+
         if(!request.files) {
             console.log("file didnt upload")
             response.status(400).send("Bad Request: File Upload Unsuccessful")
 
         } else {
             //send response
-            
+
             let newFileName = randomUUID() // set random name
             let file = request.files.file as fileUpload.UploadedFile
             let tempName = file.name;
             let parts = tempName.split('.');
             const file_extension = parts.length > 1 ? parts[parts.length - 1] : "";
-       
+
             let filename = newFileName + '.' + file_extension;
             file.mv('./filestore/' + filename, (err) => {
                 if (err) {
@@ -99,8 +98,8 @@ let serverPrivateKey: webcrypto.CryptoKey | undefined;
 
 if (fs.existsSync(publicKeyFile) && fs.existsSync(privateKeyFile)) {
     // Load from file
-    serverPrivateKey = await PEMToKey(fs.readFileSync(privateKeyFile).toString(), true, PSSImportParams);
-    serverPublicKey = await PEMToKey(fs.readFileSync(publicKeyFile).toString(), false, PSSImportParams);
+    serverPrivateKey = await PEMToKey(fs.readFileSync(privateKeyFile).toString(), PSSImportParams);
+    serverPublicKey = await PEMToKey(fs.readFileSync(publicKeyFile).toString(), PSSImportParams);
 }
 
 if (serverPublicKey === undefined || serverPrivateKey === undefined) {
@@ -130,7 +129,7 @@ if (fs.existsSync(neighbourhoodFile)) {
 
             neighbourhood.push({
                 address: entry.address,
-                verifyKey: await PEMToKey(entry.verifyKey, false, PSSImportParams)
+                verifyKey: await PEMToKey(entry.verifyKey, PSSImportParams)
             });
 
             URLs.push(entry.URL);
@@ -138,37 +137,43 @@ if (fs.existsSync(neighbourhoodFile)) {
     }
 }
 
-const httpServer = app.listen(port, () => {
+const httpServer = app.listen(port, async () => {
     console.log(`Server started http://localhost:${port}`);
-});
 
-const wsEntryPoint = new WebSocketEntryPoint(httpServer, neighbourhood);
-const testEntryPoint = new TestEntryPoint(neighbourhood);
-const server = new ChatServer(address, [wsEntryPoint, testEntryPoint], serverPrivateKey, serverPublicKey);
+    const wsEntryPoint = new WebSocketEntryPoint(httpServer, neighbourhood);
+    const testEntryPoint = new TestEntryPoint(neighbourhood);
+    const server = new ChatServer(address, [wsEntryPoint, testEntryPoint], serverPrivateKey, serverPublicKey);
 
-const client1Keys = await webcrypto.subtle.generateKey(PSSGenParams, true, ["sign", "verify"]);
-const testTransport1 = new TestClientTransport(testEntryPoint);
-const testClient1 = await ChatClient.create(testTransport1, client1Keys.privateKey, client1Keys.publicKey);
+    const client1Keys = await webcrypto.subtle.generateKey(PSSGenParams, true, ["sign", "verify"]);
+    const testTransport1 = new TestClientTransport(testEntryPoint);
+    const testClient1 = await ChatClient.create(testTransport1, client1Keys.privateKey, client1Keys.publicKey);
 
-// Try connecting to other servers
-for (const URL of URLs) {
-    const transport = await WebsocketServerToServerTransport.connect(URL);
+    // Try connecting to other servers
+    for (const URL of URLs) {
+        const transport = await WebsocketServerToServerTransport.connect(URL);
 
-    if (transport !== undefined) {
-        console.log(`Connecting to ${URL}`)
-        await wsEntryPoint.connectToServer(transport, await server.createServerHelloMessage())
+        if (transport !== undefined) {
+            console.log(`Connecting to ${URL}`)
+            await wsEntryPoint.connectToServer(transport, await server.createServerHelloMessage())
+        }
     }
-}
 
-// Any servers which we aren't now connected to will have to connect to us later.
+    // Any servers which we aren't now connected to will have to connect to us later.
 
-// setInterval(() => {
-//     testClient1.sendPublicChat("Yay!");
-// }, 1000);
+    setInterval(() => {
+        // testClient1.sendPublicChat("Yay!");
 
-testClient1.onPublicChat.createListener(message => {
-    // console.log(`message: ${message.message} from ${message.senderFingerprint}`)
-})
-testClient1.onChat.createListener(message => {
-    // console.log(`message: ${message.message} from ${message.senderFingerprint} ${message.groupID}`)
-})
+        const onlineClients = testClient1.getOnlineClients();
+
+        // onlineClients.forEach(onlineClient => {
+        //     testClient1.sendChat("Hello there!", testClient1.getGroupID([onlineClient.fingerprint]));
+        // })
+    }, 1000);
+
+    testClient1.onPublicChat.createListener(message => {
+        console.log(`message: ${message.message} from ${message.senderFingerprint}`)
+    })
+    testClient1.onChat.createListener(message => {
+        console.log(`message: ${message.message} from ${message.senderFingerprint} ${message.groupID}`)
+    })
+});

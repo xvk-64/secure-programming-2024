@@ -1,4 +1,4 @@
-import {EventEmitter} from "@sp24/common/util/EventEmitter.js"
+import {EventEmitter, EventQueue} from "@sp24/common/util/EventEmitter.js"
 import type {IServerToServerTransport} from "./IServerToServerTransport.js";
 import {IServerToClientTransport} from "./IServerToClientTransport.js";
 import {webcrypto} from "node:crypto";
@@ -9,8 +9,8 @@ import {ServerHelloData, SignedData} from "@sp24/common/messageTypes.js";
 
 // Defines an entry point for new connections to a server.
 export abstract class EntryPoint {
-    readonly onClientConnect: EventEmitter<ConnectedClient> = new EventEmitter();
-    readonly onServerConnect: EventEmitter<ConnectedServer> = new EventEmitter();
+    readonly onClientConnect: EventQueue<ConnectedClient> = new EventQueue();
+    readonly onServerConnect: EventQueue<ConnectedServer> = new EventQueue();
 
     protected _neighbourhood: NeighbourhoodAllowList;
 
@@ -20,7 +20,7 @@ export abstract class EntryPoint {
 
     public async connectToServer(serverTransport: IServerToServerTransport, helloMessage: SignedData<ServerHelloData>) {
         // Wait for a hello message
-        const messageListener = serverTransport.onReceiveMessage.createAsyncListener(async message => {
+        const messageListener = serverTransport.onReceiveMessage.createListener(async message => {
             if (message.type === "signed_data") {
                 if (message.data.type == "server_hello") {
                     const serverHelloMessage = message as SignedData<ServerHelloData>;
@@ -39,7 +39,7 @@ export abstract class EntryPoint {
                     // Remove listener as we have received the message we want.
                     serverTransport.onReceiveMessage.removeListener(messageListener);
 
-                    const connectedServer = new ConnectedServer(serverTransport, this, entry, message.counter);
+                    const connectedServer = new ConnectedServer(serverTransport, this, entry, message.counter, this._neighbourhood);
 
                     await this.onServerConnect.dispatch(connectedServer);
                 }

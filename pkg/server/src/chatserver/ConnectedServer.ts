@@ -6,10 +6,11 @@ import {
     ServerToServerSendable,
     ServerToServerSendableSignedData, SignedData
 } from "@sp24/common/messageTypes.js";
-import {EventEmitter} from "@sp24/common/util/EventEmitter.js";
+import {EventEmitter, EventQueue} from "@sp24/common/util/EventEmitter.js";
 import {webcrypto} from "node:crypto";
 import {IServerToClientTransport} from "./IServerToClientTransport.js";
 import {NeighbourhoodAllowList, NeighbourhoodServer} from "./NeighbourhoodAllowList.js";
+import {Server} from "http";
 
 export type NeighbourhoodClient = {
     verifyKey: webcrypto.CryptoKey;
@@ -31,30 +32,53 @@ export class ConnectedServer {
 
     private _counter: number;
 
+    private _neighbourhood: NeighbourhoodAllowList;
+
     public readonly entryPoint: EntryPoint;
 
     public async sendMessage(message: ServerToServerSendable): Promise<void> {
         return await this._transport.sendMessage(message);
     }
 
-    public readonly onMessageReady: EventEmitter<ServerToServerSendable> = new EventEmitter();
+    public readonly onMessageReady: EventQueue<ServerToServerSendable> = new EventQueue();
     public readonly onDisconnect: EventEmitter<void> = new EventEmitter();
 
-    public constructor(transport: IServerToServerTransport, entryPoint: EntryPoint, neighbourhoodEntry: NeighbourhoodServer, initialCounter: number) {
+    public constructor(transport: IServerToServerTransport, entryPoint: EntryPoint, neighbourhoodEntry: NeighbourhoodServer, initialCounter: number, neighbourhood: NeighbourhoodAllowList) {
         this._transport = transport;
         this.entryPoint = entryPoint;
         this._neighbourhoodEntry = neighbourhoodEntry;
         this._counter = initialCounter;
+        this._neighbourhood = neighbourhood;
 
-        const messageListener = this._transport.onReceiveMessage.createAsyncListener(async message => {
+        const messageListener = this._transport.onReceiveMessage.createListener(async message => {
+            // console.log(message);
+
             // Validate signed data
             if (message.type == "signed_data") {
                 const signedDataMessage = message as ServerToServerSendableSignedData;
 
                 // See if this was sent by the server?
                 if (signedDataMessage.data.type == "server_hello") {
-                    // Do not let servers change their key after connecting.
-                    return;
+                    // Update server key
+                    const serverHelloMessage = signedDataMessage as SignedData<ServerHelloData>;
+
+                    if (serverHelloMessage.counter <= this._counter)
+                        // Invalid counter
+                        return;
+
+                    // Find new neighbourhood entry
+                    const newEntry = this._neighbourhood.find(e => e.address == serverHelloMessage.data.serverAddress);
+
+                    if (newEntry === undefined)
+                        // Not in allow list.
+                        return;
+
+                    if (!await serverHelloMessage.verify(newEntry.verifyKey))
+                        // Invalid signature
+                        return;
+
+                    // Update this entry
+                    this._neighbourhoodEntry = newEntry;
                 }
             }
             if (message.type == "client_update") {
@@ -68,9 +92,9 @@ export class ConnectedServer {
             await this.onMessageReady.dispatch(message);
         });
 
-        this._transport.onDisconnect.createAsyncListener(async () => {
+        this._transport.onDisconnect.createListener(() => {
             this._transport.onReceiveMessage.removeListener(messageListener);
-            await this.onDisconnect.dispatch();
+            this.onDisconnect.dispatch();
         })
     }
 }

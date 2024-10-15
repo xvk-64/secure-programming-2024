@@ -29,7 +29,7 @@ export namespace Protocol {
     export type SignedDataEntry = HelloData | ChatData | PublicChatData | ServerHelloData;
     export type SignedData = {
         type: "signed_data";
-        data: SignedDataEntry;
+        data: string;
         counter: number;
         signature: string;
     }

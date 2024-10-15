@@ -36,20 +36,42 @@ export const AESGenParams: AesKeyGenParams = {
 }
 
 export async function keyToPEM(key: CryptoKey) {
-    const exported: ArrayBuffer = await webCrypto.exportKey(key.type == "public" ? "spki" : "pkcs8", key);
-    return "-----BEGIN PUBLIC KEY-----\n" + encode(exported) + "\n-----END PUBLIC KEY-----";
+    if (key.type == "public") {
+        const exported: ArrayBuffer = await webCrypto.exportKey("spki", key);
+        return "-----BEGIN PUBLIC KEY-----\n" + encode(exported) + "\n-----END PUBLIC KEY-----";
+    } else {
+        const exported: ArrayBuffer = await webCrypto.exportKey("pkcs8", key);
+        return "-----BEGIN PRIVATE KEY-----\n" + encode(exported) + "\n-----END PRIVATE KEY-----";
+    }
 }
-export async function PEMToKey(pem: string, isPrivate: boolean, importParams: RsaHashedImportParams) {
-    const pemHeader = "-----BEGIN PUBLIC KEY-----\n";
-    const pemFooter = "\n-----END PUBLIC KEY-----";
-    const pemContents = pem.substring(
-        pemHeader.length,
-        pem.length - pemFooter.length,
-    );
+export async function PEMToKey(pem: string, importParams: RsaHashedImportParams) {
+    const publicPemHeader = "-----BEGIN PUBLIC KEY-----\n";
+    const publicPemFooter = "\n-----END PUBLIC KEY-----";
+    const privatePemHeader = "-----BEGIN PRIVATE KEY-----\n";
+    const privatePemFooter = "\n-----END PRIVATE KEY-----";
 
-    const keyContents = decode(pemContents);
+    let pemContents = "";
+    let isPrivate = true;
+    if (pem.includes(publicPemHeader)) {
+        isPrivate = false;
 
-    return await webCrypto.importKey(isPrivate ? "pkcs8" : "spki", keyContents, importParams, true, isPrivate ? ["sign"] : ["verify"]);
+        pemContents = pem.substring(
+            publicPemHeader.length,
+            pem.length - publicPemFooter.length,
+        );
+    } else if (pem.includes(privatePemHeader)) {
+        pemContents = pem.substring(
+            privatePemHeader.length,
+            pem.length - privatePemFooter.length,
+        );
+    }
+
+    // Strip whitespace from PEM contents?
+    const keyContents = decode(pemContents.replace(/\s/g, ""));
+
+    const key = await webCrypto.importKey(isPrivate ? "pkcs8" : "spki", keyContents, importParams, true, isPrivate ? ["sign"] : ["verify"]);
+
+    return key;
 }
 export async function calculateFingerprint(key: CryptoKey) {
     let exportedKeyBuffer = new TextEncoder().encode(await keyToPEM(key));
