@@ -1,7 +1,8 @@
 import {EventEmitter, EventQueue} from "../util/EventEmitter.js";
-import {AnyMessage, deserialiseMessage} from "./messageserialisation.js";
+import {deserialiseMessage} from "./messageserialisation.js";
 import * as ws from "ws";
 import {Mutex} from "async-mutex";
+import {AnyMessage} from "../messageTypes.js";
 
 let i = 0;
 
