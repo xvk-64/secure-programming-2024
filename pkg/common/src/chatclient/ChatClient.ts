@@ -242,7 +242,7 @@ export class ChatClient {
         await this.sendSignedData(publicChatData);
     }
 
-    static async create(transport: IChatClientTransport, privateKey: CryptoKey, publicKey: CryptoKey): Promise<ChatClient> {
+    static async create(transport: IChatClientTransport, privateKey: CryptoKey, publicKey: CryptoKey, onClientUpdate?: () => void): Promise<ChatClient> {
         // Hack to get the same RSA key into both OAEP and PSS
         const exportedPub = await webCrypto.exportKey("spki", publicKey);
         const exportedPriv = await webCrypto.exportKey("pkcs8", privateKey);
@@ -255,6 +255,9 @@ export class ChatClient {
         const fingerprint = await calculateFingerprint(verifyKey);
 
         let client = new ChatClient(transport, verifyKey, signKey, encryptKey, decryptKey, fingerprint);
+
+        if (onClientUpdate !== undefined)
+            client.onClientUpdate.createListener(onClientUpdate, true);
 
         // Say hello
         await client.sendSignedData(new HelloData(verifyKey));

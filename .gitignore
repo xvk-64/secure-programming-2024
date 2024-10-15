@@ -8,6 +8,7 @@ dist
 dist-ssr
 *.local
 **/generated_keys/
+**/filestore/
 
 # Editor directories and files
 .vscode/*

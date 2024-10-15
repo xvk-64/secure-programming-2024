@@ -12,7 +12,7 @@ export type ChatProps = {
 }
 
 export function Chat(props: ChatProps) {
-    const client = useContext(ClientContext);
+    const clientContext = useContext(ClientContext);
 
     const [fingerprint, setFingerprint] = useState("");
     const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
@@ -27,24 +27,26 @@ export function Chat(props: ChatProps) {
 
     // On client update
     useEffect(() => {
-        const clientUpdateListener = client?.current?.onClientUpdate.createListener(() => {
-            setFingerprint(client?.current?.fingerprint || "");
+        const clientUpdateListener = clientContext?.current?.client.onClientUpdate.createListener(() => {
+            setFingerprint(clientContext?.current?.client.fingerprint || "");
 
-            setOnlineUsers(client?.current?.getOnlineClients().map(c => c.fingerprint).filter(f => f != fingerprint) || []);
-            console.log(fingerprint);
-            console.log(onlineUsers);
+            setOnlineUsers(clientContext?.current?.client.getOnlineClients().map(c => c.fingerprint).filter(f => f != fingerprint) || []);
         });
+
+        // Fingerprint and online users are already available as client is already logged in.
+        setFingerprint(clientContext?.current?.client.fingerprint || "");
+        setOnlineUsers(clientContext?.current?.client.getOnlineClients().map(c => c.fingerprint).filter(f => f != fingerprint) || []);
 
         // Cleanup
         return () => {
             if (clientUpdateListener !== undefined)
-                client?.current?.onClientUpdate.removeListener(clientUpdateListener);
+                clientContext?.current?.client.onClientUpdate.removeListener(clientUpdateListener);
         }
-    }, [allGroupIDs, fingerprint, onlineUsers]);
+    }, [allGroupIDs]);
 
     // On public chat
     useEffect(() => {
-        const publicChatListener = client?.current?.onPublicChat.createListener(data => {
+        const publicChatListener = clientContext?.current?.client.onPublicChat.createListener(data => {
             setMessageGroups(mg => new Map(mg.set("", [...mg.get("")!, {
                 senderFingerprint: data.senderFingerprint,
                 text: data.message,
@@ -55,13 +57,13 @@ export function Chat(props: ChatProps) {
         // Cleanup
         return () => {
             if (publicChatListener !== undefined)
-                client?.current?.onPublicChat.removeListener(publicChatListener);
+                clientContext?.current?.client.onPublicChat.removeListener(publicChatListener);
         }
     }, []);
 
     // On chat
     useEffect(() => {
-        const chatListener = client?.current?.onChat.createListener(data => {
+        const chatListener = clientContext?.current?.client.onChat.createListener(data => {
             if (!allGroupIDs.includes(data.groupID))
                 setAllGroupIDs([...allGroupIDs, data.groupID]);
             if (!(messageGroups.has(data.groupID)))
@@ -79,15 +81,15 @@ export function Chat(props: ChatProps) {
         // Cleanup
         return () => {
             if (chatListener !== undefined)
-                client?.current?.onChat.removeListener(chatListener);
+                clientContext?.current?.client.onChat.removeListener(chatListener);
         }
     }, [allGroupIDs, messageGroups]);
 
     function onSendMessage(messageText: string) {
         if (selectedGroupID === "") {
-            client?.current?.sendPublicChat(messageText);
+            clientContext?.current?.client.sendPublicChat(messageText);
         } else {
-            client?.current?.sendChat(messageText, selectedGroupID);
+            clientContext?.current?.client.sendChat(messageText, selectedGroupID);
         }
 
         const message: Message = {

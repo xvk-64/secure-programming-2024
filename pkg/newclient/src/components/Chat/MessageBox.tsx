@@ -1,4 +1,5 @@
 import React, {FormEvent, useState} from "react"
+import {FileUpload} from "./FileUpload.js";
 
 export type MessageBoxProps = {
     onSendMessage: (message: string) => void;
@@ -14,8 +15,13 @@ export function MessageBox (props: MessageBoxProps) {
         setMessage("");
     }
 
+    const onUploadDone = (URL: string) => {
+        setMessage(URL);
+    }
+
     return <>
         <form onSubmit={onSend}>
+            <FileUpload onUploadDone={onUploadDone}/>
             <input type="text" value={message} onChange={e => setMessage(e.target.value)} />
             <input type="submit" value="Send"/>
         </form>

@@ -5,7 +5,7 @@ import {TestClientTransport} from "./chatserver/testclient/TestClientTransport.j
 
 import {ChatClient} from "@sp24/common/chatclient/ChatClient.js";
 import {WebSocketEntryPoint} from "./chatserver/websocketserver/WebSocketEntryPoint.js";
-import {randomUUID, webcrypto} from "node:crypto";
+import {webcrypto} from "node:crypto";
 import {PEMToKey, PSSGenParams, PSSImportParams} from "@sp24/common/util/crypto.js";
 import {TestEntryPoint} from "./chatserver/testclient/TestEntryPoint.js";
 import * as fs from "node:fs";
@@ -13,9 +13,8 @@ import {NeighbourhoodAllowList} from "./chatserver/NeighbourhoodAllowList.js";
 import {WebsocketServerToServerTransport} from "./chatserver/websocketserver/WebsocketServerToServerTransport.js";
 import cors from "cors";
 import fileUpload from "express-fileupload";
-import url from "url";
 import bodyParser from "body-parser";
-
+import {handleFileUpload} from "./fileupload.js";
 
 
 /*
@@ -42,51 +41,30 @@ const neighbourhoodFile = process.argv[6];
 
 const app = express();
 
-app.use(express.static("../client/dist/"));
-app.use('/filestore', express.static('filestore'));
+// app.use(express.static("../client/dist/"));
+
+
+// File upload
+// Create if not existing
+if (!fs.existsSync("./filestore/"))
+    fs.mkdirSync("./filestore/")
+
+app.use('/filestore', express.static('./filestore/'));
 
 app.use(fileUpload({
     createParentPath: true
 }));
 
+const corsOptions = {
+    origin: "*"
+}
+app.use(cors(corsOptions));
+// app.use(bodyParser.json());
 
-app.use(cors());
-app.use(bodyParser.json());
-
-app.post("/api/upload", (request, response) => {
-
-    try {
-
-        if(!request.files) {
-            console.log("file didnt upload")
-            response.status(400).send("Bad Request: File Upload Unsuccessful")
-
-        } else {
-            //send response
-
-            let newFileName = randomUUID() // set random name
-            let file = request.files.file as fileUpload.UploadedFile
-            let tempName = file.name;
-            let parts = tempName.split('.');
-            const file_extension = parts.length > 1 ? parts[parts.length - 1] : "";
-
-            let filename = newFileName + '.' + file_extension;
-            file.mv('./filestore/' + filename, (err) => {
-                if (err) {
-                    response.status(500).send("Internal Server Error: File Could Not Be Saved");
-                } else {
-                    response.send({filename});
-                }
-            })
-        }
-    } catch (err) {
-        response.status(500).send("Internal Server Error: File Upload Unsuccessful");
-
-    }
+app.post("/api/upload", handleFileUpload);
 
 
-})
-
+// Server address
 if (address === undefined) {
     console.error("Need to provide address")
     process.exit(-1);

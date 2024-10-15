@@ -1,9 +1,11 @@
 import React from "react";
 import {useState} from "react";
 import {WebSocketClientTransport} from "../client/WebSocketClientTransport.js";
+import {ChatClient} from "@sp24/common/chatclient/ChatClient.js";
+import {PSSGenParams} from "@sp24/common/util/crypto.js";
 
 export type LoginProps = {
-    onConnect: (transport: WebSocketClientTransport) => void;
+    onLogin: (client: ChatClient, serverAddress: string) => void;
 }
 
 export function Login(props: LoginProps) {
@@ -17,14 +19,24 @@ export function Login(props: LoginProps) {
         setInputEnabled(false);
         setStatusMessage("Checking...");
 
-        WebSocketClientTransport.connect(serverAddress)
-            .then(transport => {
-                // Successfully connected.
-                setStatusMessage("Connected! Loading app...");
+        const cleanedAddress = serverAddress.replace(/(^\w+:|^)\/\//, '');
 
-                props.onConnect(transport);
+        WebSocketClientTransport.connect("ws://" + cleanedAddress)
+            .then(async transport => {
+                // Successfully connected.
+                setStatusMessage("Connected to server. Logging in...");
+
+                // Get keys
+                const keyPair = await crypto.subtle.generateKey(PSSGenParams, true, ["sign", "verify"]);
+
+                // Create client.
+                const client = await ChatClient.create(transport, keyPair.privateKey, keyPair.publicKey, () => {
+                    props.onLogin(client, "http://" + cleanedAddress);
+                    setStatusMessage("Logged in! Loading app...");
+                })
             })
             .catch(err => {
+                console.error(err)
                 setInputEnabled(true);
                 setStatusMessage("Invalid server address.");
             })
