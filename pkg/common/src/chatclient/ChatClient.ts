@@ -1,5 +1,5 @@
 import {
-    ChatData, ClientList,
+    ChatData, ClientList, ClientListRequest,
     ClientSendableSignedDataEntry,
     HelloData,
     PublicChatData,
