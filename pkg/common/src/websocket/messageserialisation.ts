@@ -13,7 +13,18 @@ const messageTypes = ["signed_data", "client_list_request", "client_update", "cl
 const signedDataTypes = ["chat", "hello", "public_chat", "server_hello"];
 
 export async function deserialiseMessage(message: string) : Promise<AnyMessage | undefined> {
-    const parsed = JSON.parse(message);
+    // console.log(message)
+
+    let parsed: any = undefined;
+    try {
+        parsed = JSON.parse(message);
+    } catch (SyntaxError) {
+        // Not json
+        return undefined;
+    }
+
+    if (parsed === undefined)
+        return undefined;
 
     // Assert message type
     if (typeof parsed.type != "string") return;

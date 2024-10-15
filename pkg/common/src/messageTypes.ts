@@ -224,6 +224,8 @@ export class ServerHelloData extends MessageDataBase<Protocol.ServerHelloData> {
             type: "server_hello",
             sender: serverAddress
         };
+
+        return new ServerHelloData(protocolData, serverAddress);
     }
 
     static fromProtocol(protocolData: Protocol.ServerHelloData): ServerHelloData {
@@ -295,6 +297,10 @@ export class SignedData<TData extends MessageDataBase<Protocol.SignedDataEntry>>
 export class ClientListRequest extends MessageBase<Protocol.ClientListRequest> {
     static fromProtocol(protocolMessage: Protocol.ClientListRequest): ClientListRequest {
         return new ClientListRequest(protocolMessage);
+    }
+
+    static create() : ClientListRequest {
+        return new ClientListRequest({type: "client_list_request"});
     }
 }
 

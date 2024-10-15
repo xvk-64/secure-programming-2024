@@ -37,7 +37,7 @@ export class ChatServer {
         await this.sendClientList();
 
         // Do client_update to other servers
-        const clientUpdateMessage = new ClientUpdate(this._clients.map(client => client.verifyKey));
+        const clientUpdateMessage = await ClientUpdate.create(this._clients.map(client => client.verifyKey));
         for (const server of this._neighbourhoodServers)
             await server.sendMessage(clientUpdateMessage);
 
@@ -69,7 +69,7 @@ export class ChatServer {
         }
 
         // Send client list
-        const clientListMessage = new ClientList(clientList);
+        const clientListMessage = await ClientList.create(clientList);
         await Promise.all(this._clients.map(client => client.sendMessage(clientListMessage)));
     }
 
@@ -85,7 +85,7 @@ export class ChatServer {
                         await this.sendClientList();
 
                         // Do client_update to other servers
-                        const clientUpdateMessage = new ClientUpdate(this._clients.map(client => client.verifyKey));
+                        const clientUpdateMessage = await ClientUpdate.create(this._clients.map(client => client.verifyKey));
                         for (const server of this._neighbourhoodServers)
                             await server.sendMessage(clientUpdateMessage);
 
@@ -130,7 +130,7 @@ export class ChatServer {
     }
 
     public async createServerHelloMessage() {
-        const serverHelloData = new ServerHelloData(this.address);
+        const serverHelloData = ServerHelloData.create(this.address);
         return await SignedData.create(serverHelloData, this._counter++, this._signKey);
     }
 
@@ -150,7 +150,7 @@ export class ChatServer {
         await server.sendMessage(await this.createServerHelloMessage());
 
         // Request client update
-        await server.sendMessage(new ClientUpdateRequest());
+        await server.sendMessage(ClientUpdateRequest.create());
 
         server.onDisconnect.createListener(() => {
             server.onMessageReady.removeListener(messageListener);
@@ -187,7 +187,7 @@ export class ChatServer {
                 // console.log(message)
                 // We need to send a client update.
 
-                const clientUpdateMessage = new ClientUpdate(this._clients.map(client => client.verifyKey));
+                const clientUpdateMessage = await ClientUpdate.create(this._clients.map(client => client.verifyKey));
                 await server.sendMessage(clientUpdateMessage);
                 break;
             }
