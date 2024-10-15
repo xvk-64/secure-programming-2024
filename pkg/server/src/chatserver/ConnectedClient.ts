@@ -64,7 +64,7 @@ export class ConnectedClient {
                     this._verifyKey = helloData.verifyKey;
 
                     // Update fingerprint
-                    this._fingerprint = await calculateFingerprint(this._verifyKey);
+                    this._fingerprint = await helloData.calculateFingerprint();
                 }
 
                 if (this._verifyKey === undefined)

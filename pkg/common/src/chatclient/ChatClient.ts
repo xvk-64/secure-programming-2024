@@ -79,9 +79,18 @@ export class ChatClient {
 
                 for (const [i, server] of clientListMessage.servers.entries()) {
                     for (const [j, verifyKey] of server.clientVerifyKeys.entries()) {
-                        const client = this._otherClients.find(c => compareKey(c.verifyKey, verifyKey));
+                        let client: OtherClient | undefined = undefined;
+                        for (const c of this._otherClients)
+                            if (await compareKey(c.verifyKey, verifyKey)) {
+                                client = c;
+                                break;
+                            }
 
                         if (client === undefined) {
+                            if (await compareKey(verifyKey, this._verifyKey))
+                                // Skip myself.
+                                continue;
+
                             const originalExportedKey = message.protocol.servers[i].clients[j];
 
                             this._otherClients.push(await OtherClient.create(server.address, await calculateFingerprint(originalExportedKey), verifyKey, 0));
@@ -234,9 +243,9 @@ export class ChatClient {
         const exportedPriv = await webCrypto.exportKey("pkcs8", privateKey);
 
         const verifyKey = await webCrypto.importKey("spki", exportedPub, PSSImportParams, true, ["verify"]);
-        const signKey = await webCrypto.importKey("pkcs8", exportedPriv, PSSImportParams, false, ["sign"]);
+        const signKey = await webCrypto.importKey("pkcs8", exportedPriv, PSSImportParams, true, ["sign"]);
         const encryptKey = await webCrypto.importKey("spki", exportedPub, OAEPImportParams, true, ["encrypt"]);
-        const decryptKey = await webCrypto.importKey("pkcs8", exportedPriv, OAEPImportParams, false, ["decrypt"]);
+        const decryptKey = await webCrypto.importKey("pkcs8", exportedPriv, OAEPImportParams, true, ["decrypt"]);
 
         const helloData = await HelloData.create(verifyKey);
 
@@ -246,6 +255,9 @@ export class ChatClient {
 
         // Say hello
         await client.sendSignedData(helloData);
+
+        // Request client list
+        await client._transport.sendMessage(ClientListRequest.create())
 
         return client;
     }

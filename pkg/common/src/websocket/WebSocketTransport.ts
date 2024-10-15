@@ -22,9 +22,16 @@ export class WebSocketTransport {
         this._webSocket.onclose = (event: CloseEvent) => {this.onDisconnect.dispatch()};
     }
 
-    private async onMessage(message: string) {
+    private async onMessage(message: string | Blob) {
+        let strMessage: string = ""
+        if (message instanceof Blob)
+            strMessage = await message.text();
+        else
+            strMessage = message;
+
+        console.log(strMessage);
         await this._mutex.runExclusive(async () => {
-            const parsed = await deserialiseMessage(message);
+            const parsed = await deserialiseMessage(strMessage);
 
             if (parsed === undefined) return;
 
@@ -40,6 +47,8 @@ export class WebSocketTransport {
     public async sendMessage(message: AnyMessage): Promise<void> {
         // console.log(`s ${message.type} ${message.type == "signed_data" ? message.data.type : ""}`);
 
-        this._webSocket.send(JSON.stringify(message.protocol))
+        const protocol = message.protocol;
+
+        this._webSocket.send(JSON.stringify(protocol))
     }
 }

@@ -88,43 +88,46 @@ if (fs.existsSync(neighbourhoodFile)) {
     }
 }
 
-const httpServer = app.listen(port, () => {
+const httpServer = app.listen(port, async () => {
     console.log(`Server started http://localhost:${port}`);
-});
 
-const wsEntryPoint = new WebSocketEntryPoint(httpServer, neighbourhood);
-const testEntryPoint = new TestEntryPoint(neighbourhood);
-const server = new ChatServer(address, [wsEntryPoint, testEntryPoint], serverPrivateKey, serverPublicKey);
+    const wsEntryPoint = new WebSocketEntryPoint(httpServer, neighbourhood);
+    const testEntryPoint = new TestEntryPoint(neighbourhood);
+    const server = new ChatServer(address, [wsEntryPoint, testEntryPoint], serverPrivateKey, serverPublicKey);
 
 const client1Keys = await webcrypto.subtle.generateKey(PSSGenParams, true, ["sign", "verify"]);
 const testTransport1 = new TestClientTransport(testEntryPoint);
 const testClient1 = await ChatClient.create(testTransport1, client1Keys.privateKey, client1Keys.publicKey);
+    const client1Keys = await webcrypto.subtle.generateKey(PSSGenParams, true, ["sign", "verify"]);
+    const testTransport1 = new TestClientTransport(testEntryPoint);
+    const testClient1 = await ChatClient.create(testTransport1, client1Keys.privateKey, client1Keys.publicKey);
 
-// Try connecting to other servers
-for (const URL of URLs) {
-    const transport = await WebsocketServerToServerTransport.connect(URL);
+    // Try connecting to other servers
+    for (const URL of URLs) {
+        const transport = await WebsocketServerToServerTransport.connect(URL);
 
-    if (transport !== undefined) {
-        console.log(`Connecting to ${URL}`)
-        await wsEntryPoint.connectToServer(transport, await server.createServerHelloMessage())
+        if (transport !== undefined) {
+            console.log(`Connecting to ${URL}`)
+            await wsEntryPoint.connectToServer(transport, await server.createServerHelloMessage())
+        }
     }
-}
 
-// Any servers which we aren't now connected to will have to connect to us later.
+    // Any servers which we aren't now connected to will have to connect to us later.
 
-setInterval(() => {
-    // testClient1.sendPublicChat("Yay!");
+    setInterval(() => {
+        // testClient1.sendPublicChat("Yay!");
 
-    const onlineClients = testClient1.getOnlineClients();
+        const onlineClients = testClient1.getOnlineClients();
 
-    // onlineClients.forEach(onlineClient => {
-    //     testClient1.sendChat("Hello there!", testClient1.getGroupID([onlineClient.fingerprint]));
-    // })
-}, 1000);
+        // onlineClients.forEach(onlineClient => {
+        //     testClient1.sendChat("Hello there!", testClient1.getGroupID([onlineClient.fingerprint]));
+        // })
+    }, 1000);
 
-testClient1.onPublicChat.createListener(message => {
-    console.log(`message: ${message.message} from ${message.senderFingerprint}`)
-})
-testClient1.onChat.createListener(message => {
-    console.log(`message: ${message.message} from ${message.senderFingerprint} ${message.groupID}`)
-})
+    testClient1.onPublicChat.createListener(message => {
+        console.log(`message: ${message.message} from ${message.senderFingerprint}`)
+    })
+    testClient1.onChat.createListener(message => {
+        console.log(`message: ${message.message} from ${message.senderFingerprint} ${message.groupID}`)
+    })
+});
