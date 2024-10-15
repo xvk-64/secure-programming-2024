@@ -41,7 +41,7 @@ export abstract class EntryPoint {
 
                     const connectedServer = new ConnectedServer(serverTransport, this, entry, message.counter, this._neighbourhood);
 
-                    this.onServerConnect.dispatch(connectedServer);
+                    await this.onServerConnect.dispatch(connectedServer);
                 }
             }
         });
