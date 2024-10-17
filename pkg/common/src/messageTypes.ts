@@ -45,7 +45,12 @@ export class HelloData implements IMessageData<Protocol.HelloData> {
     }
     static async fromProtocol(protocolData: Protocol.HelloData): Promise<HelloData> {
         // Import the key from the PEM
-        return new HelloData(await PEMToKey(protocolData.public_key, PSSImportParams));
+        const verifyKey = await PEMToKey(protocolData.public_key, PSSImportParams)
+
+        if (!verifyKey)
+            throw new Error("Invalid verify key!");
+
+        return new HelloData(verifyKey);
     }
 }
 export class CleartextChat {
@@ -337,8 +342,12 @@ export class ClientList implements IMessage<Protocol.ClientList> {
 
         for (const server of protocolData.servers) {
             let keys: CryptoKey[] = [];
-            for (const pem of server.clients)
-                keys.push(await PEMToKey(pem, PSSImportParams));
+            for (const pem of server.clients) {
+                const verifyKey = await PEMToKey(pem, PSSImportParams);
+
+                if (verifyKey)
+                    keys.push(verifyKey);
+            }
 
             servers.push({address: server.address, clientVerifyKeys: keys});
         }
@@ -373,7 +382,10 @@ export class ClientUpdate implements IMessage<Protocol.ClientUpdate> {
         let keys: CryptoKey[] = [];
 
         for (const pem of protocolMessage.clients) {
-            keys.push(await PEMToKey(pem, PSSImportParams));
+            const verifyKey = await PEMToKey(pem, PSSImportParams)
+
+            if (verifyKey)
+                keys.push(verifyKey);
         }
 
         return new ClientUpdate(keys);

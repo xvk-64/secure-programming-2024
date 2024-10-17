@@ -160,9 +160,15 @@ export class ChatServer {
         // Request client update
         await server.sendMessage(new ClientUpdateRequest());
 
+        // Handle server disconnection
         server.onDisconnect.createListener(() => {
+            console.log(`${this.address}: Server disconnected: ${server.neighbourhoodEntry.address}`);
+
             server.onMessageReady.removeListener(messageListener);
             this._neighbourhoodServers = this._neighbourhoodServers.filter(s => s != server);
+
+            // Do client_list to my clients
+            this.sendClientList();
         }, true);
     }
 
