@@ -4,7 +4,7 @@ import * as ws from "ws";
 import {Mutex} from "async-mutex";
 import {AnyMessage} from "../messageTypes.js";
 
-let i = 0;
+const TimeoutInterval = 1000;
 
 // Lowest level transport for websockets. Assumes the socket is already connected.
 export class WebSocketTransport {
@@ -16,7 +16,7 @@ export class WebSocketTransport {
     readonly onReceiveMessage: EventQueue<AnyMessage> = new EventQueue();
     readonly onDisconnect: EventEmitter<void> = new EventEmitter();
 
-    public constructor(webSocket: WebSocket | ws.WebSocket) {
+    private constructor(webSocket: WebSocket | ws.WebSocket) {
         this._webSocket = webSocket;
 
         this._webSocket.onmessage = (event: MessageEvent) => this.onMessage(event.data);
@@ -42,5 +42,40 @@ export class WebSocketTransport {
         // console.log(`s ${message.type} ${message.type == "signed_data" ? message.data.type : ""}`);
 
         this._webSocket.send(JSON.stringify(await message.toProtocol()))
+    }
+
+    public static createClient(webSocket: WebSocket): WebSocketTransport {
+        return new WebSocketTransport(webSocket);
+    }
+    public static createServer(webSocket: ws.WebSocket): WebSocketTransport {
+        let isAlive = true;
+
+        const transport = new WebSocketTransport(webSocket);
+
+        webSocket.on("pong", () => {
+            isAlive = true;
+        })
+
+        webSocket.on("ping", () => {
+            webSocket.pong();
+        })
+
+        webSocket.on("close", () => {
+            // console.log("Websocket timed out!")
+            clearInterval(timeoutInterval);
+
+            transport.onDisconnect.dispatch();
+        })
+
+        const timeoutInterval = setInterval(() => {
+            if (!isAlive) {
+                webSocket.terminate();
+            }
+
+            isAlive = false;
+            webSocket.ping();
+        }, TimeoutInterval);
+
+        return transport;
     }
 }
