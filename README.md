@@ -71,7 +71,7 @@ node ./pkg/server/dist/src/server.js server0 3300 ./generated_keys/key0private.p
 # In another shell
 node ./pkg/server/dist/src/server.js server1 3301 .\generated_keys\key1private.pkcs8.pem .\generated_keys\key1public.spki.pem .\generated_keys\neighbourhood.json
 ```
-This will create two servers connected in a neighbourhood on ports `3300` and `3301`
+This will create two servers connected in a neighbourhood on ports `3300` and `3301`. Start up a client and ensure you change the default server address accordingly. 
 
 ## How to navigate the GUI
 
