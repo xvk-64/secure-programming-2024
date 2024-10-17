@@ -108,6 +108,6 @@ export function SideBarList(props: SideBarListProps) {
                 <h4 className="heading">Offline: {userDisplayOffline.length}</h4>
                 {offlineServerList}
             </div>
-            <button onClick={() => props.setIsVisible(5)}>Pat Baba</button>
+            {/* <button onClick={() => props.setIsVisible(5)}>Pat Baba</button> */}
         </>
 }

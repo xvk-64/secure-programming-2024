@@ -44,9 +44,7 @@ export function MiddleDivContent(props: MiddleDivContentProps) {
         case 4:
             visibleElement = <PublicBroadcast></PublicBroadcast>;
             break;
-        default:
-            visibleElement = <PatBaba></PatBaba>;
-            break;
+      
     }
 
     return <>{visibleElement}</>
