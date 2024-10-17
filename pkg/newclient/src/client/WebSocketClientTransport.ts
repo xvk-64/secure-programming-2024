@@ -33,6 +33,8 @@ export class WebSocketClientTransport implements IChatClientTransport {
         });
         this._transport.onDisconnect.createListener(() => {
             this._transport.onReceiveMessage.removeListener(receiveListener);
+
+            this.onDisconnect.dispatch();
         }, true);
     }
 
