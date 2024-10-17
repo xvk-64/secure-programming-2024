@@ -67,7 +67,7 @@ node ./pkg/server/dist/src/util/keygen.js
 # Open two shells:
 
 # In first shell
-node ./pkg/server/dist/src/server.js server0 3300 .\generated_keys\key0private.pkcs8.pem .\generated_keys\key0public.spki.pem .\generated_keys\neighbourhood.json
+node ./pkg/server/dist/src/server.js server0 3300 ./generated_keys/key0private.pkcs8.pem ./generated_keys/key0public.spki.pem ./generated_keys/neighbourhood.json
 
 # In another shell
 node ./pkg/server/dist/src/server.js server1 3301 .\generated_keys\key1private.pkcs8.pem .\generated_keys\key1public.spki.pem .\generated_keys\neighbourhood.json
