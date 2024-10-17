@@ -41,7 +41,7 @@ Your terminal should show you which port the server is currently running on. Cli
 ## Advanced Testing
 For testing with networked neighbourhood, you need a definition of the other neighbourhood servers. You can generate this by running
 ```shell
-tsx ./pkg/server/src/util/keygen.ts [numKeys] [outDir]
+node ./pkg/server/dist/src/util/keygen.js [numKeys] [outDir]
 ```
 - The default number of key pairs (servers in neighbourhood) is 3
 - The default output directory is `generated_keys` in the current directory
@@ -51,20 +51,22 @@ tsx ./pkg/server/src/util/keygen.ts [numKeys] [outDir]
 
 Run an instance of a server in the neighbourhood using
 ```shell
-tsx ./pkg/server/src/server.ts [address] [port] [private key file] [public key file] [neighbourhood.json file]
+node ./pkg/server/dist/src/server.js [address] [port] [private key file] [public key file] [neighbourhood.json file]
 ```
 
 Add additional servers by modifying the `neighbourhood.json` file.
 
 ### Paste & go
 ```shell
-tsx ./pkg/server/src/util/keygen.ts
+npm run build
+
+node ./pkg/server/dist/src/util/keygen.js
 
 # In first shell
-tsx ./pkg/server/src/server.ts server0 3300 .\generated_keys\key0private.pkcs8.pem .\generated_keys\key0public.spki.pem .\generated_keys\neighbourhood.json
+node ./pkg/server/dist/src/server.js server0 3300 .\generated_keys\key0private.pkcs8.pem .\generated_keys\key0public.spki.pem .\generated_keys\neighbourhood.json
 
 # In another shell
-tsx ./pkg/server/src/server.ts server1 3300 .\generated_keys\key1private.pkcs8.pem .\generated_keys\key1public.spki.pem .\generated_keys\neighbourhood.json
+node ./pkg/server/dist/src/server.js server1 3300 .\generated_keys\key1private.pkcs8.pem .\generated_keys\key1public.spki.pem .\generated_keys\neighbourhood.json
 ```
 This will create two servers connected in a neighbourhood on ports `3300` and `3301`
 
