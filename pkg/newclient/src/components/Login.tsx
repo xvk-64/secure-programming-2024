@@ -10,7 +10,7 @@ export type LoginProps = {
 
 export function Login(props: LoginProps) {
     const [statusMessage, setStatusMessage] = useState("Enter server address below.")
-    const [serverAddress, setServerAddress] = useState<string>("ws://localhost:3307");
+    const [serverAddress, setServerAddress] = useState<string>("wss://localhost:3307");
     const [inputEnabled, setInputEnabled] = useState<boolean>(true);
 
     const onFormSubmit: React.FormEventHandler<HTMLFormElement> = e => {
