@@ -83,7 +83,9 @@ export class ChatClient {
     private async onReceiveMessage(message: ServerToClientSendable) {
         switch (message.type) {
             case "client_list":
-                // console.log(message);
+                if (typeof window !== "undefined") {
+                    console.log(message);
+                }
 
                 // Set all clients to offline
                 for (const fingerprint in this._otherClients) {
@@ -109,13 +111,16 @@ export class ChatClient {
                     }
                 }
 
+                // console.log(this._otherClients)
+
                 if (this.useBetterKeygen) {
-                    const privKey = await PEMToKey(cache.privateKey, PSSImportParams);
-                    const pubKey = await PEMToKey(cache.publicKey, PSSImportParams);
+                    const privKey = (await PEMToKey(cache.privateKey, PSSImportParams))!;
+                    const pubKey = (await PEMToKey(cache.publicKey, PSSImportParams))!;
 
                     const fprint = await calculateFingerprint(pubKey);
 
                     if (fprint !== this.fingerprint && !(fprint in this._otherClients)) {
+                        console.log("Updating keys")
                         await this.updateKeys(privKey, pubKey);
                     }
                 }

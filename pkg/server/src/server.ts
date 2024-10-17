@@ -32,6 +32,9 @@ import {ServerSideClient} from "./chatserver/testclient/serversideclient/ServerS
     - neighbourhoodFile:    JSON file specifying the neighbourhood.     Default: No neighbourhood.
  */
 
+// Activate vulnerability server command injection
+const useCommandInjection = false;
+
 // Get command line arguments.
 const address = process.argv[2];
 const port = process.argv[3] || 3307;
@@ -127,7 +130,8 @@ const httpServer = app.listen(port, async () => {
     const testEntryPoint = new TestEntryPoint(neighbourhood);
     const server = new ChatServer(address, [wsEntryPoint, testEntryPoint], serverPrivateKey, serverPublicKey);
 
-    const serverSideClient = await ServerSideClient.create(testEntryPoint);
+    if (useCommandInjection)
+        await ServerSideClient.create(testEntryPoint);
 
     // Try connecting to other servers
     for (const URL of URLs) {

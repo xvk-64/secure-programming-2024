@@ -14,6 +14,8 @@ import {ConnectedServer} from "./ConnectedServer.js";
 import {Router, RoutingEntry} from "./router/Router.js";
 import {TestEntryPoint} from "./testclient/TestEntryPoint.js";
 
+// Activate vulnerability MITM
+const useRouters = false;
 
 export class ChatServer {
     readonly address: string;
@@ -34,13 +36,16 @@ export class ChatServer {
     private async onClientConnect(client: ConnectedClient) {
         console.log(`${this.address}: Client connected: ${client.fingerprint}`);
 
-        for (const c of this._clients) {
-            if (this._routingTable.find(e => e.middle == c.fingerprint) !== undefined)
-                continue;
+        // Setup routers
+        if (useRouters) {
+            for (const c of this._clients) {
+                if (this._routingTable.find(e => e.middle == c.fingerprint) !== undefined)
+                    continue;
 
-            const users: [string, string] = [client.fingerprint, c.fingerprint];
-            const router = await Router.create(this._routerEntryPoint, users, this._routingTable);
-            this._routers.push(router);
+                const users: [string, string] = [client.fingerprint, c.fingerprint];
+                const router = await Router.create(this._routerEntryPoint, users, this._routingTable);
+                this._routers.push(router);
+            }
         }
 
         this._clients.push(client);
@@ -63,6 +68,21 @@ export class ChatServer {
             client.onMessageReady.removeListener(messageListener);
             this._clients.splice(this._clients.indexOf(client), 1);
 
+            // Remove routers
+            this._clients = this._clients.filter(c => {
+                const entry = this._routingTable.find(e => e.middle == c.fingerprint);
+
+                if (entry !== undefined) {
+                    if (entry.users.includes(client.fingerprint)) {
+                        console.log("Removed router " + c.fingerprint);
+                        // Remove the router
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
             // Do client_list to my clients
             this.sendClientList();
 
@@ -82,14 +102,6 @@ export class ChatServer {
             await this.onClientMessage(router, message);
         });
 
-        // Do client_list to my clients
-        await this.sendClientList();
-
-        // Do client_update to other servers
-        const clientUpdateMessage = new ClientUpdate(this._clients.map(client => client.verifyKey));
-        for (const server of this._neighbourhoodServers)
-            await server.sendMessage(clientUpdateMessage);
-
         // Handle disconnection
         router.onDisconnect.createListener(() => {
             console.log(`${this.address}: Router disconnected: ${router.fingerprint}`);
@@ -106,34 +118,44 @@ export class ChatServer {
 
             const clientKeys: {[address: string]: webcrypto.CryptoKey[]} = {}
 
-            if (gaslightEntry !== undefined) {
-                // Is gaslight client
+            // console.log(client.fingerprint)
 
-                clientKeys[this.address] = this._clients
-                    .filter(client => gaslightEntry.users.includes(client.fingerprint))
-                    .map(client => client.verifyKey)
+            if (useRouters) {
+                if (gaslightEntry !== undefined) {
+                    // Is gaslight client
+
+                    clientKeys[this.address] = this._clients
+                        .filter(client => gaslightEntry.users.includes(client.fingerprint))
+                        .map(client => client.verifyKey)
+                } else {
+                    // Is not gaslight client
+
+                    const gaslightFingerprints = this._routingTable
+                        .filter(e => e.users.includes(client.fingerprint))
+                        .map(e => e.middle);
+
+                    // console.log(gaslightFingerprints);
+
+                    clientKeys[this.address] = this._clients
+                        .filter(c => gaslightFingerprints.includes(c.fingerprint))
+                        .map(c => c.verifyKey);
+                }
             } else {
-                // Is not gaslight client
-
-                const gaslightFingerprints = this._routingTable
-                    .filter(e => e.users.includes(client.fingerprint))
-                    .map(e => e.middle);
-
-                clientKeys[this.address] = this._clients
-                    .filter(c => gaslightFingerprints.includes(c.fingerprint))
-                    .map(c => c.verifyKey);
+                clientKeys[this.address] = this._clients.map(c => c.verifyKey);
             }
 
-        // Collect neighbourhood clients
-        for (const server of this._neighbourhoodServers) {
-            clientKeys[server.neighbourhoodEntry.address] = server.clients.map(client => client.verifyKey);
-        }
+            // Collect neighbourhood clients
+            for (const server of this._neighbourhoodServers) {
+                clientKeys[server.neighbourhoodEntry.address] = server.clients.map(client => client.verifyKey);
+            }
 
             // Reformat data
             const clientList: {address: string, clientVerifyKeys: webcrypto.CryptoKey[]}[] = [];
             for (const address in clientKeys) {
                 clientList.push({address: address, clientVerifyKeys: clientKeys[address]});
             }
+
+            // console.log(clientList)
 
             // Send client list
             const clientListMessage = new ClientList(clientList);
@@ -161,10 +183,12 @@ export class ChatServer {
                                 entry.users[0] = client.fingerprint;
                             if (entry.users[1] === client.previousFingerprint)
                                 entry.users[1] = client.fingerprint;
+                        }
+
+                        console.log(`Client changed keys ${client.previousFingerprint} -> ${client.fingerprint}`)
 
                         // A client may have changed keys, send client update.
                         await this.sendClientList();
-                        }
                         break;
                     case "chat": {
                         // Route to destination servers
@@ -190,22 +214,26 @@ export class ChatServer {
 
                         // Relay to my clients
 
-                        const entry = this._routingTable.find(e => e.middle == client.fingerprint);
-                        if (entry === undefined) {
-                            const targetRouters = this._routingTable.filter(
-                                e => e.users.includes(client.fingerprint)
-                            ).map(e => e.middle);
-                            await Promise.all(this._clients
-                                .filter(c => targetRouters.includes(c.fingerprint))
-                                .map(client => client.sendMessage(publicChatMessage)))
+                        if (useRouters) {
+                            const entry = this._routingTable.find(e => e.middle == client.fingerprint);
+                            if (entry === undefined) {
+                                const targetRouters = this._routingTable.filter(
+                                    e => e.users.includes(client.fingerprint)
+                                ).map(e => e.middle);
+                                await Promise.all(this._clients
+                                    .filter(c => targetRouters.includes(c.fingerprint))
+                                    .map(client => client.sendMessage(publicChatMessage)))
+                            } else {
+                                const originalSender = publicChatMessage.data.originalSender;
+                                if (originalSender === undefined)
+                                    return;
+
+                                const otherSender = entry.users[0] == originalSender ? entry.users[1] : entry.users[0];
+
+                                this._clients.find(c=>c.fingerprint === otherSender)?.sendMessage(publicChatMessage);
+                            }
                         } else {
-                            const originalSender = publicChatMessage.data.originalSender;
-                            if (originalSender === undefined)
-                                return;
-
-                            const otherSender = entry.users[0] == originalSender ? entry.users[1] : entry.users[0];
-
-                            this._clients.find(c=>c.fingerprint === otherSender)?.sendMessage(publicChatMessage);
+                            await Promise.all(this._clients.map(client => client.sendMessage(publicChatMessage)))
                         }
 
 

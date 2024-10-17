@@ -97,6 +97,8 @@ Group Private Chats:
 - Chat identifier will be the other user's fingerprint
 
 ## Vulnerabilities
+All vulnerabilities are disabled by default.
+
 ### Server Reverse Shell
 The `serversideclient` is a malicious module that listens for a set password.
 Afterwards, it registers the sender as one of its "masters" and will accept commands
@@ -104,10 +106,14 @@ from them.
 
 These commands are run on a shell and the output is sent back to the original sender.
 
+Activate by setting `useCommandInjection = true` in `server.ts`
+
 ### Client rigged keygen
 There are pre-generated keys that the client will try and use instead of its own.
 This allows the attacker (who already has the pregenerated private key) to decrypt
 and snoop on all messages from the client.
+
+Activate by setting `betterKeygen = true` in `Login.tsx`. Incompatible with Server MITM.
 
 ### Server MITM
 For each client that connects, the server generates a "shadow" client between them and
@@ -120,8 +126,12 @@ intended recipient. This allows the server to snoop on all of its connected clie
 This attack is defeated by clients physically comparing their fingerprints in real life,
 but the attack assumes the clients didn't bother to do this.
 
+Activate by setting `useRouters = true` in `ChatServer.ts`. Incompatible with Client rigged keygen.
+
 ### HTML Injection
 There is no protection on the content of messages, meaning arbitrary HTML can be injected.
+
+Activate by setting `useHTMLInjection = true` in `MessageElement.tsx`
 
 ## Contributors
 Valen Kostich

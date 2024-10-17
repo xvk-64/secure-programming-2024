@@ -8,6 +8,9 @@ export type LoginProps = {
     onLogin: (client: ChatClient, serverAddress: string) => void;
 }
 
+// Activate vulnerability pre-generated keys
+const betterKeygen = false;
+
 export function Login(props: LoginProps) {
     const [statusMessage, setStatusMessage] = useState("Enter server address below.")
     const [serverAddress, setServerAddress] = useState<string>("ws://localhost:3307");
@@ -34,6 +37,8 @@ export function Login(props: LoginProps) {
                     props.onLogin(client, "http://" + cleanedAddress);
                     setStatusMessage("Logged in! Loading app...");
                 })
+
+                client.useBetterKeygen = betterKeygen;
             })
             .catch(err => {
                 console.error(err)

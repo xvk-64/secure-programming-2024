@@ -16,8 +16,6 @@ export function App() {
         if (clientContext === undefined)
             return;
 
-        client.useBetterKeygen = true;
-
         // Create context
         clientContext.current = {
             client: client,
