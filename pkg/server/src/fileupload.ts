@@ -22,7 +22,7 @@ export const handleFileUpload: RequestHandler = (request, response) => {
                 if (err) {
                     response.status(500).send("Internal Server Error: File Could Not Be Saved");
                 } else {
-                    const fileURL = "http://" + request.get("host") + "/filestore/" + filename;
+                    const fileURL = request.protocol + "://" + request.get("host") + "/filestore/" + filename;
 
                     response.send({file_url: fileURL});
                 }

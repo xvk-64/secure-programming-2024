@@ -38,6 +38,21 @@ npm run dev:server
 
 Your terminal should show you which port the server is currently running on. Client will run on port 8000, and server will run on port 3307. Navigate to http://localhost:8000 to access the app.
 
+### Adding TLS (https and wss)
+The server will automatically apply TLS encryption if the following files exist in the current working directory.
+- `cert.pem` - SSL Certificate
+- `key.pem` - RSA Private key
+
+You can easily generate these files with OpenSSL:
+```shell
+openssl req -x509 -newkey rsa:2048 -keyout keytmp.pem -out cert.pem -days 365
+# Populate certificate fields...
+
+openssl rsa -in keytmp.pem -out key.pem
+```
+
+Note, to use TLS with `npm run dev:server`, the `cert.pem` and `key.pem` files should be in the `pkg/server` directory.
+
 ## Advanced Testing
 For testing with networked neighbourhood, you need a definition of the other neighbourhood servers. You can generate this by running
 ```shell

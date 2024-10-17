@@ -15,6 +15,8 @@ import cors from "cors";
 import fileUpload from "express-fileupload";
 import bodyParser from "body-parser";
 import {handleFileUpload} from "./fileupload.js";
+import * as https from "node:https";
+import * as http from "node:http";
 
 
 /*
@@ -40,9 +42,6 @@ const publicKeyFile = process.argv[5];
 const neighbourhoodFile = process.argv[6];
 
 const app = express();
-
-// app.use(express.static("../client/dist/"));
-
 
 // File upload
 // Create if not existing
@@ -120,12 +119,12 @@ if (fs.existsSync(neighbourhoodFile)) {
     }
 }
 
-const httpServer = app.listen(port, async () => {
-    console.log(`Server started http://localhost:${port}`);
+async function onServerStart(httpServer: https.Server | http.Server) {
+    console.log(`Server started on port ${port}`);
 
     const wsEntryPoint = new WebSocketEntryPoint(httpServer, neighbourhood);
     const testEntryPoint = new TestEntryPoint(neighbourhood);
-    const server = new ChatServer(address, [wsEntryPoint, testEntryPoint], serverPrivateKey, serverPublicKey);
+    const server = new ChatServer(address, [wsEntryPoint, testEntryPoint], serverPrivateKey!, serverPublicKey!);
 
     const client1Keys = await webcrypto.subtle.generateKey(PSSGenParams, true, ["sign", "verify"]);
     const testTransport1 = new TestClientTransport(testEntryPoint);
@@ -163,4 +162,18 @@ const httpServer = app.listen(port, async () => {
     testClient1.onChat.createListener(message => {
         console.log(`message: ${message.message} from ${message.senderFingerprint} ${message.groupID}`)
     })
-});
+}
+
+if ((fs.existsSync("./key.pem") && fs.existsSync("./cert.pem"))) {
+    console.log("Starting HTTPS Server")
+
+    const httpsOptions = {
+        key: fs.readFileSync('./key.pem'),
+        cert: fs.readFileSync('./cert.pem')
+    }
+
+    const httpsServer = https.createServer(httpsOptions, app).listen(port, () => onServerStart(httpsServer));
+} else {
+    console.log("Starting HTTP Server")
+    const httpServer = app.listen(port, () => onServerStart(httpServer));
+}

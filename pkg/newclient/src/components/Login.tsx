@@ -20,8 +20,18 @@ export function Login(props: LoginProps) {
         setStatusMessage("Checking...");
 
         const cleanedAddress = serverAddress.replace(/(^\w+:|^)\/\//, '');
+        let usingSecure = true;
 
-        WebSocketClientTransport.connect("ws://" + cleanedAddress)
+        WebSocketClientTransport.connect("wss://" + cleanedAddress)
+            .catch(err => {
+                // Fallback to unsecure socket
+                usingSecure = false;
+
+                console.log("Secure connection failed, falling back to ws://");
+                setStatusMessage("Checking unsecure...")
+
+                return WebSocketClientTransport.connect("ws://" + cleanedAddress)
+            })
             .then(async transport => {
                 // Successfully connected.
                 setStatusMessage("Connected to server. Logging in...");
@@ -31,7 +41,7 @@ export function Login(props: LoginProps) {
 
                 // Create client.
                 const client = await ChatClient.create(transport, keyPair.privateKey, keyPair.publicKey, () => {
-                    props.onLogin(client, "http://" + cleanedAddress);
+                    props.onLogin(client, (usingSecure ? "https://" : "http://") + cleanedAddress);
                     setStatusMessage("Logged in! Loading app...");
                 })
             })
