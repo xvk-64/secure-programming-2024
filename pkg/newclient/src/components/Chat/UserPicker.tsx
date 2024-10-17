@@ -9,12 +9,12 @@ export type UserPickerProps = {
 export function UserPicker(props: UserPickerProps) {
     const [pickedUsers, setPickedUsers] = useState<string[]>([]);
 
-    const client = useContext(ClientContext);
+    const clientContext = useContext(ClientContext);
 
     function onSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        const groupID = client?.current?.getGroupID(pickedUsers);
+        const groupID = clientContext?.current?.client.getGroupID(pickedUsers);
 
         if (groupID !== undefined)
             props.onGroup(groupID);
