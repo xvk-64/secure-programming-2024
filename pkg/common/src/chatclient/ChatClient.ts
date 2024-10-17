@@ -42,12 +42,17 @@ export class ChatClient {
     private _fingerprint: string;
     public get fingerprint() {return this._fingerprint;}
 
+    public readonly onDisconnect = new EventEmitter<void>()
+
     private _otherClients: { [fingerprint: string]: OtherClient } = {};
     public getOnlineClients() {
         let result: OnlineClient[] = [];
 
         for (const fingerprint in this._otherClients) {
             const client = this._otherClients[fingerprint];
+
+            if (!client.isOnline)
+                continue;
 
             result.push({fingerprint: client.fingerprint, serverAddress: client.serverAddress});
         }
@@ -73,12 +78,17 @@ export class ChatClient {
         return result;
     }
 
-    public onClientUpdate: EventEmitter<void> = new EventEmitter<void>();
+    public readonly onClientUpdate = new EventEmitter<void>();
 
     private async onReceiveMessage(message: ServerToClientSendable) {
         switch (message.type) {
             case "client_list":
                 // console.log(message);
+
+                // Set all clients to offline
+                for (const fingerprint in this._otherClients) {
+                    this._otherClients[fingerprint].isOnline = false;
+                }
 
                 // Client list from the server
                 let clientListMessage = message as ClientList;
@@ -86,8 +96,13 @@ export class ChatClient {
                 for (const server of clientListMessage.servers) {
                     for (const verifyKey of server.clientVerifyKeys) {
                         const fingerprint = await calculateFingerprint(verifyKey);
+
+                        if (fingerprint === this.fingerprint)
+                            // Don't include self
+                            continue;
+
                         if (fingerprint in this._otherClients) {
-                            // TODO set online status?
+                            this._otherClients[fingerprint].isOnline = true;
                         } else {
                             this._otherClients[fingerprint] = await OtherClient.create(server.address, verifyKey, 0);
                         }
@@ -215,6 +230,8 @@ export class ChatClient {
 
         this._transport.onDisconnect.createListener(() => {
             this._transport.onReceiveMessage.removeListener(receiveListener);
+
+            this.onDisconnect.dispatch();
         })
     }
 
@@ -261,7 +278,7 @@ export class ChatClient {
         await this.sendSignedData(publicChatData);
     }
 
-    static async create(transport: IChatClientTransport, privateKey: CryptoKey, publicKey: CryptoKey): Promise<ChatClient> {
+    static async create(transport: IChatClientTransport, privateKey: CryptoKey, publicKey: CryptoKey, onClientUpdate?: () => void): Promise<ChatClient> {
         // Hack to get the same RSA key into both OAEP and PSS
         const exportedPub = await webCrypto.exportKey("spki", publicKey);
         const exportedPriv = await webCrypto.exportKey("pkcs8", privateKey);
@@ -274,6 +291,9 @@ export class ChatClient {
         const fingerprint = await calculateFingerprint(verifyKey);
 
         let client = new ChatClient(transport, verifyKey, signKey, encryptKey, decryptKey, fingerprint);
+
+        if (onClientUpdate !== undefined)
+            client.onClientUpdate.createListener(onClientUpdate, true);
 
         // Say hello
         await client.sendSignedData(new HelloData(verifyKey));

@@ -47,7 +47,12 @@ export class HelloData implements IMessageData<Protocol.HelloData> {
     }
     static async fromProtocol(protocolData: Protocol.HelloData): Promise<HelloData> {
         // Import the key from the PEM
-        return new HelloData(await PEMToKey(protocolData.public_key, PSSImportParams));
+        const verifyKey = await PEMToKey(protocolData.public_key, PSSImportParams)
+
+        if (!verifyKey)
+            throw new Error("Invalid verify key!");
+
+        return new HelloData(verifyKey);
     }
 }
 export class CleartextChat {
@@ -206,18 +211,19 @@ export class ServerHelloData implements IMessageData<Protocol.ServerHelloData> {
 export class SignedData<TData extends IMessageData<Protocol.SignedDataEntry>> implements IMessage<Protocol.SignedData> {
     type: "signed_data" = "signed_data";
     readonly data: TData;
+    readonly dataString: string;
     readonly counter: number;
     readonly signature: ArrayBuffer;
 
-    private constructor(data: TData, counter: number, signature: ArrayBuffer) {
+    private constructor(data: TData, dataString: string, counter: number, signature: ArrayBuffer) {
         this.data = data;
+        this.dataString = dataString;
         this.counter = counter;
         this.signature = signature;
     }
 
     public async verify(verifyKey: CryptoKey): Promise<boolean> {
-        const payloadString = JSON.stringify(await this.data.toProtocol()) + this.counter.toString();
-        const encodedPayload = new TextEncoder().encode(payloadString);
+        const encodedPayload = new TextEncoder().encode(this.dataString + this.counter.toString());
 
         try {
             return await crypto.subtle.verify(PSSParams, verifyKey, this.signature, encodedPayload);
@@ -230,35 +236,59 @@ export class SignedData<TData extends IMessageData<Protocol.SignedDataEntry>> im
     static async create<TData extends IMessageData<Protocol.SignedDataEntry>>
         (data: TData, counter: number, signKey: CryptoKey): Promise<SignedData<TData>> {
         // Generate signature.
-        const payloadString = JSON.stringify(await data.toProtocol()) + counter.toString();
+        const JSONString = JSON.stringify(await data.toProtocol());
+        const payloadString = JSONString + counter.toString();
         const encodedPayload = new TextEncoder().encode(payloadString);
 
         const signature = await webCrypto.sign(PSSParams, signKey, encodedPayload);
 
-        return new SignedData(data, counter, signature);
+        return new SignedData(data, JSONString, counter, signature);
     }
 
     async toProtocol(): Promise<Protocol.SignedData> {
         return {
             type: "signed_data",
-            data: await this.data.toProtocol(),
+            data: this.dataString,
             counter: this.counter,
             signature: encode(this.signature)
         };
     }
-    static async fromProtocol(protocolMessage: Protocol.SignedData): Promise<SignedData<IMessageData<Protocol.SignedDataEntry>> | undefined> {
-        let data = await (async () => {
-            switch (protocolMessage.data.type) {
-                case "hello":
-                    return await HelloData.fromProtocol(protocolMessage.data as Protocol.HelloData);
+    static async fromProtocol(protocolMessage: Protocol.SignedData): Promise<AnySignedData | undefined> {
+        const data: AnySignedDataEntry | undefined = await (async () => {
+            const parsed = JSON.parse(protocolMessage.data);
+
+            // Assert data type
+            if (typeof parsed.type != "string") return;
+            if (!SignedDataTypes.includes(parsed.type)) return;
+
+            switch (parsed.type) {
                 case "chat":
-                    return ChatData.fromProtocol(protocolMessage.data as Protocol.ChatData);
+                    // Assert fields
+                    if (! (parsed.destination_servers instanceof Array)) return;
+                    if (typeof parsed.iv != "string") return;
+                    if (! (parsed.symm_keys instanceof Array)) return;
+                    if (typeof parsed.chat != "string") return;
+
+                    // All done.
+                    return ChatData.fromProtocol(parsed);
+                case "hello":
+                    // Assert fields
+                    if (typeof parsed.public_key != "string") return;
+
+                    // All done.
+                    return await HelloData.fromProtocol(parsed);
                 case "public_chat":
-                    return PublicChatData.fromProtocol(protocolMessage.data as Protocol.PublicChatData);
+                    // Assert fields
+                    if (typeof parsed.sender != "string") return;
+                    if (typeof parsed.message != "string") return;
+
+                    // All done.
+                    return PublicChatData.fromProtocol(parsed);
                 case "server_hello":
-                    return ServerHelloData.fromProtocol(protocolMessage.data as Protocol.ServerHelloData);
-                default:
-                    return undefined;
+                    // Assert fields
+                    if (typeof parsed.sender != "string") return;
+
+                    return ServerHelloData.fromProtocol(parsed);
             }
         })();
 
@@ -266,7 +296,7 @@ export class SignedData<TData extends IMessageData<Protocol.SignedDataEntry>> im
             // Error
             return undefined;
 
-        return new SignedData(data, protocolMessage.counter, decode(protocolMessage.signature));
+        return new SignedData(data, protocolMessage.data, protocolMessage.counter, decode(protocolMessage.signature));
     }
 }
 
@@ -277,10 +307,6 @@ export class ClientListRequest implements IMessage<Protocol.ClientListRequest> {
         return Promise.resolve({
             type: "client_list_request"
         });
-    }
-
-    static fromProtocol(protocolMessage: Protocol.ClientListRequest): ClientListRequest {
-        return new ClientListRequest();
     }
 }
 
@@ -325,8 +351,12 @@ export class ClientList implements IMessage<Protocol.ClientList> {
 
         for (const server of protocolData.servers) {
             let keys: CryptoKey[] = [];
-            for (const pem of server.clients)
-                keys.push(await PEMToKey(pem, PSSImportParams));
+            for (const pem of server.clients) {
+                const verifyKey = await PEMToKey(pem, PSSImportParams);
+
+                if (verifyKey)
+                    keys.push(verifyKey);
+            }
 
             servers.push({address: server.address, clientVerifyKeys: keys});
         }
@@ -361,7 +391,10 @@ export class ClientUpdate implements IMessage<Protocol.ClientUpdate> {
         let keys: CryptoKey[] = [];
 
         for (const pem of protocolMessage.clients) {
-            keys.push(await PEMToKey(pem, PSSImportParams));
+            const verifyKey = await PEMToKey(pem, PSSImportParams)
+
+            if (verifyKey)
+                keys.push(verifyKey);
         }
 
         return new ClientUpdate(keys);
@@ -377,11 +410,14 @@ export class ClientUpdateRequest implements IMessage<Protocol.ClientUpdateReques
             type: "client_update_request",
         });
     }
-
-    static fromProtocol(protocolMessage: Protocol.ClientUpdateRequest) {
-        return new ClientUpdateRequest();
-    }
 }
+
+export const MessageTypes = ["signed_data", "client_list_request", "client_update", "client_list", "client_update_request"];
+export const SignedDataTypes = ["chat", "hello", "public_chat", "server_hello"];
+
+export type AnySignedDataEntry = HelloData | ChatData | PublicChatData | ServerHelloData;
+export type AnySignedData = SignedData<AnySignedDataEntry>;
+export type AnyMessage = AnySignedData | ClientListRequest | ClientList | ClientUpdateRequest | ClientUpdate;
 
 // Which message types is a client allowed to send?
 export type ClientSendableSignedDataEntry = HelloData | ChatData | PublicChatData;

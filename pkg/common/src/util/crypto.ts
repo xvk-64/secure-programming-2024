@@ -59,16 +59,26 @@ export async function PEMToKey(pem: string, importParams: RsaHashedImportParams)
             publicPemHeader.length,
             pem.length - publicPemFooter.length,
         );
-    } else {
+    } else if (pem.includes(privatePemHeader)) {
         pemContents = pem.substring(
             privatePemHeader.length,
             pem.length - privatePemFooter.length,
         );
+    } else
+        return;
+
+    // Strip whitespace from PEM contents?
+    const keyContents = decode(pemContents.replace(/\s/g, ""));
+
+    try {
+        const key = await webCrypto.importKey(isPrivate ? "pkcs8" : "spki", keyContents, importParams, true, isPrivate ? ["sign"] : ["verify"]);
+
+        return key;
+    } catch (e) {
+        console.log(e)
+        return;
     }
 
-    const keyContents = decode(pemContents);
-
-    return await webCrypto.importKey(isPrivate ? "pkcs8" : "spki", keyContents, importParams, true, isPrivate ? ["sign"] : ["verify"]);
 }
 export const verifyMessage = (message: string) => message == "Message is valid!"
 export async function calculateFingerprint(key: CryptoKey) {

@@ -2,6 +2,7 @@ import React, {MutableRefObject, useEffect, useRef, useState} from "react";
 import { ChatClient } from "@sp24/common/chatclient/ChatClient.js";
 import {WebSocketClientTransport} from "./client/WebSocketClientTransport.js";
 import {PSSGenParams} from "@sp24/common/util/crypto.js";
+import UploadFile from "./UploadFile.js";
 
 export const App : React.FC = () => {
     // useEffect(() => {
@@ -39,5 +40,8 @@ export const App : React.FC = () => {
             }
         })();
     }, []);
-    return <h1>Hi</h1>;
+    return <>
+    <h1>Hi</h1>;
+    <UploadFile></UploadFile>
+    </> 
 }

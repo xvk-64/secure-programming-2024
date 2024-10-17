@@ -77,7 +77,7 @@ export class EventQueue<TData> {
 
         let front = this._eventQueue.shift();
         while (front != undefined) {
-            this.dispatch(front);
+            this.dispatch(front).then();
             front = this._eventQueue.shift();
         }
     }

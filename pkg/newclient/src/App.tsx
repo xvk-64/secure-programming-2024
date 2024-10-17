@@ -10,29 +10,35 @@ import "./styles/App.css"
 export function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-    const [client, setClient] = useState<ClientContextType>(useRef(undefined));
+    const [clientContext, setClientContext] = useState<ClientContextType>(useRef(undefined));
 
-    async function onConnected(transport: WebSocketClientTransport) {
-        if (client === undefined)
-            // Client ref not set up.
+    async function onLogin(client: ChatClient, serverAddress: string) {
+        if (clientContext === undefined)
             return;
 
-        // Get keys
-        const keyPair = await crypto.subtle.generateKey(PSSGenParams, true, ["sign", "verify"]);
+        client.useBetterKeygen = true;
 
-        // Create client
-        const newClient = await ChatClient.create(transport, keyPair.privateKey, keyPair.publicKey);
-        newClient.useBetterKeygen = true;
-
-        client.current = newClient;
+        // Create context
+        clientContext.current = {
+            client: client,
+            serverAddress: serverAddress,
+        };
         setIsLoggedIn(true);
+
+        client.onDisconnect.createListener(() => {
+            setIsLoggedIn(false);
+
+            setClientContext(useRef(undefined));
+        }, true);
     }
 
     return (
         <>
         {(isLoggedIn)
-            ? <ClientContext.Provider value={client}><Chat/></ClientContext.Provider>
-            : <Login onConnect={onConnected}/>
+            ? <ClientContext.Provider value={clientContext}>
+                <Chat/>
+            </ClientContext.Provider>
+            : <Login onLogin={onLogin}/>
         }
         </>
     );

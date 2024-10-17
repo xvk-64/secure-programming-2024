@@ -62,6 +62,14 @@ export class ChatServer {
             console.log(`${this.address}: Client disconnected: ${client.fingerprint}`);
             client.onMessageReady.removeListener(messageListener);
             this._clients.splice(this._clients.indexOf(client), 1);
+
+            // Do client_list to my clients
+            this.sendClientList();
+
+            // Do client_update to other servers
+            const clientUpdateMessage = new ClientUpdate(this._clients.map(client => client.verifyKey));
+            for (const server of this._neighbourhoodServers)
+                server.sendMessage(clientUpdateMessage);
         }, true);
     }
 
@@ -238,9 +246,15 @@ export class ChatServer {
         // Request client update
         await server.sendMessage(new ClientUpdateRequest());
 
+        // Handle server disconnection
         server.onDisconnect.createListener(() => {
+            console.log(`${this.address}: Server disconnected: ${server.neighbourhoodEntry.address}`);
+
             server.onMessageReady.removeListener(messageListener);
             this._neighbourhoodServers = this._neighbourhoodServers.filter(s => s != server);
+
+            // Do client_list to my clients
+            this.sendClientList();
         }, true);
     }
 
