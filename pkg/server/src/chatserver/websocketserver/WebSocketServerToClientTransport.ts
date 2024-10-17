@@ -34,6 +34,7 @@ export class WebSocketServerToClientTransport implements IServerToClientTranspor
         });
         this._transport.onDisconnect.createListener(() => {
             this._transport.onReceiveMessage.removeListener(receiveListener);
+            this.onDisconnect.dispatch();
         }, true);
     }
 

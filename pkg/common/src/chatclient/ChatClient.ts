@@ -39,6 +39,8 @@ export class ChatClient {
     private _counter: number = 0;
     public readonly fingerprint: string;
 
+    public readonly onDisconnect = new EventEmitter<void>()
+
     private _otherClients: { [fingerprint: string]: OtherClient } = {};
     public getOnlineClients() {
         let result: OnlineClient[] = [];
@@ -71,7 +73,7 @@ export class ChatClient {
         return result;
     }
 
-    public onClientUpdate: EventEmitter<void> = new EventEmitter<void>();
+    public readonly onClientUpdate = new EventEmitter<void>();
 
     private async onReceiveMessage(message: ServerToClientSendable) {
         switch (message.type) {
@@ -196,6 +198,8 @@ export class ChatClient {
 
         this._transport.onDisconnect.createListener(() => {
             this._transport.onReceiveMessage.removeListener(receiveListener);
+
+            this.onDisconnect.dispatch();
         })
     }
 

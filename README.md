@@ -38,45 +38,40 @@ npm run dev:server
 
 Your terminal should show you which port the server is currently running on. Client will run on port 8000, and server will run on port 3307. Navigate to http://localhost:8000 to access the app.
 
+## Advanced Testing
+For testing with networked neighbourhood, you need a definition of the other neighbourhood servers. You can generate this by running
+```shell
+tsx ./pkg/server/src/util/keygen.ts [numKeys] [outDir]
+```
+- The default number of key pairs (servers in neighbourhood) is 3
+- The default output directory is `generated_keys` in the current directory
+- The keys will be named `key[Number][private|public].[format].pem`
+- The generated neighbourhood file will have server `i` with key `key[i]....pem` using port `3300 + i`
+  - For example, server 2 (the third server) has public key `key2public.spki.pem` and uses port `3302`
+
+Run an instance of a server in the neighbourhood using
+```shell
+tsx ./pkg/server/src/server.ts [address] [port] [private key file] [public key file] [neighbourhood.json file]
+```
+
+Add additional servers by modifying the `neighbourhood.json` file.
+
+### Paste & go
+```shell
+tsx ./pkg/server/src/util/keygen.ts
+
+# In first shell
+tsx ./pkg/server/src/server.ts server0 3300 .\generated_keys\key0private.pkcs8.pem .\generated_keys\key0public.spki.pem .\generated_keys\neighbourhood.json
+
+# In another shell
+tsx ./pkg/server/src/server.ts server1 3300 .\generated_keys\key1private.pkcs8.pem .\generated_keys\key1public.spki.pem .\generated_keys\neighbourhood.json
+```
+This will create two servers connected in a neighbourhood on ports `3300` and `3301`
+
 ## How to navigate the GUI
-
-# Initial Setup:
-
-You will be prompted with a screen to enter the address of a server to connect to. 
-If you cannot successfully connect to a server, you will be shown an error message and be asked to input another address. Your private key will be automatically generated, or loaded from storage. 
-
-# Main GUI
-Once you successfully connect, you will have access to the main GUI.
-This is comprised of a navigation sidebar, a middle content display, and an occassional right sidebar. 
-
-Navigation Sidebar:
-
-- Public Broadcast
-    - Click to view public messages and create public messages/broadcasts
-
-- Chat List
-    - Click '+' to create a new encrypted chat
-        - Enter user's fingerprint to create a chat. Add multiple participants to create a group chat
-        - Finalise your group by pressing "submit"
-    - Click a chat from the list to bring up the chat log for that chat
-        - Send messages and files from the input box
-        - To the right is a list of all online and offline members of the chat
-
-- Friend List
-    - Shows online/offline status all registers 'friends'. A friend is simply a user whose fingerprint you gave given a nickname
-    - To add a new friend (or remove one), click '+'
-        - Type the user's fingerprint and the associated nickname, and press 'submit'
-        - A list of all friends will appear. From here you can remove them from your friend list. 
-
-- Fallback Server List
-    - A list of fallback servers in case one fails.
-        - Shows all currently listed servers and their status, connected, online, and offline
-    - Click '+' to add a fallback server
-        - Enter the server's address to add it to the list
-        - From this panel you can remove fallback servers
-    
+TODO
 
 ## Contributors
-PLease contact us via this email address if you have any questions or issues:
+Please contact us via this email address if you have any questions or issues:
 
 sp24.feedback@proton.me

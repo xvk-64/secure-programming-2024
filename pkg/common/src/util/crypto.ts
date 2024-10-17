@@ -64,14 +64,21 @@ export async function PEMToKey(pem: string, importParams: RsaHashedImportParams)
             privatePemHeader.length,
             pem.length - privatePemFooter.length,
         );
-    }
+    } else
+        return;
 
     // Strip whitespace from PEM contents?
     const keyContents = decode(pemContents.replace(/\s/g, ""));
 
-    const key = await webCrypto.importKey(isPrivate ? "pkcs8" : "spki", keyContents, importParams, true, isPrivate ? ["sign"] : ["verify"]);
+    try {
+        const key = await webCrypto.importKey(isPrivate ? "pkcs8" : "spki", keyContents, importParams, true, isPrivate ? ["sign"] : ["verify"]);
 
-    return key;
+        return key;
+    } catch (e) {
+        console.log(e)
+        return;
+    }
+
 }
 export async function calculateFingerprint(key: CryptoKey) {
     let exportedKeyBuffer = new TextEncoder().encode(await keyToPEM(key));

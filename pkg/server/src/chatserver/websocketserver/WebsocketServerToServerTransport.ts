@@ -40,6 +40,8 @@ export class WebsocketServerToServerTransport implements IServerToServerTranspor
         });
         this._transport.onDisconnect.createListener(() => {
             this._transport.onReceiveMessage.removeListener(receiveListener);
+
+            this.onDisconnect.dispatch();
         }, true);
     }
 
@@ -50,7 +52,7 @@ export class WebsocketServerToServerTransport implements IServerToServerTranspor
     public static async connect(URL: string): Promise<WebsocketServerToServerTransport | undefined> {
         return new Promise((resolve, reject) => {
             const webSocket = new ws.WebSocket(URL);
-            webSocket.onopen = () => resolve(new WebsocketServerToServerTransport(new WebSocketTransport(webSocket)));
+            webSocket.onopen = () => resolve(new WebsocketServerToServerTransport(WebSocketTransport.createServer(webSocket)));
             webSocket.onerror = () => resolve(undefined);
         });
     }

@@ -105,9 +105,14 @@ if (fs.existsSync(neighbourhoodFile)) {
                 // Don't add our own entry.
                 continue;
 
+            const verifyKey = await PEMToKey(entry.verifyKey, PSSImportParams);
+
+            if (!verifyKey)
+                continue;
+
             neighbourhood.push({
                 address: entry.address,
-                verifyKey: await PEMToKey(entry.verifyKey, PSSImportParams)
+                verifyKey: verifyKey
             });
 
             URLs.push(entry.URL);
@@ -128,10 +133,14 @@ const httpServer = app.listen(port, async () => {
 
     // Try connecting to other servers
     for (const URL of URLs) {
+        if (URL.includes(port.toString()))
+            // Don't include myself.
+            continue;
+
         const transport = await WebsocketServerToServerTransport.connect(URL);
 
         if (transport !== undefined) {
-            console.log(`Connecting to ${URL}`)
+            console.log(`Trying to connect to ${URL}`)
             await wsEntryPoint.connectToServer(transport, await server.createServerHelloMessage())
         }
     }
