@@ -71,9 +71,33 @@ node ./pkg/server/dist/src/server.js server1 3300 .\generated_keys\key1private.p
 This will create two servers connected in a neighbourhood on ports `3300` and `3301`
 
 ## How to navigate the GUI
-TODO
+
+# Initial Setup:
+
+You will be prompted with a screen to enter the address of a server to connect to. 
+ 
+
+# Main GUI
+Once you successfully connect, you will have access to the main GUI.
+
+At the top of the screen, you will see your assigned fingerprint.
+
+Below is "Group selection", which will show you all your created groups. By default, you will see "Global", which is where you can send public messages to all connected clients.
+
+Below this is a list of all currently connected clients. If you are the only connected client to a server, you will see the server's client in the list of clients. 
+
+To create a private chat, select the users from the global list that you want to include, and press the'Create Private Chat' button.
+This will create a new Private Chat which will appear beside the "Global" button. Members of the chat will automatically have this chat appear on their client. 
+
+Group Private Chats:
+- Will have its own unique identifier unique to each client. 
+- Once a chat with multiple members is created, you cannot see the members of the chat unless they message the group. 
+
+1:1 Private Chat
+- Chat identifier will be the other user's fingerprint
+
 
 ## Contributors
-Please contact us via this email address if you have any questions or issues:
-
-sp24.feedback@proton.me
+Valen Kostich
+James Fitton-Gum
+Mia Klaric

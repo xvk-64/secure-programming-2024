@@ -32,7 +32,7 @@ export function UserPicker(props: UserPickerProps) {
                     /><span>{user}</span>
                 </p>
             )}
-            <input type="submit" value="Create group"/>
+            <input type="submit" value="Create Private Chat"/>
         </form>
     </>
 }
