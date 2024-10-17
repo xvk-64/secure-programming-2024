@@ -69,7 +69,7 @@ export function Chat(props: ChatProps) {
             if (!(messageGroups.has(data.groupID)))
                 setMessageGroups(mg => new Map(mg.set(data.groupID, [])));
 
-            console.log(messageGroups.get(data.groupID));
+            // console.log(messageGroups.get(data.groupID));
 
             setMessageGroups(mg => new Map(mg.set(data.groupID, mg.get(data.groupID)!.concat({
                 senderFingerprint: data.senderFingerprint,
@@ -92,20 +92,19 @@ export function Chat(props: ChatProps) {
             clientContext?.current?.client.sendChat(messageText, selectedGroupID);
         }
 
+        console.log(1)
+
         const message: Message = {
             senderFingerprint: fingerprint,
             text: messageText,
             key: crypto.randomUUID()
         };
 
-        if (!(messageGroups.has(selectedGroupID)))
-            setMessageGroups(mg => new Map(mg.set(selectedGroupID, [])));
-
-        setMessageGroups(mg => new Map(mg.set(selectedGroupID, mg.get(selectedGroupID)!.concat(message))));
+        setMessageGroups(mg => new Map(mg.set(selectedGroupID, (mg.has(selectedGroupID) ? mg.get(selectedGroupID)! : []).concat(message))));
     }
 
     function onGroup(groupID: string) {
-        console.log(groupID)
+        // console.log(groupID)
 
         if (!allGroupIDs.includes(groupID))
             setAllGroupIDs([...allGroupIDs, groupID]);

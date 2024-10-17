@@ -11,6 +11,10 @@ export function MessageBox (props: MessageBoxProps) {
     const onSend: React.FormEventHandler<HTMLFormElement> = e => {
         e.preventDefault();
 
+        if (message === "")
+            // Don't send empty message
+            return;
+
         props.onSendMessage(message);
         setMessage("");
     }

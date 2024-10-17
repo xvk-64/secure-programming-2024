@@ -14,7 +14,7 @@ export function UserPicker(props: UserPickerProps) {
     function onSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        const groupID = client?.current?.getGroupID(pickedUsers);
+        const groupID = client?.current?.client.getGroupID(pickedUsers);
 
         if (groupID !== undefined)
             props.onGroup(groupID);
