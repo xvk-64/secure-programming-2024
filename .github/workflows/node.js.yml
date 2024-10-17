@@ -25,7 +25,12 @@ jobs:
     - run: npm install
     - run: npm run build --if-present
 
-    - name: Deploy
-      uses: JamesIves/github-pages-deploy-action@v4
+    - name: Setup Pages
+      uses: actions/configure-pages@v5
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
       with:
-        folder: pkg/newclient/dist # The folder the action should deploy.
+        path: './pkg/newclient/dist/'
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4y.
