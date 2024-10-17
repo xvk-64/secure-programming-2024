@@ -1,7 +1,5 @@
 import React, {useRef, useState} from "react";
 import {Login} from "./components/Login.js";
-import {WebSocketClientTransport} from "./client/WebSocketClientTransport.js";
-import {PSSGenParams} from "@sp24/common/util/crypto.js";
 import {ClientContext, ClientContextType} from "./context/ClientContext.js";
 import {ChatClient} from "@sp24/common/chatclient/ChatClient.js";
 import {Chat} from "./components/Chat.js";
@@ -22,6 +20,12 @@ export function App() {
             serverAddress: serverAddress,
         };
         setIsLoggedIn(true);
+
+        client.onDisconnect.createListener(() => {
+            setIsLoggedIn(false);
+
+            setClientContext(useRef(undefined));
+        }, true);
     }
 
     return (

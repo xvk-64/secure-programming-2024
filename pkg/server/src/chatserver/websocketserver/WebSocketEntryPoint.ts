@@ -68,8 +68,8 @@ export class WebSocketEntryPoint extends EntryPoint {
 
         this._webSocketServer = new WebSocketServer({server: httpServer});
 
-        this._webSocketServer.on("connection", (webSocket: globalThis.WebSocket) => {
-            this.purgatory(new WebSocketTransport(webSocket));
+        this._webSocketServer.on("connection", (webSocket: WebSocket) => {
+            this.purgatory(WebSocketTransport.createServer(webSocket));
         });
     }
 }

@@ -14,20 +14,7 @@
 
 import path from "node:path";
 import * as fs from "node:fs";
-import {encode} from "base64-arraybuffer";
-import {webcrypto} from "node:crypto";
-
-async function keyToPEM(key: webcrypto.CryptoKey) {
-    const exported: ArrayBuffer = await globalThis.crypto.subtle.exportKey(key.type == "public" ? "spki" : "pkcs8", key);
-    return "-----BEGIN PUBLIC KEY-----\n" + encode(exported) + "\n-----END PUBLIC KEY-----";
-}
-
-const PSSGenParams = {
-    name: "RSA-PSS",
-    modulusLength: 2048,
-    publicExponent: new Uint8Array([1,0,1]),
-    hash: "SHA-256"
-}
+import {keyToPEM, PSSGenParams} from "@sp24/common/util/crypto.js";
 
 const numKeys = parseInt(process.argv[2]) || 3;
 const outDir = process.argv[3] || path.join(process.cwd(), "generated_keys");

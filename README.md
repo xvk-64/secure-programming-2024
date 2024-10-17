@@ -38,6 +38,36 @@ npm run dev:server
 
 Your terminal should show you which port the server is currently running on. Client will run on port 8000, and server will run on port 3307. Navigate to http://localhost:8000 to access the app.
 
+## Advanced Testing
+For testing with networked neighbourhood, you need a definition of the other neighbourhood servers. You can generate this by running
+```shell
+tsx ./pkg/server/src/util/keygen.ts [numKeys] [outDir]
+```
+- The default number of key pairs (servers in neighbourhood) is 3
+- The default output directory is `generated_keys` in the current directory
+- The keys will be named `key[Number][private|public].[format].pem`
+- The generated neighbourhood file will have server `i` with key `key[i]....pem` using port `3300 + i`
+  - For example, server 2 (the third server) has public key `key2public.spki.pem` and uses port `3302`
+
+Run an instance of a server in the neighbourhood using
+```shell
+tsx ./pkg/server/src/server.ts [address] [port] [private key file] [public key file] [neighbourhood.json file]
+```
+
+Add additional servers by modifying the `neighbourhood.json` file.
+
+### Paste & go
+```shell
+tsx ./pkg/server/src/util/keygen.ts
+
+# In first shell
+tsx ./pkg/server/src/server.ts server0 3300 .\generated_keys\key0private.pkcs8.pem .\generated_keys\key0public.spki.pem .\generated_keys\neighbourhood.json
+
+# In another shell
+tsx ./pkg/server/src/server.ts server1 3300 .\generated_keys\key1private.pkcs8.pem .\generated_keys\key1public.spki.pem .\generated_keys\neighbourhood.json
+```
+This will create two servers connected in a neighbourhood on ports `3300` and `3301`
+
 ## How to navigate the GUI
 
 # Initial Setup:
