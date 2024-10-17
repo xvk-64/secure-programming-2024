@@ -92,8 +92,6 @@ export function Chat(props: ChatProps) {
             clientContext?.current?.client.sendChat(messageText, selectedGroupID);
         }
 
-        console.log(1)
-
         const message: Message = {
             senderFingerprint: fingerprint,
             text: messageText,
