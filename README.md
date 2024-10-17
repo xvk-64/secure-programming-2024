@@ -34,6 +34,7 @@ npm run dev:newclient
 
 # For server
 npm run dev:server
+
 ```
 
 Your terminal should show you which port the server is currently running on. Client will run on port 8000, and server will run on port 3307. Navigate to http://localhost:8000 to access the app.
@@ -58,15 +59,18 @@ Add additional servers by modifying the `neighbourhood.json` file.
 
 ### Paste & go
 ```shell
+# Run these commands once
 npm run build
 
 node ./pkg/server/dist/src/util/keygen.js
+
+# Open two shells:
 
 # In first shell
 node ./pkg/server/dist/src/server.js server0 3300 .\generated_keys\key0private.pkcs8.pem .\generated_keys\key0public.spki.pem .\generated_keys\neighbourhood.json
 
 # In another shell
-node ./pkg/server/dist/src/server.js server1 3300 .\generated_keys\key1private.pkcs8.pem .\generated_keys\key1public.spki.pem .\generated_keys\neighbourhood.json
+node ./pkg/server/dist/src/server.js server1 3301 .\generated_keys\key1private.pkcs8.pem .\generated_keys\key1public.spki.pem .\generated_keys\neighbourhood.json
 ```
 This will create two servers connected in a neighbourhood on ports `3300` and `3301`
 
