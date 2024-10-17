@@ -43,40 +43,29 @@ Your terminal should show you which port the server is currently running on. Cli
 # Initial Setup:
 
 You will be prompted with a screen to enter the address of a server to connect to. 
-If you cannot successfully connect to a server, you will be shown an error message and be asked to input another address. Your private key will be automatically generated, or loaded from storage. 
+ 
 
 # Main GUI
 Once you successfully connect, you will have access to the main GUI.
-This is comprised of a navigation sidebar, a middle content display, and an occassional right sidebar. 
 
-Navigation Sidebar:
+At the top of the screen, you will see your assigned fingerprint.
 
-- Public Broadcast
-    - Click to view public messages and create public messages/broadcasts
+Below is "Group selection", which will show you all your created groups. By default, you will see "Global", which is where you can send public messages to all connected clients.
 
-- Chat List
-    - Click '+' to create a new encrypted chat
-        - Enter user's fingerprint to create a chat. Add multiple participants to create a group chat
-        - Finalise your group by pressing "submit"
-    - Click a chat from the list to bring up the chat log for that chat
-        - Send messages and files from the input box
-        - To the right is a list of all online and offline members of the chat
+Below this is a list of all currently connected clients. If you are the only connected client to a server, you will see the server's client in the list of clients. 
 
-- Friend List
-    - Shows online/offline status all registers 'friends'. A friend is simply a user whose fingerprint you gave given a nickname
-    - To add a new friend (or remove one), click '+'
-        - Type the user's fingerprint and the associated nickname, and press 'submit'
-        - A list of all friends will appear. From here you can remove them from your friend list. 
+To create a private chat, select the users from the global list that you want to include, and press the'Create Private Chat' button.
+This will create a new Private Chat which will appear beside the "Global" button. Members of the chat will automatically have this chat appear on their client. 
 
-- Fallback Server List
-    - A list of fallback servers in case one fails.
-        - Shows all currently listed servers and their status, connected, online, and offline
-    - Click '+' to add a fallback server
-        - Enter the server's address to add it to the list
-        - From this panel you can remove fallback servers
-    
+Group Private Chats:
+- Will have its own unique identifier unique to each client. 
+- Once a chat with multiple members is created, you cannot see the members of the chat unless they message the group. 
+
+1:1 Private Chat
+- Chat identifier will be the other user's fingerprint
+
 
 ## Contributors
-PLease contact us via this email address if you have any questions or issues:
-
-sp24.feedback@proton.me
+Valen Kostich
+James Fitton-Gum
+Mia Klaric
