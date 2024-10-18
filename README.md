@@ -1,4 +1,4 @@
-# Secure Programming Implmementation
+# Secure Programming Implementation
 
 Group 35 - University of Adelaide Semester 2 2024.
 
