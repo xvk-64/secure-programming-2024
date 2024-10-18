@@ -16,6 +16,7 @@ code contained in this repository may be vulnerable. Please open it at your own 
 ## How to run
 Prerequisites:
 - NodeJS, at least version 20
+- OpenSSL (If using TLS)
 
 Install all project dependencies
 ```shell
@@ -43,11 +44,8 @@ The server will automatically apply TLS encryption if the following files exist 
 - `cert.pem` - SSL Certificate
 - `key.pem` - RSA Private key
 
-You can easily generate these files with OpenSSL:
-** If running on Windows these commands must be done in WSL
+You can generate these files with OpenSSL:
 ```shell
-# You will be prompted for a PEM pass phrase. This is putting a password on the file, so make sure it's something you will remember
-# Next, you will be prompted for details such as country, state, etc. You can leave these blank
 openssl req -x509 -newkey rsa:2048 -keyout keytmp.pem -out cert.pem -days 365
 # Populate certificate fields...
 
@@ -55,8 +53,11 @@ openssl req -x509 -newkey rsa:2048 -keyout keytmp.pem -out cert.pem -days 365
 openssl rsa -in keytmp.pem -out key.pem
 ```
 
-Note, to use TLS with `npm run dev:server`, the `cert.pem` and `key.pem` files should be in the `pkg/server` directory.
-These by default will be in the repository folder -- move them to anywhere in `pkg/server` to use them.
+Note, `npm run dev:server` uses `pkg/server` as the working directory, so the `cert.pem` and `key.pem` files should be 
+in that directory to use TLS.
+
+The self-signed certificate needs to be trusted by the browser before the secure websocket will connect. Go to
+`https://<URL>/filestore` and accept the security warning to trust the certificate.
 
 ## Advanced Testing
 For testing with networked neighbourhood, you need a definition of the other neighbourhood servers. You can generate this by running
