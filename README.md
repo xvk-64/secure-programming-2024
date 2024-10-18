@@ -103,13 +103,13 @@ This will create two servers connected in a neighbourhood on ports `3300` and `3
 
 ## How to navigate the GUI
 
-# Initial Setup:
+### Initial Setup:
 
 You will be prompted with a screen to enter the address of a server to connect to.
 If connecting using your own generated certificate, your browser might block the connection. 
  
 
-# Main GUI
+### Main GUI
 Once you successfully connect, you will have access to the main GUI.
 
 At the top of the screen, you will see your assigned fingerprint.
