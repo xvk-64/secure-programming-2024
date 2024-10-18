@@ -117,7 +117,7 @@ Below is "Group selection", which will show you all your created groups. By defa
 
 Below this is a list of all currently connected clients. If you are the only connected client to a server, you will see the server's client in the list of clients. 
 
-To create a private chat, select the users from the global list that you want to include, and press the'Create Private Chat' button.
+To create a private chat, select the users from the global list that you want to include, and press the 'Create Private Chat' button.
 This will create a new Private Chat which will appear beside the "Global" button. Members of the chat will automatically have this chat appear on their client. 
 
 Group Private Chats:
