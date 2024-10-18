@@ -44,7 +44,7 @@ The server will automatically apply TLS encryption if the following files exist 
 - `key.pem` - RSA Private key
 
 You can easily generate these files with OpenSSL:
-** If running on Windows these commands must be done in WSL
+** If running on Windows these commands must be done in WSL. Switch back to Powershell after generating the keys. 
 ```shell
 # You will be prompted for a PEM pass phrase. This is putting a password on the file, so make sure it's something you will remember
 # Next, you will be prompted for details such as country, state, etc. You can leave these blank
