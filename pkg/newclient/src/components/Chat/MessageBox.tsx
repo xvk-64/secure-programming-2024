@@ -26,7 +26,7 @@ export function MessageBox (props: MessageBoxProps) {
     return <>
         <FileUpload onUploadDone={onUploadDone}/>
         <form onSubmit={onSend}>
-            <input type="text" value={message} onChange={e => setMessage(e.target.value)} />
+            <input type="text" value={message} onChange={e => setMessage(e.target.value)} style={{width: "40em"}}/>
             <input type="submit" value="Send"/>
         </form>
     </>
