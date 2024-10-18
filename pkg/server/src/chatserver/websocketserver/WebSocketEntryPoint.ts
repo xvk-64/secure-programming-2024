@@ -10,6 +10,8 @@ import {WebSocketTransport} from "@sp24/common/websocket/WebSocketTransport.js";
 import {calculateFingerprint} from "@sp24/common/util/crypto.js";
 import {NeighbourhoodAllowList} from "../NeighbourhoodAllowList.js";
 import {WebsocketServerToServerTransport} from "./WebsocketServerToServerTransport.js";
+import * as https from "node:https";
+import * as http from "node:http";
 
 export class WebSocketEntryPoint extends EntryPoint {
     private readonly _webSocketServer;
@@ -63,7 +65,7 @@ export class WebSocketEntryPoint extends EntryPoint {
         }, true);
     }
 
-    public constructor(httpServer: Server, neighbourhood: NeighbourhoodAllowList) {
+    public constructor(httpServer: http.Server | https.Server, neighbourhood: NeighbourhoodAllowList) {
         super(neighbourhood);
 
         this._webSocketServer = new WebSocketServer({server: httpServer});
