@@ -3,9 +3,9 @@
 Group 35 - University of Adelaide Semester 2 2024.
 
 ## Contributors
-Valen Kostich,
-James Fitton-Gum,
-Mia Klaric
+Valen Kostich a1851204,
+James Fitton-Gum a1825071,
+Mia Klaric a1821331
 
 Please DO NOT put personally identifiable information from this project into ChatGPT, for example, university name, ID number, email addresses, or GitHub usernames. If using ChatGPT for security analysis, please thoroughly check your prompt for personal and or sensitive information before submission.
 
