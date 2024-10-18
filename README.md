@@ -56,7 +56,9 @@ openssl rsa -in keytmp.pem -out key.pem
 ```
 
 Note, to use TLS with `npm run dev:server`, the `cert.pem` and `key.pem` files should be in the `pkg/server` directory.
-These by default will be in the repository folder -- move them to anywhere in `pkg/server` to use them.
+These by default will be in the working directory; move them to anywhere in `pkg/server` to use them. 
+
+If you are using 'Paste and Go Advanced Testing', keep them in the working directory they were generated in, otherwise HTTPS won't work.
 
 ## Advanced Testing
 For testing with networked neighbourhood, you need a definition of the other neighbourhood servers. You can generate this by running
