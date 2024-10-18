@@ -96,7 +96,7 @@ export function Chat(props: ChatProps) {
             key: crypto.randomUUID()
         };
 
-        setMessageGroups(mg => new Map(mg.set(selectedGroupID, (mg.has(selectedGroupID) ? mg.get(selectedGroupID)! : []).concat(message))));
+        setMessageGroups(mg => new Map(mg).set(selectedGroupID, (mg.has(selectedGroupID) ? mg.get(selectedGroupID)! : []).concat(message)));
     }
 
     function onGroup(groupID: string) {

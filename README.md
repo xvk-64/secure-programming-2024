@@ -16,6 +16,7 @@ code contained in this repository may be vulnerable. Please open it at your own 
 ## How to run
 Prerequisites:
 - NodeJS, at least version 20
+- OpenSSL (If using TLS)
 
 Install all project dependencies
 ```shell
@@ -38,6 +39,28 @@ npm run dev:server
 
 Your terminal should show you which port the server is currently running on. Client will run on port 8000, and server will run on port 3307. Navigate to http://localhost:8000 to access the app.
 
+### Adding TLS (https and wss)
+The server will automatically apply TLS encryption if the following files exist in the current working directory.
+- `cert.pem` - SSL Certificate
+- `key.pem` - RSA Private key
+
+You can generate these files with OpenSSL:
+```shell
+# You will be prompted for a PEM pass phrase. This is putting a password on the file, so make sure it's something you will remember
+# Next, you will be prompted for details such as country, state, etc. You can leave these blank
+openssl req -x509 -newkey rsa:2048 -keyout keytmp.pem -out cert.pem -days 365
+# Populate certificate fields...
+
+# Use the password you just created
+openssl rsa -in keytmp.pem -out key.pem
+```
+
+Note, `npm run dev:server` uses `pkg/server` as the working directory, so the `cert.pem` and `key.pem` files should be 
+in that directory to use TLS.
+
+The self-signed certificate needs to be trusted by the browser before the secure websocket will connect. Go to
+`https://<URL>/filestore` and accept the security warning to trust the certificate.
+
 ## Advanced Testing
 For testing with networked neighbourhood, you need a definition of the other neighbourhood servers. You can generate this by running
 ```shell
@@ -56,19 +79,22 @@ node ./pkg/server/dist/src/server.js [address] [port] [private key file] [public
 
 Add additional servers by modifying the `neighbourhood.json` file.
 
-### Paste & go
+### Paste & Go Advanced Testing
 ```shell
+# Run these commands once
 npm run build
 
 node ./pkg/server/dist/src/util/keygen.js
+
+# Open two shells:
 
 # In first shell
 node ./pkg/server/dist/src/server.js server0 3300 ./generated_keys/key0private.pkcs8.pem ./generated_keys/key0public.spki.pem ./generated_keys/neighbourhood.json
 
 # In another shell
-node ./pkg/server/dist/src/server.js server1 3300 ./generated_keys/key1private.pkcs8.pem ./generated_keys/key1public.spki.pem ./generated_keys/neighbourhood.json
+node ./pkg/server/dist/src/server.js server1 3301 .\generated_keys\key1private.pkcs8.pem .\generated_keys\key1public.spki.pem .\generated_keys\neighbourhood.json
 ```
-This will create two servers connected in a neighbourhood on ports `3300` and `3301`
+This will create two servers connected in a neighbourhood on ports `3300` and `3301`. Start up a client and ensure you change the default server address accordingly. 
 
 ## How to navigate the GUI
 

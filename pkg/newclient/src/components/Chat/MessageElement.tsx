@@ -19,8 +19,8 @@ export function MessageElement(props: MessageElementProps) {
     } else {
         return (
             <div>
-                <strong>{props.message.senderFingerprint}</strong>:
-                <span>{props.message.text}</span>
+                <strong>{props.message.senderFingerprint}:</strong>
+                <span> {props.message.text}</span>
             </div>
         )
     }
