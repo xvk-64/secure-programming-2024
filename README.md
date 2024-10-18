@@ -46,6 +46,8 @@ The server will automatically apply TLS encryption if the following files exist 
 
 You can generate these files with OpenSSL:
 ```shell
+# You will be prompted for a PEM pass phrase. This is putting a password on the file, so make sure it's something you will remember
+# Next, you will be prompted for details such as country, state, etc. You can leave these blank
 openssl req -x509 -newkey rsa:2048 -keyout keytmp.pem -out cert.pem -days 365
 # Populate certificate fields...
 
