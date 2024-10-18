@@ -44,7 +44,7 @@ export async function keyToPEM(key: CryptoKey) {
         return "-----BEGIN PRIVATE KEY-----\n" + encode(exported) + "\n-----END PRIVATE KEY-----";
     }
 }
-export async function PEMToKey(pem: string, importParams: RsaHashedImportParams) {
+export async function PEMToKey(pem: string, importParams: RsaHashedImportParams, usages?: KeyUsage[]) {
     const publicPemHeader = "-----BEGIN PUBLIC KEY-----\n";
     const publicPemFooter = "\n-----END PUBLIC KEY-----";
     const privatePemHeader = "-----BEGIN PRIVATE KEY-----\n";
@@ -70,8 +70,11 @@ export async function PEMToKey(pem: string, importParams: RsaHashedImportParams)
     // Strip whitespace from PEM contents?
     const keyContents = decode(pemContents.replace(/\s/g, ""));
 
+    if (usages === undefined)
+        usages = isPrivate ? ["sign"] : ["verify"];
+
     try {
-        const key = await webCrypto.importKey(isPrivate ? "pkcs8" : "spki", keyContents, importParams, true, isPrivate ? ["sign"] : ["verify"]);
+        const key = await webCrypto.importKey(isPrivate ? "pkcs8" : "spki", keyContents, importParams, true, usages);
 
         return key;
     } catch (e) {
