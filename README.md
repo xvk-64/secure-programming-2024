@@ -105,7 +105,8 @@ This will create two servers connected in a neighbourhood on ports `3300` and `3
 
 # Initial Setup:
 
-You will be prompted with a screen to enter the address of a server to connect to. 
+You will be prompted with a screen to enter the address of a server to connect to.
+If connecting using your own generated certificate, your browser might block the connection. 
  
 
 # Main GUI
@@ -126,5 +127,7 @@ Group Private Chats:
 
 1:1 Private Chat
 - Chat identifier will be the other user's fingerprint
+
+To upload a file, press 'Upload a File'. This will upload a file to the server and send a link in whichever chat you are in. This link can then be pasted into a new tab, and will either display or download your file. 
 
 
